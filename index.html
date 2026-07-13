@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xStore — Admin Dashboard (Design Prototype)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">x</div><div><b>xStore</b><span>Admin Console</span></div></div>
+    <div class="nav" id="nav">
+      <div class="nav-group">Overview</div>
+      <a data-view="overview" class="active"><i data-ic="grid"></i><span>Dashboard</span></a>
+      <a data-view="analytics"><i data-ic="chart"></i><span>Analytics</span></a>
+      <div class="nav-group">Marketplace</div>
+      <a data-view="moderation"><i data-ic="shield"></i><span>Product Moderation</span><span class="badge">5</span></a>
+      <a data-view="vendors"><i data-ic="store"></i><span>Vendors</span><span class="badge">3</span></a>
+      <a data-view="categories"><i data-ic="tag"></i><span>Categories</span></a>
+      <a data-view="orders"><i data-ic="box"></i><span>Orders</span></a>
+      <a data-view="disputes"><i data-ic="alert"></i><span>Disputes</span><span class="badge">6</span></a>
+      <div class="nav-group">Growth</div>
+      <a data-view="customers"><i data-ic="users"></i><span>Users</span></a>
+      <a data-view="coupons"><i data-ic="ticket"></i><span>Coupons</span></a>
+      <a data-view="content"><i data-ic="image"></i><span>Content &amp; Banners</span></a>
+      <div class="nav-group">System</div>
+      <a data-view="settings"><i data-ic="cog"></i><span>Settings</span></a>
+    </div>
+    <div class="side-foot"><div class="avatar">A</div><div><b style="color:#fff;font-size:13px">Ahmed (Owner)</b><small>Super Admin</small></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h1 id="topTitle">Dashboard</h1>
+      <div class="search"><i data-ic="search"></i><input id="searchInput" placeholder="Search this page…"></div>
+      <div class="top-actions">
+        <div class="icon-btn"><i data-ic="bell"></i><span class="dot"></span></div>
+        <div class="icon-btn"><i data-ic="help"></i></div>
+        <div class="avatar" style="background:var(--primary)">A</div>
+      </div>
+    </div>
+    <div class="content" id="content"><!-- views injected --></div>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
