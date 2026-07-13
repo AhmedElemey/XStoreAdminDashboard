@@ -34,18 +34,19 @@
   <!-- MAIN -->
   <div class="main">
     <div class="topbar">
+      <div class="icon-btn menu-btn" onclick="toggleSidebar()"><i data-ic="menu"></i></div>
       <h1 id="topTitle">Dashboard</h1>
       <div class="search"><i data-ic="search"></i><input id="searchInput" placeholder="Search this page…"></div>
       <div class="top-actions">
         <div class="icon-btn"><i data-ic="bell"></i><span class="dot"></span></div>
-        <div class="icon-btn"><i data-ic="help"></i></div>
+        <div class="icon-btn hide-sm"><i data-ic="help"></i></div>
         <div class="avatar" style="background:var(--primary)">A</div>
       </div>
     </div>
     <div class="content" id="content"><!-- views injected --></div>
   </div>
 </div>
-<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="overlay" id="overlay" onclick="closeDrawer();closeSidebar()"></div>
 <aside class="drawer" id="drawer"></aside>
 <div class="toast" id="toast"></div>
 

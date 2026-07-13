@@ -12,6 +12,7 @@ function ic(n){const p={
  image:'M3 3h18v18H3zM3 15l5-5 4 4 3-3 6 6',
  cog:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.3l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2.2-1.3L14 2h-4l-.3 2.5a7 7 0 0 0-2.2 1.3l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2.2 1.3L10 22h4l.3-2.5a7 7 0 0 0 2.2-1.3l2.4 1 2-3.4-2-1.6A7 7 0 0 0 19 12z',
  search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+ menu:'M3 6h18M3 12h18M3 18h18',
  bell:'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
  help:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'
  }[n]||'';
@@ -297,12 +298,21 @@ function settings(){
 const VIEWS={overview,analytics,moderation,vendors,categories,orders,disputes,customers,coupons,content,settings};
 const TITLES={overview:'Dashboard',analytics:'Analytics',moderation:'Product Moderation',vendors:'Vendors',categories:'Categories',orders:'Orders',disputes:'Disputes',customers:'Users',coupons:'Coupons',content:'Content & Banners',settings:'Settings'};
 
+/* ---------- responsive sidebar (off-canvas below 1050px) ---------- */
+function syncOverlay(){
+ const show=document.getElementById('drawer').classList.contains('show')||document.querySelector('.sidebar').classList.contains('open');
+ document.getElementById('overlay').classList.toggle('show',show);
+}
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open');syncOverlay();}
+function closeSidebar(){document.querySelector('.sidebar').classList.remove('open');syncOverlay();}
+
 /* ---------- router ---------- */
 function go(v){
  document.getElementById('content').innerHTML=VIEWS[v]();
  document.getElementById('topTitle').textContent=TITLES[v];
  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===v));
  const s=document.getElementById('searchInput'); if(s) s.value='';
+ closeSidebar();
  window.scrollTo(0,0);
 }
 document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.view));
@@ -315,9 +325,9 @@ function decide(i,action){const el=document.getElementById('mod-'+i);if(!el)retu
 function openDrawer(title,html,actions){
  const d=document.getElementById('drawer');
  d.innerHTML='<div class="d-head"><b style="font-size:16px">'+title+'</b><div class="d-close" onclick="closeDrawer()">✕</div></div><div class="d-body">'+html+(actions?'<div style="display:flex;gap:8px;margin-top:20px">'+actions+'</div>':'')+'</div>';
- d.classList.add('show');document.getElementById('overlay').classList.add('show');
+ d.classList.add('show');syncOverlay();
 }
-function closeDrawer(){document.getElementById('drawer').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('show');syncOverlay();}
 const cellTxt=(tr,i)=>tr.children[i]?tr.children[i].innerText.trim():'';
 const kv=(k,v)=>'<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>';
 const secH=t=>'<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin:16px 0 4px">'+t+'</h3>';
@@ -633,7 +643,7 @@ document.addEventListener('click',e=>{
  const btn=e.target.closest('.btn'); if(btn&&!btn.getAttribute('onclick')){onCTA(btn);return;}
 });
 document.getElementById('searchInput').addEventListener('input',e=>searchRows(e.target.value));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeSidebar();}});
 
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
 /* boot */
