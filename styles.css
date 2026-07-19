@@ -150,6 +150,12 @@
   .kv{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px}
   .kv span{color:var(--text-2)} .kv b{text-align:right}
 
+  /* Delivery requests (consumer package pilot) */
+  .pkg-in{width:74px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit}
+  .hint{display:block;font-size:11.5px;color:var(--text-3);margin-top:4px;font-weight:400}
+  .route b{font-weight:600}
+  .route small{color:var(--text-3);display:block;font-size:12px}
+
   /* ---------- responsive (keep last: these must override the base rules above) ---------- */
   .menu-btn{display:none}
   @media(max-width:1050px){
