@@ -1,3 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xStore — Admin Dashboard (Design Prototype)</title>
+<style>
+:root{
+    --primary:#2E5C6E; --primary-light:#5C8493; --primary-dark:#21454F;
+    --accent:#C68A2E; --accent-light:#DBA850;
+    --success:#3F7A5C; --success-bg:#DEEDE4;
+    --warning:#B6811F; --warning-bg:#F5EAD3;
+    --error:#B4472E; --error-bg:#F3E0D8;
+    --info:#356F80; --info-bg:#DEE9EC;
+    --bg:#FAF8F1; --surface:#FFFFFF; --line:#E7E2D5; --line-soft:#F1EDE3;
+    --text:#1A2A24; --text-2:#5B655E; --text-3:#8C9189;
+    --sidebar:#15211D; --sidebar-2:#213029; --sidebar-text:#B4C0B4;
+    --radius:16px; --shadow:0 1px 3px rgba(20,33,29,.05),0 10px 26px rgba(20,33,29,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .app{display:flex;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{width:248px;background:var(--sidebar);color:var(--sidebar-text);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;padding:18px 12px;z-index:20}
+  .brand{display:flex;align-items:center;gap:10px;padding:8px 10px 18px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:var(--sidebar);font-weight:800;font-size:18px}
+  .brand b{color:#F3F1E8;font-size:16px;letter-spacing:.2px}
+  .brand span{display:block;font-size:11px;color:var(--accent-light)}
+  .nav-group{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:#7E8C7F;padding:14px 12px 6px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;color:var(--sidebar-text);font-weight:500;cursor:pointer;position:relative}
+  .nav a:hover{background:var(--sidebar-2);color:#fff}
+  .nav a.active{background:linear-gradient(90deg,var(--primary),var(--primary-dark));color:#fff}
+  .nav a svg{width:18px;height:18px;flex:0 0 18px}
+  .nav a .badge{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+  .side-foot{margin-top:auto;padding:12px 10px;display:flex;align-items:center;gap:10px;border-top:1px solid #322e6e}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-light);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .side-foot small{color:#8f8dc0;display:block}
+
+  /* Main */
+  .main{flex:1;margin-left:248px;min-width:0}
+  .topbar{height:64px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 26px;position:sticky;top:0;z-index:10}
+  .topbar h1{font-size:18px;font-weight:700}
+  .search{margin-left:8px;flex:1;max-width:420px;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text-3)}
+  .search input{border:none;background:none;outline:none;flex:1;font-size:13px;color:var(--text)}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--text-2)}
+  .icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+  .icon-btn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:2px solid #fff}
+  .icon-btn svg{width:18px;height:18px}
+  .search svg{width:16px;height:16px;flex:0 0 16px}
+  .content{padding:26px}
+  .view{display:none;animation:fade .25s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h2{font-size:22px;font-weight:800}
+  .page-head p{color:var(--text-2);font-size:13px;margin-top:2px}
+
+  /* Cards & grid */
+  .grid{display:grid;gap:18px}
+  .g-4{grid-template-columns:repeat(4,1fr)}
+  .g-3{grid-template-columns:repeat(3,1fr)}
+  .g-2{grid-template-columns:2fr 1fr}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card .c-head{padding:16px 18px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
+  .card .c-head h3{font-size:15px;font-weight:700}
+  .card .c-body{padding:18px}
+  .kpi{padding:18px}
+  .kpi .k-top{display:flex;align-items:center;justify-content:space-between}
+  .kpi .k-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+  .kpi .k-val{font-size:27px;font-weight:800;margin-top:12px;letter-spacing:-.5px}
+  .kpi .k-label{color:var(--text-2);font-size:12.5px;margin-top:2px}
+  .trend{font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .up{color:var(--success);background:var(--success-bg)}
+  .down{color:var(--error);background:var(--error-bg)}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);font-weight:700;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:#F7F4EC}
+  td{padding:13px 18px;border-bottom:1px solid var(--line-soft);font-size:13.5px;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FBF9F3}
+  .u{display:flex;align-items:center;gap:10px}
+  .u .ua{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px}
+  .u b{font-weight:600}.u small{color:var(--text-3);display:block;font-size:12px}
+  .money{font-variant-numeric:tabular-nums;font-weight:600}
+
+  /* Badges */
+  .badge-s{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+  .b-green{color:#2C6347;background:var(--success-bg)} .b-amber{color:#7E5A14;background:var(--warning-bg)}
+  .b-red{color:#8A3A24;background:var(--error-bg)} .b-blue{color:#2A5666;background:var(--info-bg)}
+  .b-grey{color:#4C554E;background:#ECE9DF} .b-indigo{color:#22505E;background:#D9E5E8}
+  .dotb{width:7px;height:7px;border-radius:50%}
+
+  /* Buttons */
+  .btn{border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-dark)}
+  .btn-ok{background:var(--success);color:#fff}.btn-ok:hover{filter:brightness(.94)}
+  .btn-no{background:#fff;color:var(--error);border:1px solid var(--error)}.btn-no:hover{background:var(--error-bg)}
+  .btn-g{background:#fff;border:1px solid var(--line);color:var(--text-2)}.btn-g:hover{background:var(--bg)}
+  .btn-sm{padding:6px 11px;font-size:12px}
+  td.r .btn+.btn{margin-left:8px}
+
+  /* Tabs / chips */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer}
+  .chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  /* Charts */
+  .bars{display:flex;flex-direction:column;gap:12px}
+  .bar-row{display:grid;grid-template-columns:120px 1fr 52px;align-items:center;gap:12px;font-size:13px}
+  .bar-track{height:10px;background:var(--line-soft);border-radius:20px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--primary-light),var(--primary))}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--text-2)}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+  /* Category cards */
+  .cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .cat{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .cat .ci{width:44px;height:44px;border-radius:12px;background:#EAF0F1;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .cat .cmeta{flex:1;min-width:0}.cat .cmeta b{font-size:14.5px}.cat .cmeta small{color:var(--text-3);display:block}
+  .cat .ci-img{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:0 0 44px;background:#EAF0F1}
+  .cat-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .switch{width:40px;height:22px;border-radius:20px;background:var(--success);position:relative;cursor:pointer;flex:0 0 40px}
+  .switch.off{background:var(--line)}
+  .switch::after{content:'';position:absolute;top:2px;left:20px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .switch.off::after{left:2px}
+
+  /* Moderation cards */
+  .mod{display:flex;gap:14px;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff;align-items:center}
+  .mod .thumb{width:66px;height:66px;border-radius:10px;background:linear-gradient(135deg,#EAF0F1,#DAE6E9);display:flex;align-items:center;justify-content:center;font-size:26px;flex:0 0 66px}
+  .mod .minfo{flex:1;min-width:0}
+  .mod .minfo b{font-size:15px}.mod .minfo p{color:var(--text-2);font-size:12.5px;margin-top:2px}
+  .mod .mactions{display:flex;gap:8px}
+
+  .split{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+  .list-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .list-row:last-child{border-bottom:none}
+  .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 18px;border-radius:11px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(12px);transition:.28s;z-index:99}
+  .toast.show{opacity:1;transform:none}
+  .muted{color:var(--text-2)} .r{text-align:right} .mt{margin-top:18px}
+  .donut-wrap{display:flex;align-items:center;gap:22px}
+  .banner{border:1px dashed var(--line);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center}
+  .banner .bimg{width:120px;height:64px;border-radius:9px;background:linear-gradient(120deg,var(--primary),var(--accent));flex:0 0 120px}
+  .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .form-row label{font-size:12.5px;font-weight:600;color:var(--text-2)}
+  .form-row input,.form-row select{padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;font-family:inherit}
+
+  /* Drawer / detail panel */
+  .overlay{position:fixed;inset:0;background:rgba(17,24,39,.42);opacity:0;pointer-events:none;transition:.25s;z-index:40}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:430px;max-width:92vw;background:#fff;box-shadow:-12px 0 44px rgba(17,24,39,.18);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:50;display:flex;flex-direction:column}
+  .drawer.show{transform:none}
+  .d-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .d-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2);font-size:15px}
+  .d-close:hover{background:var(--bg)}
+  .d-body{padding:20px 22px;overflow:auto;flex:1}
+  .kv{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+  .kv span{color:var(--text-2)} .kv b{text-align:right}
+
+  /* Delivery requests (consumer package pilot) */
+  .pkg-in{width:74px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit}
+  .hint{display:block;font-size:11.5px;color:var(--text-3);margin-top:4px;font-weight:400}
+  .route b{font-weight:600}
+  .route small{color:var(--text-3);display:block;font-size:12px}
+
+  /* ---------- async states (live data: loading / empty / error) ---------- */
+  .state{padding:46px 24px;text-align:center;color:var(--text-2);display:flex;flex-direction:column;align-items:center;gap:6px}
+  .state svg{width:34px;height:34px;opacity:.45}
+  .state b{color:var(--text);font-size:15px}
+  .state span{font-size:13px;max-width:340px}
+  .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .search-mini{flex:1;max-width:340px;margin-left:0}
+  .pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--text-2);flex-wrap:wrap}
+  .pager .pg-btns{display:flex;gap:8px;align-items:center}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+  /* ---------- login gate ---------- */
+  .gate{position:fixed;inset:0;background:linear-gradient(135deg,var(--sidebar),var(--primary-dark));display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .gate-card{background:#fff;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.35);padding:32px;width:100%;max-width:380px}
+  .gate-card .logo{width:46px;height:46px;border-radius:12px;background:var(--accent);color:var(--sidebar);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;margin-bottom:16px}
+  .gate-card h2{font-size:20px;font-weight:800}
+  .gate-card p{color:var(--text-2);font-size:13px;margin:4px 0 18px}
+  .gate-err{color:var(--error);font-size:12.5px;font-weight:600;min-height:18px;margin-bottom:8px}
+
+  /* ---------- responsive (keep last: these must override the base rules above) ---------- */
+  .menu-btn{display:none}
+  @media(max-width:1050px){
+    .g-4{grid-template-columns:repeat(2,1fr)}
+    .g-2,.split{grid-template-columns:1fr}
+    .cat-grid{grid-template-columns:1fr}
+    .sidebar{transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 44px rgba(17,24,39,.18);z-index:45}
+    .sidebar.open{transform:none}
+    .main{margin-left:0}
+    .menu-btn{display:flex}
+  }
+  @media(max-width:820px){
+    .content{padding:18px}
+    .topbar{padding:0 16px}
+    .card{overflow-x:auto}
+    .card>table{min-width:640px}
+    .card th{white-space:nowrap;padding:10px 14px}
+    .card td{white-space:nowrap;padding:11px 14px}
+  }
+  @media(max-width:640px){
+    .g-4,.g-3{grid-template-columns:1fr}
+    .content{padding:14px}
+    .topbar{gap:10px;padding:0 12px}
+    .topbar h1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .search{min-width:0;margin-left:0}
+    .search input{min-width:0}
+    .top-actions{gap:8px}
+    .hide-sm{display:none}
+    .kpi .k-val{font-size:23px}
+    .page-head h2{font-size:19px}
+    .mod{flex-wrap:wrap}
+    .mod .mactions{width:100%;justify-content:flex-end}
+    .bar-row{grid-template-columns:86px 1fr 46px;gap:8px}
+    .banner{flex-wrap:wrap}
+    .banner .bimg{flex:0 0 96px;width:96px;height:52px}
+    .toast{left:16px;right:16px;bottom:16px;text-align:center}
+    .drawer{width:100vw;max-width:100vw}
+  }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">x</div><div><b>xStore</b><span>Admin Console</span></div></div>
+    <div class="nav" id="nav">
+      <div class="nav-group">Overview</div>
+      <a data-view="overview" class="active"><i data-ic="grid"></i><span>Dashboard</span></a>
+      <!-- PHASE 2 — <a data-view="analytics"><i data-ic="chart"></i><span>Analytics</span></a> -->
+      <div class="nav-group">Marketplace</div>
+      <a data-view="moderation"><i data-ic="shield"></i><span>Product Moderation</span><span class="badge">5</span></a>
+      <a data-view="vendors"><i data-ic="store"></i><span>Vendors</span><span class="badge">3</span></a>
+      <a data-view="categories"><i data-ic="tag"></i><span>Categories</span></a>
+      <a data-view="orders"><i data-ic="box"></i><span>Orders</span></a>
+      <!-- PHASE 2 — <a data-view="couriers"><i data-ic="truck"></i><span>Delivery</span><span class="badge">1</span></a> -->
+      <!-- PHASE 2 — <a data-view="packages"><i data-ic="send"></i><span>Delivery Requests</span><span class="badge">1</span></a> -->
+      <!-- PHASE 2 — <a data-view="disputes"><i data-ic="alert"></i><span>Disputes</span><span class="badge">6</span></a> -->
+      <div class="nav-group">Growth</div>
+      <a data-view="customers"><i data-ic="users"></i><span>Users</span></a>
+      <!-- PHASE 2 — <a data-view="coupons"><i data-ic="ticket"></i><span>Coupons</span></a> -->
+      <a data-view="content"><i data-ic="image"></i><span>Content &amp; Banners</span></a>
+      <div class="nav-group">System</div>
+      <a data-view="settings"><i data-ic="cog"></i><span>Settings</span></a>
+    </div>
+    <div class="side-foot" style="cursor:pointer" title="Sign out" onclick="if(confirm('Sign out?'))logout()"><div class="avatar">A</div><div><b style="color:#fff;font-size:13px">Ahmed (Owner)</b><small>Super Admin · sign out</small></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="icon-btn menu-btn" onclick="toggleSidebar()"><i data-ic="menu"></i></div>
+      <h1 id="topTitle">Dashboard</h1>
+      <div class="search"><i data-ic="search"></i><input id="searchInput" placeholder="Search this page…"></div>
+      <div class="top-actions">
+        <div class="icon-btn"><i data-ic="bell"></i><span class="dot"></span></div>
+        <div class="icon-btn hide-sm"><i data-ic="help"></i></div>
+        <div class="avatar" style="background:var(--primary)">A</div>
+      </div>
+    </div>
+    <div class="content" id="content"><!-- views injected --></div>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="closeDrawer();closeSidebar()"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="toast" id="toast"></div>
+
+<script>
 /* ---------- tiny icon set ---------- */
 function ic(n){const p={
  grid:'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
@@ -139,13 +415,6 @@ const DISPUTES=[
  {id:'XS-2026-4344',buyer:'Hany Wael',vendor:'Heliopolis Sportswear',reason:'Wrong size shipped',val:890,status:'review',note:'Vendor shipped M instead of L. Vendor has offered a free exchange.',sug:'Partial refund or exchange'},
  {id:'XS-2026-4322',buyer:'Rana Fathy',vendor:'Zamalek Boutique',reason:'Refund not received',val:1250,status:'review',note:'Return accepted 9 days ago, refund still pending from the vendor.',sug:'Refund buyer'},
  {id:'XS-2026-4290',buyer:'Sameh Adel',vendor:'Maadi Toy Box',reason:'Late delivery',val:320,status:'open',note:'Delivered 6 days late; buyer requests partial compensation.',sug:'Partial refund'}];
-const CUSTOMERS=[
- {n:'Ahmed Hassan',city:'Cairo',orders:23,spend:142300,joined:'Nov 2025',phone:'+20 100 111 2233'},
- {n:'Sara Mostafa',city:'Giza',orders:18,spend:64200,joined:'Dec 2025',phone:'+20 101 222 3344'},
- {n:'Karim Fouad',city:'Cairo',orders:11,spend:38900,joined:'Jan 2026',phone:'+20 102 333 4455'},
- {n:'Mona Adel',city:'Alexandria',orders:31,spend:98750,joined:'Oct 2025',phone:'+20 103 444 5566'},
- {n:'Youssef Ali',city:'Cairo',orders:7,spend:51600,joined:'Mar 2026',phone:'+20 104 555 6677'},
- {n:'Nour Ibrahim',city:'Giza',orders:14,spend:42100,joined:'Feb 2026',phone:'+20 105 666 7788'}];
 
 /* ---------- view builders ---------- */
 const kpi=(ico,val,label,trend,dir,c)=>`<div class="card kpi"><div class="k-top"><div class="k-ico" style="background:${c}22;color:${c}">${ic(ico)}</div><span class="trend ${dir}">${trend}</span></div><div class="k-val">${val}</div><div class="k-label">${label}</div></div>`;
@@ -218,28 +487,24 @@ function productDrawer(i){
    `<button class="btn btn-ok" style="flex:1;justify-content:center" onclick="decide(${i},'approve');closeDrawer()">Approve</button><button class="btn btn-g" style="flex:1;justify-content:center" onclick="decide(${i},'changes');closeDrawer()">Request changes</button><button class="btn btn-no" style="flex:1;justify-content:center" onclick="decide(${i},'reject');closeDrawer()">Reject</button>`);
 }
 
+/* Vendors tab — live GET /api/users?role=VENDOR + PUT approve/reject
+   (rows loaded by loadVendors; status tabs filter server-side via onChip). */
 function vendors(){
- const rows=VENDORS.map((v,i)=>{const st=v.status==='active'?'b-green':v.status==='pending'?'b-amber':'b-red';
-   const act=v.status==='pending'?`<button class="btn btn-ok btn-sm" onclick="vdecide(${i},'approve')">Approve</button><button class="btn btn-no btn-sm" onclick="vdecide(${i},'reject')">Reject</button>`
-     :v.status==='suspended'?`<button class="btn btn-g btn-sm" onclick="vdecide(${i},'reinstate')">Reinstate</button>`
-     :`<button class="btn btn-g btn-sm" onclick="vdecide(${i},'suspend')">Suspend</button>`;
-   return `<tr data-status="${v.status}"><td><div class="u" style="cursor:pointer" onclick="openVendorProducts(${i})" title="View ${v.n}'s listings">${avatar(v.n)}<div><b>${v.n}</b><small>${v.owner} · ${v.city}</small></div></div></td>
-     <td><span class="badge-s b-indigo">🏢 Business</span></td>
-     <td><span class="badge-s ${st}"><span class="dotb" style="background:currentColor"></span>${v.status[0].toUpperCase()+v.status.slice(1)}</span></td>
-     <td><a style="cursor:pointer;color:var(--primary);font-weight:600" onclick="openVendorProducts(${i})">${v.products||'—'}</a></td><td class="money">${v.gmv?EGP(v.gmv):'—'}</td><td>${v.rating?'⭐ '+v.rating:'—'}</td>
-     <td class="r"><button class="btn btn-g btn-sm" onclick="openVendorProducts(${i})">Listings</button><button class="btn btn-g btn-sm" onclick="vendorDrawer(${i})">Details</button>${act}</td></tr>`}).join('');
+ vendorsState.keyword='';vendorsState.vendorStatus='';vendorsState.statusLabel='All';vendorsState.page=1;vendorsState.items=null;
+ const tabs=VENDOR_STATUS_TABS.map((t,i)=>`<span class="chip${i===0?' active':''}">${t[0]}</span>`).join('');
  return `<div class="page-head"><div><h2>Vendors</h2><p><b>Business</b> accounts — sellers on the marketplace (role: vendor). Individual buyers are under <a data-jump="customers" style="color:var(--primary);cursor:pointer">Users</a>.</p></div>
-   <div class="tabs"><span class="chip active">All</span><span class="chip">Pending</span><span class="chip">Active</span><span class="chip">Suspended</span></div></div>
-   <div class="card"><table><thead><tr><th>Vendor</th><th>Account type</th><th>Status</th><th>Products</th><th>GMV</th><th>Rating</th><th class="r">Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+   <div class="tabs" data-remote="vendors">${tabs}</div></div>
+   <div class="toolbar"><div class="search search-mini">${ic('search')}<input id="vSearch" placeholder="Search vendors by store, owner, phone…" oninput="onVendorsSearch(this.value)"></div></div>
+   <div class="card"><div id="vendorsHost">${stateLoading('Loading vendors…')}</div></div>`;
 }
 
+/* Categories tab — live GET /api/categories + create/update (multipart),
+   status toggle and delete (cards loaded by loadCategories). */
 function categories(){
- const cards=CATS.map((c,i)=>`<div class="cat"><div class="ci">${c[1]}</div>
-   <div class="cmeta"><b>${c[0]}</b><small>${c[2]} subcategories · ${c[3]} live products</small></div>
-   <div class="switch ${c[4]?'':'off'}" onclick="this.classList.toggle('off');toast('${c[0]} '+(this.classList.contains('off')?'hidden':'visible'))"></div></div>`).join('');
- return `<div class="page-head"><div><h2>Categories</h2><p>Server-driven taxonomy (10 categories · 31 subcategories) — powers <b>GET /categories</b></p></div>
+ catState.items=null;
+ return `<div class="page-head"><div><h2>Categories</h2><p>Server-driven taxonomy — <b>GET /api/categories</b>. Add, edit, show/hide and delete all sync to the backend.</p></div>
    <button class="btn btn-p" onclick="openCategoryForm()">+ Add category</button></div>
-   <div class="card"><div class="c-body"><div class="cat-grid">${cards}</div></div></div>`;
+   <div id="catHost">${stateLoading('Loading categories…')}</div>`;
 }
 
 /* which orders can still be handed to a platform courier */
@@ -272,16 +537,15 @@ function disputes(){
    <div class="card"><table><thead><tr><th>Order</th><th>Buyer</th><th>Vendor</th><th>Reason</th><th>Value</th><th>Status</th><th class="r">Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
+/* Users tab — live GET /api/users?role=CONSUMER (rows loaded by loadUsers). */
 function customers(){
- const rows=CUSTOMERS.map((c,i)=>`<tr data-status="active"><td><div class="u" style="cursor:pointer" onclick="userDrawer(${i})">${avatar(c.n,'50')}<div><b>${c.n}</b><small>role: consumer</small></div></div></td><td class="muted">${c.city}</td>
-   <td><span class="badge-s b-blue">👤 Customer</span></td>
-   <td>${c.orders}</td><td class="money">${EGP(c.spend)}</td><td><span class="badge-s b-green">Active</span></td>
-   <td class="r"><button class="btn btn-g btn-sm" onclick="userDrawer(${i})">Profile</button></td></tr>`).join('');
+ usersState.keyword='';usersState.page=1;usersState.items=null;usersState.error='';
  return `<div class="page-head"><div><h2>Users</h2><p>Individual <b>customer</b> accounts — normal buyers (role: consumer). <b>Business</b> accounts are managed under <a data-jump="vendors" style="color:var(--primary);cursor:pointer">Vendors</a>.</p></div>
-   <button class="btn btn-g">Export CSV</button></div>
+   <button class="btn btn-g" onclick="exportUsersCsv()">Export CSV</button></div>
    <div class="tabs" style="margin-bottom:18px"><span class="chip active">👤 Customers</span><span class="chip" data-jump="vendors">🏢 Business (vendors)</span></div>
-   <div class="grid g-3" style="margin-bottom:18px">${kpi('users','41,208','Total customers','+7%','up','#2E5C6E')}${kpi('chart','2.4','Orders per customer','+0.2','up','#C68A2E')}${kpi('box','63%','Repeat rate','+4%','up','#3F7A5C')}</div>
-   <div class="card"><table><thead><tr><th>User</th><th>City</th><th>Account type</th><th>Orders</th><th>Lifetime spend</th><th>Status</th><th class="r"></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+   <div class="grid g-3" style="margin-bottom:18px">${kpi('users','<span id="uTotal">—</span>','Total customers','live','up','#2E5C6E')}${kpi('chart','2.4','Orders per customer','+0.2','up','#C68A2E')}${kpi('box','63%','Repeat rate','+4%','up','#3F7A5C')}</div>
+   <div class="toolbar"><div class="search search-mini">${ic('search')}<input id="uSearch" placeholder="Search customers by name, phone, email…" oninput="onUsersSearch(this.value)"></div></div>
+   <div class="card"><div id="usersHost">${stateLoading('Loading customers…')}</div></div>`;
 }
 
 /* ---------- delivery (courier pilot) ---------- */
@@ -548,7 +812,10 @@ function go(v){
  const s=document.getElementById('searchInput'); if(s) s.value='';
  closeSidebar();
  window.scrollTo(0,0);
+ if(AFTER[v]) AFTER[v]();          // views backed by live data load after render
 }
+/* post-render loaders for live-data views (see LIVE API section below) */
+const AFTER={customers:loadUsers,vendors:loadVendors,categories:loadCategories};
 document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.view));
 
 /* ---------- toast + moderation ---------- */
@@ -584,15 +851,6 @@ function orderDrawer(i){
    +secH('Fulfilment timeline')+tl,
    '<button class="btn btn-p" style="flex:1;justify-content:center" onclick="toast(\'Message sent to vendor\');closeDrawer()">Contact vendor</button>'+assignBtn
    +(canCancel?'<button class="btn btn-no" style="flex:1;justify-content:center" onclick="toast(\'Order cancelled\');closeDrawer()">Cancel order</button>':'<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Close</button>'));
-}
-function userDrawer(i){
- const c=CUSTOMERS[i];
- openDrawer(c.n,
-   '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+avatar(c.n,'50')+'<div><b style="font-size:16px">'+c.n+'</b><div class="muted" style="font-size:12.5px">Customer · role: consumer</div></div></div>'
-   +'<div style="margin-bottom:8px"><span class="badge-s b-blue">👤 Customer</span> <span class="badge-s b-green">Active</span></div>'
-   +secH('Account')
-   +kv('City',c.city)+kv('Phone',c.phone)+kv('Joined',c.joined)+kv('Total orders',c.orders)+kv('Lifetime spend',EGP(c.spend))+kv('Avg order',EGP(Math.round(c.spend/c.orders))),
-   '<button class="btn btn-p" style="flex:1;justify-content:center" onclick="toast(\'Message sent to customer\');closeDrawer()">Message</button><button class="btn btn-no" style="flex:1;justify-content:center" onclick="toast(\'Customer suspended\');closeDrawer()">Suspend</button>');
 }
 function disputeDrawer(i){
  const d=DISPUTES[i];
@@ -802,9 +1060,104 @@ function formDrawer(title,fields,submitLabel,onSubmit,values){
  };
  openDrawer(title,body,'<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Cancel</button><button class="btn btn-p" style="flex:1;justify-content:center" onclick="_submitForm()">'+submitLabel+'</button>');
 }
-function openCategoryForm(){formDrawer('Add category',
- [{label:'Category name',ph:'e.g. Groceries',required:true},{label:'Icon (emoji)',ph:'🛒'},{label:'Subcategories (comma-separated)',ph:'Fruits, Dairy, Bakery'}],
- 'Add category',v=>{const subs=v[2]?v[2].split(',').filter(x=>x.trim()).length:0;CATS.push([v[0],v[1]||'📦',subs,0,true]);toast('Category "'+v[0]+'" added ✓');closeDrawer();go('categories');});}
+/* ============================================================
+   Categories (live) — Postman "Categories" folder
+     GET    /api/categories
+     POST   /api/categories            (multipart: nameEn,nameAr,isActive,image)
+     PUT    /api/categories            (multipart: id,nameEn,nameAr,isActive,image)
+     PUT    /api/categories/{id}/status  (json: {isActive})
+     DELETE /api/categories/{id}
+   ============================================================ */
+const catState={items:null};
+async function loadCategories(){
+ const host=document.getElementById('catHost'); if(!host)return;
+ host.innerHTML=stateLoading('Loading categories…');
+ try{
+   const data=await apiFetch('/api/categories');
+   catState.items=Array.isArray(data)?data:readPage(data,200).items;
+   renderCategories();
+ }catch(e){ if(e.status===401)return; host.innerHTML=stateError(e.message,'loadCategories()'); }
+}
+function mapCategory(c){
+ let img=_fne(c.imageUrl,c.image,c.imagePath,c.iconUrl);
+ if(img&&!/^https?:\/\//i.test(String(img))) img=API.base.replace(/\/+$/,'')+'/'+String(img).replace(/^\/+/,'');
+ return{
+   id:_fne(c.id,c.categoryId,c._id),
+   nameEn:_fne(c.nameEn,c.name,c.nameAr)||'Untitled',
+   nameAr:_fne(c.nameAr,c.nameEn)||'',
+   image:img,
+   active:c.isActive===undefined||c.isActive===null?true:!!c.isActive,
+   products:_numOr(c.productsCount,c.listingsCount,c.liveProducts,c.products),
+   subs:_numOr(c.subcategoriesCount,c.subCategoriesCount,c.subcategories)
+ };
+}
+function renderCategories(){
+ const host=document.getElementById('catHost'); if(!host)return;
+ const items=catState.items||[];
+ if(!items.length){host.innerHTML='<div class="card"><div class="c-body">'+stateEmpty('No categories yet — add your first one.')+'</div></div>';return;}
+ const cards=items.map((c,i)=>{const m=mapCategory(c);
+   const thumb=m.image
+     ?'<img class="ci-img" src="'+esc(m.image)+'" alt="" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'ci\',textContent:\'📦\'}))">'
+     :'<div class="ci">'+esc((m.nameEn[0]||'📦').toUpperCase())+'</div>';
+   const meta=[m.products!=null?m.products+' products':null,m.subs!=null?m.subs+' subcategories':null].filter(Boolean).join(' · ')||'—';
+   return '<div class="cat">'+thumb
+     +'<div class="cmeta"><b>'+esc(m.nameEn)+'</b><small>'+(m.nameAr?'<bdi>'+esc(m.nameAr)+'</bdi> · ':'')+meta+'</small></div>'
+     +'<div class="cat-actions">'
+     +'<div class="switch '+(m.active?'':'off')+'" title="Show / hide" onclick="toggleCategory('+i+')"></div>'
+     +'<button class="btn btn-g btn-sm" onclick="openCategoryForm('+i+')">Edit</button>'
+     +'<button class="btn btn-no btn-sm" onclick="deleteCategory('+i+')">Delete</button>'
+     +'</div></div>';
+ }).join('');
+ host.innerHTML='<div class="card"><div class="c-body"><div class="cat-grid">'+cards+'</div></div></div>';
+}
+async function toggleCategory(i){
+ const c=(catState.items||[])[i]; if(!c)return; const m=mapCategory(c);
+ if(!m.id){toast('Missing category id');return;}
+ const next=!m.active;
+ try{
+   await apiFetch('/api/categories/'+encodeURIComponent(m.id)+'/status',{method:'PUT',body:{isActive:next}});
+   c.isActive=next; renderCategories();
+   toast('“'+m.nameEn+'” '+(next?'visible':'hidden'));
+ }catch(e){ if(e.status===401)return; toast('Status update failed: '+(e.message||'error')); renderCategories(); }
+}
+async function deleteCategory(i){
+ const c=(catState.items||[])[i]; if(!c)return; const m=mapCategory(c);
+ if(!m.id){toast('Missing category id');return;}
+ if(!confirm('Delete category “'+m.nameEn+'”? This cannot be undone.'))return;
+ try{
+   await apiFetch('/api/categories/'+encodeURIComponent(m.id),{method:'DELETE'});
+   toast('Category “'+m.nameEn+'” deleted'); loadCategories();
+ }catch(e){ if(e.status===401)return; toast('Delete failed: '+(e.message||'error')); }
+}
+function openCategoryForm(i){
+ const editing=(i!==undefined&&i!==null);
+ const m=editing?mapCategory(catState.items[i]):{nameEn:'',nameAr:'',active:true};
+ openDrawer(editing?'Edit category':'Add category',
+   '<div class="form-row"><label>Name (English) *</label><input id="catEn" value="'+esc(m.nameEn)+'" placeholder="Electronics"></div>'
+   +'<div class="form-row"><label>Name (Arabic) *</label><input id="catAr" dir="rtl" value="'+esc(m.nameAr)+'" placeholder="إلكترونيات"></div>'
+   +'<div class="form-row"><label>Image '+(editing?'<span class="muted" style="font-weight:400">(leave empty to keep current)</span>':'<span class="muted" style="font-weight:400">(jpg, png, webp)</span>')+'</label><input id="catImg" type="file" accept="image/jpeg,image/png,image/webp"></div>'
+   +'<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-top:4px"><input id="catActive" type="checkbox" '+(m.active?'checked':'')+'> Active (visible to shoppers)</label>',
+   '<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Cancel</button><button class="btn btn-p" style="flex:1;justify-content:center" id="catSaveBtn" onclick="saveCategory('+(editing?i:'null')+')">'+(editing?'Save changes':'Add category')+'</button>');
+}
+async function saveCategory(i){
+ const editing=(i!==null&&i!==undefined);
+ const en=document.getElementById('catEn').value.trim();
+ const ar=document.getElementById('catAr').value.trim();
+ const active=document.getElementById('catActive').checked;
+ const fileEl=document.getElementById('catImg'); const file=fileEl&&fileEl.files&&fileEl.files[0];
+ if(!en||!ar){toast('Enter both English and Arabic names');return;}
+ if(!editing&&!file){toast('Pick a category image');return;}   // image is required on create
+ const btn=document.getElementById('catSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
+ const fd=new FormData();
+ fd.append('nameEn',en); fd.append('nameAr',ar); fd.append('isActive',active?'true':'false');
+ if(file) fd.append('image',file);
+ try{
+   if(editing){ fd.append('id',mapCategory(catState.items[i]).id); await apiFetch('/api/categories',{method:'PUT',body:fd}); }
+   else { await apiFetch('/api/categories',{method:'POST',body:fd}); }
+   toast(editing?'Category updated ✓':'Category “'+en+'” added ✓');
+   closeDrawer(); loadCategories();
+ }catch(e){ if(e.status===401)return; toast((editing?'Update':'Create')+' failed: '+(e.message||'error')); if(btn){btn.disabled=false;btn.textContent=editing?'Save changes':'Add category';} }
+}
 function openCouponForm(){formDrawer('New coupon',
  [{label:'Code',ph:'SUMMER25',required:true},{label:'Offer description',ph:'25% off orders over EGP 500',required:true},{label:'Scope',type:'select',options:['Platform','Seasonal']}],
  'Create coupon',v=>{COUPONS.push([v[0].toUpperCase(),v[1],v[2],0,true]);toast('Coupon "'+v[0].toUpperCase()+'" created ✓');closeDrawer();go('coupons');});}
@@ -842,6 +1195,7 @@ function deleteBanner(i){BANNERS.splice(i,1);toast('Banner deleted');go('content
 const STATUSES=['pending','confirmed','processing','shipped','delivered','cancelled','active','suspended','open','review','resolved','approved','rejected','live','out','off','submitted','priced','pickedup'];
 function onChip(chip){
  const g=chip.closest('.tabs'); if(g) g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===chip));
+ if(g&&g.dataset.remote){ onRemoteChip(g.dataset.remote,chip); return; } // live-data tabs filter server-side
  const label=chip.innerText.replace(/\s*\(\d+\)/,'').trim();
  let key=label.toLowerCase(); if(key==='in review') key='review'; if(key==='out of stock') key='out'; if(key==='off duty') key='off'; if(key==='picked up') key='pickedup';
  const view=document.getElementById('content');
@@ -872,6 +1226,266 @@ function searchRows(q){
  els.forEach(el=>{el.style.display=(!q||el.innerText.toLowerCase().indexOf(q)>-1)?'':'none';});
 }
 
+/* ============================================================
+   LIVE API INTEGRATION — "Users" folder of the Admin Dashboard
+   Postman collection: xStoreEcommerce Admin Dashboard
+     GET  /api/users?keyword&role&isVerified&vendorStatus&page&pageSize
+     PUT  /api/users/{id}/approve   (vendor approval)
+     PUT  /api/users/{id}/reject    (vendor rejection)
+   Auth: static Basic license key on EVERY request +, once signed in,
+   the per-user JWT in an X-Auth-Token header (POST /api/auth/login).
+   Paginated envelope: {items, totalCount, page, pageSize, totalPages}.
+   ============================================================ */
+const API_LICENSE='Basic MTEzMTk3Njg6NjAtZGF5ZnJlZXRyaWFs';           // 60-day trial license key (public, sent on every request)
+const API_DEFAULT_BASE='https://xstoreegy-001-site1.jtempurl.com';   // hosted backend; override via the login screen's "change API server"
+const API={
+ get base(){return localStorage.getItem('xs_admin_base')||API_DEFAULT_BASE;},
+ set base(v){v?localStorage.setItem('xs_admin_base',v):localStorage.removeItem('xs_admin_base');},
+ get token(){return localStorage.getItem('xs_admin_token')||'';},
+ set token(v){v?localStorage.setItem('xs_admin_token',v):localStorage.removeItem('xs_admin_token');}
+};
+class ApiError extends Error{constructor(status,msg){super(msg);this.status=status;}}
+
+async function apiFetch(path,{method='GET',query,body,noAuthRedirect=false}={}){
+ let url;
+ try{url=new URL(API.base.replace(/\/+$/,'')+path);}catch(_){throw new ApiError(0,'Invalid API base URL.');}
+ if(query)Object.entries(query).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v);});
+ const headers={'Authorization':API_LICENSE};
+ if(API.token)headers['X-Auth-Token']=API.token;
+ let payload;
+ if(body instanceof FormData){payload=body;}                              // let the browser set multipart Content-Type + boundary
+ else if(body!==undefined){headers['Content-Type']='application/json';payload=JSON.stringify(body);}
+ let res;
+ try{res=await fetch(url.toString(),{method,headers,body:payload});}
+ catch(_){throw new ApiError(0,'Network error — is the API reachable at '+API.base+'? (CORS or server down)');}
+ const text=await res.text();
+ let data=null; if(text){try{data=JSON.parse(text);}catch(_){data=text;}}
+ if(res.status===401&&!noAuthRedirect){API.token='';renderLogin('Your session expired — please sign in again.');throw new ApiError(401,'Unauthorized');}
+ if(!res.ok)throw new ApiError(res.status,serverMsg(data)||('Request failed ('+res.status+').'));
+ return data;
+}
+function serverMsg(d){
+ if(!d)return'';
+ if(typeof d==='string')return d;
+ return (d.error&&d.error.message)||(typeof d.error==='string'?d.error:'')||d.message||d.title||'';
+}
+
+/* ---------- login gate ---------- */
+function renderLogin(msg){
+ let g=document.getElementById('gate');
+ if(!g){g=document.createElement('div');g.id='gate';g.className='gate';document.body.appendChild(g);}
+ g.innerHTML=
+   '<form class="gate-card" onsubmit="doLogin(event)">'
+   +'<div class="logo">x</div><h2>xStore Admin</h2><p>Sign in to manage the marketplace.</p>'
+   +'<div class="gate-err" id="lgErr">'+(msg?esc(msg):'')+'</div>'
+   +'<div class="form-row"><label>Phone number</label><input id="lgPhone" inputmode="tel" autocomplete="username" placeholder="01012345678"></div>'
+   +'<div class="form-row"><label>Password</label><input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••"></div>'
+   +'<button class="btn btn-p" id="lgBtn" type="submit" style="width:100%;justify-content:center;margin-top:6px">Sign in</button>'
+   +'<div style="margin-top:14px;font-size:12px;color:var(--text-3)">Advanced: <a id="lgBaseToggle" style="color:var(--primary);cursor:pointer">change API server</a></div>'
+   +'<div class="form-row" id="lgBaseRow" style="display:none;margin-top:10px"><label>API base URL</label><input id="lgBase" value="'+esc(API.base)+'"></div>'
+   +'</form>';
+ g.style.display='flex';
+ document.getElementById('lgBaseToggle').onclick=()=>{const r=document.getElementById('lgBaseRow');r.style.display=r.style.display==='none'?'flex':'none';};
+ document.getElementById('lgPhone').focus();
+}
+function hideLogin(){const g=document.getElementById('gate');if(g)g.style.display='none';}
+async function doLogin(ev){
+ if(ev)ev.preventDefault();
+ const phone=document.getElementById('lgPhone').value.trim();
+ const pass=document.getElementById('lgPass').value;
+ const baseEl=document.getElementById('lgBase');
+ if(baseEl&&baseEl.value.trim())API.base=baseEl.value.trim();
+ const err=document.getElementById('lgErr'),btn=document.getElementById('lgBtn');
+ err.textContent='';
+ if(!phone||!pass){err.textContent='Enter your phone number and password.';return;}
+ btn.disabled=true;btn.textContent='Signing in…';
+ try{
+   const data=await apiFetch('/api/auth/login',{method:'POST',noAuthRedirect:true,body:{phoneNumber:phone,password:pass,rememberMe:true}});
+   const token=data&&(data.token||data.accessToken);
+   if(!token)throw new ApiError(0,'Server did not return a token.');
+   API.token=token; hideLogin(); go('customers'); toast('Signed in ✓');
+ }catch(e){ err.textContent=e.message||'Sign in failed.'; }
+ finally{ btn.disabled=false; btn.textContent='Sign in'; }
+}
+function logout(){API.token='';renderLogin('Signed out.');}
+
+/* ---------- shared helpers (live views) ---------- */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const _fne=(...a)=>{for(const x of a){if(x!==undefined&&x!==null&&String(x).trim()!=='')return x;}return'';};
+const _numOr=(...a)=>{for(const x of a){const n=Number(x);if(x!==undefined&&x!==null&&x!==''&&Number.isFinite(n))return n;}return null;};
+const _num=v=>{const n=Number(v);return Number.isFinite(n)?n:null;};
+function stateLoading(msg){return '<div class="state"><span class="spin"></span><b>'+esc(msg||'Loading…')+'</b></div>';}
+function stateEmpty(msg){return '<div class="state">'+ic('users')+'<b>Nothing to show</b><span>'+esc(msg||'No records found.')+'</span></div>';}
+function stateError(msg,retry){return '<div class="state">'+ic('alert')+'<b>Couldn’t load data</b><span>'+esc(msg||'Something went wrong.')+'</span><div style="margin-top:14px"><button class="btn btn-p btn-sm" onclick="'+retry+'">Retry</button></div></div>';}
+function readPage(data,pageSize){
+ // Confirmed xStore envelope {items,totalCount,page,pageSize,totalPages}; tolerant to aliases / bare array.
+ let items=[],total=0,totalPages=1;
+ if(Array.isArray(data)){items=data;total=data.length;}
+ else if(data&&typeof data==='object'){
+   items=data.items||data.results||data.data||data.users||[];
+   if(!Array.isArray(items))items=[];
+   total=_num(data.totalCount)??_num(data.total)??items.length;
+   totalPages=_num(data.totalPages)??Math.max(1,Math.ceil(total/(pageSize||20)));
+ }
+ return{items,total,totalPages};
+}
+function pager(kind){
+ const st=kind==='users'?usersState:vendorsState;
+ const fn=kind==='users'?'gotoUsersPage':'gotoVendorsPage';
+ const from=st.total===0?0:(st.page-1)*st.pageSize+1, to=Math.min(st.page*st.pageSize,st.total);
+ return '<div class="pager"><span>'+from+'–'+to+' of '+st.total.toLocaleString('en-US')+'</span>'
+   +'<div class="pg-btns">'
+   +'<button class="btn btn-g btn-sm" '+(st.page<=1?'disabled':'')+' onclick="'+fn+'('+(st.page-1)+')">← Prev</button>'
+   +'<span>Page '+st.page+' / '+Math.max(1,st.totalPages)+'</span>'
+   +'<button class="btn btn-g btn-sm" '+(st.page>=st.totalPages?'disabled':'')+' onclick="'+fn+'('+(st.page+1)+')">Next →</button>'
+   +'</div></div>';
+}
+function onRemoteChip(kind,chip){
+ const label=chip.innerText.trim();
+ if(kind==='vendors'){
+   const t=VENDOR_STATUS_TABS.find(x=>x[0]===label);
+   vendorsState.vendorStatus=t?t[1]:''; vendorsState.statusLabel=label; vendorsState.page=1; loadVendors();
+ }
+}
+
+/* ---------- Users (consumers) ---------- */
+const usersState={role:'CONSUMER',keyword:'',isVerified:'',vendorStatus:'',page:1,pageSize:20,total:0,totalPages:1,items:null,error:''};
+let _uSearchT;
+function onUsersSearch(v){clearTimeout(_uSearchT);_uSearchT=setTimeout(()=>{usersState.keyword=v.trim();usersState.page=1;loadUsers();},350);}
+function gotoUsersPage(p){if(p<1||p>usersState.totalPages||p===usersState.page)return;usersState.page=p;loadUsers();}
+async function loadUsers(){
+ const host=document.getElementById('usersHost'); if(!host)return;
+ host.innerHTML=stateLoading('Loading customers…');
+ try{
+   const data=await apiFetch('/api/users',{query:{keyword:usersState.keyword,role:usersState.role,isVerified:usersState.isVerified,vendorStatus:usersState.vendorStatus,page:usersState.page,pageSize:usersState.pageSize}});
+   const p=readPage(data,usersState.pageSize);
+   usersState.items=p.items; usersState.total=p.total; usersState.totalPages=p.totalPages;
+   renderUsers();
+ }catch(e){ if(e.status===401)return; host.innerHTML=stateError(e.message,'loadUsers()'); }
+}
+function mapUser(u){
+ // Tolerant mapping — adjust these key lists if the /api/users item shape differs.
+ const email=_fne(u.email), phone=_fne(u.phoneNumber,u.phone,u.whatsAppNumber)||'—';
+ const orders=_numOr(u.ordersCount,u.totalOrders,u.orders), spend=_numOr(u.totalSpent,u.lifetimeSpend,u.totalSpend);
+ return{
+   id:_fne(u.id,u.userId,u._id,u.uuid),
+   name:_fne(u.fullNameEn,u.fullName,u.name,u.nameEn,u.fullNameAr,email,u.phoneNumber)||'Unknown',
+   sub:email||phone||('role: '+_fne(u.role,'consumer')),
+   city:_fne(u.city,u.storeCity,u.governorate,u.town,u.location)||'—',
+   phone, email, role:_fne(u.role,'consumer'), verified:!!u.isVerified,
+   orders:orders==null?'—':orders, spend:spend==null?'—':EGP(spend),
+   joined:_fne(u.joinedAt,u.createdAt,u.joinDate)||'—'
+ };
+}
+function renderUsers(){
+ const host=document.getElementById('usersHost'); if(!host)return;
+ const items=usersState.items||[];
+ const tot=document.getElementById('uTotal'); if(tot)tot.textContent=usersState.total.toLocaleString('en-US');
+ if(!items.length){host.innerHTML=stateEmpty(usersState.keyword?'No customers match “'+esc(usersState.keyword)+'”.':'No customer accounts found.');return;}
+ const rows=items.map((u,i)=>{const m=mapUser(u);
+   return '<tr data-status="active"><td><div class="u" style="cursor:pointer" onclick="remoteUserDrawer('+i+')">'+avatar(m.name,'50')+'<div><b>'+esc(m.name)+'</b><small>'+esc(m.sub)+'</small></div></div></td>'
+     +'<td class="muted">'+esc(m.city)+'</td><td><span class="badge-s b-blue">👤 Customer</span></td>'
+     +'<td>'+m.orders+'</td><td class="money">'+m.spend+'</td>'
+     +'<td><span class="badge-s '+(m.verified?'b-green':'b-grey')+'">'+(m.verified?'✓ Verified':'Unverified')+'</span></td>'
+     +'<td class="r"><button class="btn btn-g btn-sm" onclick="remoteUserDrawer('+i+')">Profile</button></td></tr>';
+ }).join('');
+ host.innerHTML='<table><thead><tr><th>User</th><th>City</th><th>Account type</th><th>Orders</th><th>Lifetime spend</th><th>Status</th><th class="r"></th></tr></thead><tbody>'+rows+'</tbody></table>'+pager('users');
+}
+function remoteUserDrawer(i){
+ const u=(usersState.items||[])[i]; if(!u)return; const m=mapUser(u);
+ openDrawer(m.name,
+   '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+avatar(m.name,'50')+'<div><b style="font-size:16px">'+esc(m.name)+'</b><div class="muted" style="font-size:12.5px">Customer · role: '+esc(m.role)+'</div></div></div>'
+   +'<div style="margin-bottom:8px"><span class="badge-s b-blue">👤 Customer</span> '+(m.verified?'<span class="badge-s b-green">✓ Verified</span>':'<span class="badge-s b-grey">Unverified</span>')+'</div>'
+   +secH('Account')
+   +kv('City',esc(m.city))+kv('Phone',esc(m.phone))+(m.email?kv('Email',esc(m.email)):'')+kv('Joined',esc(m.joined))+kv('Total orders',m.orders)+kv('Lifetime spend',m.spend)+(m.id?kv('User ID',esc(m.id)):''),
+   '<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Close</button>');
+}
+function exportUsersCsv(){
+ const items=usersState.items||[];
+ if(!items.length){toast('Nothing to export yet');return;}
+ const head=['Name','City','Phone','Email','Orders','Role'];
+ const body=items.map(u=>{const m=mapUser(u);return [m.name,m.city,m.phone,m.email,m.orders,m.role];});
+ const csv=[head,...body].map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+ a.download='xstore-customers-page'+usersState.page+'.csv'; a.click(); URL.revokeObjectURL(a.href);
+ toast('Exported '+items.length+' customers (current page)');
+}
+
+/* ---------- Vendors (approve / reject) ---------- */
+// vendorStatus wire codes — Postman "GET All Users" filters pending with vendorStatus=0.
+const VENDOR_STATUS_TABS=[['All',''],['Pending','0'],['Active','1'],['Rejected','2'],['Suspended','3']];
+const VSTATUS={0:['b-amber','Pending'],1:['b-green','Active'],2:['b-red','Rejected'],3:['b-grey','Suspended']};
+const vendorsState={keyword:'',vendorStatus:'',statusLabel:'All',page:1,pageSize:20,total:0,totalPages:1,items:null};
+let _vSearchT;
+function onVendorsSearch(v){clearTimeout(_vSearchT);_vSearchT=setTimeout(()=>{vendorsState.keyword=v.trim();vendorsState.page=1;loadVendors();},350);}
+function gotoVendorsPage(p){if(p<1||p>vendorsState.totalPages||p===vendorsState.page)return;vendorsState.page=p;loadVendors();}
+async function loadVendors(){
+ const host=document.getElementById('vendorsHost'); if(!host)return;
+ host.innerHTML=stateLoading('Loading vendors…');
+ try{
+   const data=await apiFetch('/api/users',{query:{keyword:vendorsState.keyword,role:'VENDOR',vendorStatus:vendorsState.vendorStatus,page:vendorsState.page,pageSize:vendorsState.pageSize}});
+   const p=readPage(data,vendorsState.pageSize);
+   vendorsState.items=p.items; vendorsState.total=p.total; vendorsState.totalPages=p.totalPages;
+   renderVendors();
+ }catch(e){ if(e.status===401)return; host.innerHTML=stateError(e.message,'loadVendors()'); }
+}
+function mapVendor(v){
+ let stt; const sv=v.vendorStatus;
+ if(sv==null||sv===''){stt=['b-grey','—'];}
+ else if(typeof sv==='number'||/^\d+$/.test(String(sv))){stt=VSTATUS[Number(sv)]||['b-grey','Status '+sv];}
+ else{const k=String(sv).toLowerCase(); stt=k.includes('pend')?VSTATUS[0]:(k.includes('active')||k.includes('approv'))?VSTATUS[1]:k.includes('reject')?VSTATUS[2]:k.includes('suspend')?VSTATUS[3]:['b-grey',String(sv)];}
+ return{
+   id:_fne(v.id,v.userId,v._id),
+   store:_fne(v.storeNameEn,v.storeName,v.storeNameAr,v.fullNameEn,v.fullName,v.name)||'Unnamed store',
+   owner:_fne(v.fullNameEn,v.fullName,v.ownerName,v.nameEn)||'—',
+   city:_fne(v.storeCity,v.city,v.governorate,v.town)||'—',
+   phone:_fne(v.phoneNumber,v.whatsAppNumber,v.phone)||'—',
+   email:_fne(v.email),
+   category:_fne(v.storeCategory,v.storeCategoryName,v.category)||'—',
+   verified:!!v.isVerified, products:_numOr(v.productsCount,v.listingsCount,v.products), rating:_numOr(v.rating),
+   joined:_fne(v.joinedAt,v.createdAt)||'—', st:stt, isPending:stt[1]==='Pending'
+ };
+}
+function renderVendors(){
+ const host=document.getElementById('vendorsHost'); if(!host)return;
+ const items=vendorsState.items||[];
+ if(!items.length){host.innerHTML=stateEmpty(vendorsState.keyword?'No vendors match “'+esc(vendorsState.keyword)+'”.':'No vendors with status “'+esc(vendorsState.statusLabel)+'”.');return;}
+ const rows=items.map((v,i)=>{const m=mapVendor(v);
+   const act=m.isPending?'<button class="btn btn-ok btn-sm" onclick="approveVendor('+i+')">Approve</button><button class="btn btn-no btn-sm" onclick="rejectVendor('+i+')">Reject</button>':'';
+   return '<tr data-status="'+esc((m.st[1]||'').toLowerCase())+'"><td><div class="u" style="cursor:pointer" onclick="remoteVendorDrawer('+i+')">'+avatar(m.store)+'<div><b>'+esc(m.store)+'</b><small>'+esc(m.owner)+' · '+esc(m.city)+'</small></div></div></td>'
+     +'<td><span class="badge-s b-indigo">🏢 Business</span></td>'
+     +'<td><span class="badge-s '+m.st[0]+'"><span class="dotb" style="background:currentColor"></span>'+esc(m.st[1])+'</span>'+(m.verified?' <span class="badge-s b-green">✓</span>':'')+'</td>'
+     +'<td>'+(m.products==null?'—':m.products)+'</td><td>'+(m.rating==null?'—':'⭐ '+m.rating)+'</td>'
+     +'<td class="r"><button class="btn btn-g btn-sm" onclick="remoteVendorDrawer('+i+')">Details</button>'+act+'</td></tr>';
+ }).join('');
+ host.innerHTML='<table><thead><tr><th>Vendor</th><th>Account type</th><th>Status</th><th>Products</th><th>Rating</th><th class="r">Action</th></tr></thead><tbody>'+rows+'</tbody></table>'+pager('vendors');
+}
+function remoteVendorDrawer(i){
+ const v=(vendorsState.items||[])[i]; if(!v)return; const m=mapVendor(v);
+ const act=m.isPending
+   ?'<button class="btn btn-ok" style="flex:1;justify-content:center" onclick="approveVendor('+i+')">Approve vendor</button><button class="btn btn-no" style="flex:1;justify-content:center" onclick="rejectVendor('+i+')">Reject</button>'
+   :'<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Close</button>';
+ openDrawer('Vendor — '+m.store,
+   '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+avatar(m.store)+'<div><b style="font-size:16px">'+esc(m.store)+'</b><div class="muted" style="font-size:12.5px">'+esc(m.owner)+' · '+esc(m.city)+'</div></div></div>'
+   +'<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge-s b-indigo">🏢 Business</span><span class="badge-s '+m.st[0]+'">'+esc(m.st[1])+'</span>'+(m.verified?'<span class="badge-s b-green">✓ verified</span>':'<span class="badge-s b-amber">unverified</span>')+'</div>'
+   +secH('Business profile')
+   +kv('Owner',esc(m.owner))+kv('Category',esc(m.category))+kv('Location',esc(m.city))+kv('Joined',esc(m.joined))+kv('Products',m.products==null?'—':m.products)+kv('Rating',m.rating==null?'—':'⭐ '+m.rating)
+   +secH('Contact')+kv('Phone',esc(m.phone))+(m.email?kv('Email',esc(m.email)):'')+(m.id?kv('User ID',esc(m.id)):''),
+   act);
+}
+function approveVendor(i){vendorDecision(i,'approve');}
+function rejectVendor(i){vendorDecision(i,'reject');}
+async function vendorDecision(i,action){
+ const v=(vendorsState.items||[])[i]; if(!v)return; const m=mapVendor(v);
+ if(!m.id){toast('Missing vendor id — cannot '+action);return;}
+ if(action==='reject'&&!confirm('Reject vendor “'+m.store+'”? They will be notified.'))return;
+ try{
+   await apiFetch('/api/users/'+encodeURIComponent(m.id)+'/'+action,{method:'PUT'});
+   toast(action==='approve'?'Vendor approved — now selling ✓':'Vendor rejected — notified');
+   closeDrawer(); loadVendors();
+ }catch(e){ if(e.status===401)return; toast((action==='approve'?'Approve':'Reject')+' failed: '+(e.message||'error')); }
+}
+
 /* ---------- delegated clicks (wires every CTA) ---------- */
 document.addEventListener('click',e=>{
  const jump=e.target.closest('[data-jump]'); if(jump){go(jump.dataset.jump);return;}
@@ -883,5 +1497,9 @@ document.getElementById('searchInput').addEventListener('input',e=>searchRows(e.
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeSidebar();}});
 
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
-/* boot */
-go('overview');
+/* boot — gate the console behind sign-in (live API needs the JWT) */
+if(API.token){ go('overview'); } else { renderLogin(); }
+
+</script>
+</body>
+</html>
