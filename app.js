@@ -961,7 +961,7 @@ function searchRows(q){
    Paginated envelope: {items, totalCount, page, pageSize, totalPages}.
    ============================================================ */
 const API_LICENSE='Basic MTEzMTk3Njg6NjAtZGF5ZnJlZXRyaWFs';           // 60-day trial license key (public, sent on every request)
-const API_DEFAULT_BASE='https://xstoreegy-001-site1.jtempurl.com';   // hosted backend; override via the login screen's "change API server"
+const API_DEFAULT_BASE='http://xstoreegy-001-site1.jtempurl.com';   // hosted backend; override via the login screen's "change API server"
 const API={
  get base(){return localStorage.getItem('xs_admin_base')||API_DEFAULT_BASE;},
  set base(v){v?localStorage.setItem('xs_admin_base',v):localStorage.removeItem('xs_admin_base');},
