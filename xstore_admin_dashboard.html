@@ -1232,12 +1232,15 @@ function searchRows(q){
      GET  /api/users?keyword&role&isVerified&vendorStatus&page&pageSize
      PUT  /api/users/{id}/approve   (vendor approval)
      PUT  /api/users/{id}/reject    (vendor rejection)
-   Auth: static Basic license key on EVERY request +, once signed in,
-   the per-user JWT in an X-Auth-Token header (POST /api/auth/login).
+   Auth: the per-user JWT from POST /api/auth/login is sent as a
+   standard `Authorization: Bearer <jwt>` header. Protected endpoints
+   (e.g. GET /api/users) reply `WWW-Authenticate: Bearer` — there is no
+   "Basic license" header on this backend; sending one makes every
+   authenticated call 401. Anonymous endpoints (GET /api/categories) work
+   without it, which is why those tabs load while Users did not.
    Paginated envelope: {items, totalCount, page, pageSize, totalPages}.
    ============================================================ */
-const API_LICENSE='Basic MTEzMTk3Njg6NjAtZGF5ZnJlZXRyaWFs';           // 60-day trial license key (public, sent on every request)
-const API_DEFAULT_BASE='http://xstoreegy-001-site1.jtempurl.com';   // hosted backend; override via the login screen's "change API server"
+const API_DEFAULT_BASE='https://xstoreegy-001-site1.jtempurl.com';   // hosted backend (HTTPS avoids mixed-content when the dashboard is served over https); override via the login screen's "change API server"
 const API={
  get base(){return localStorage.getItem('xs_admin_base')||API_DEFAULT_BASE;},
  set base(v){v?localStorage.setItem('xs_admin_base',v):localStorage.removeItem('xs_admin_base');},
@@ -1250,8 +1253,8 @@ async function apiFetch(path,{method='GET',query,body,noAuthRedirect=false}={}){
  let url;
  try{url=new URL(API.base.replace(/\/+$/,'')+path);}catch(_){throw new ApiError(0,'Invalid API base URL.');}
  if(query)Object.entries(query).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v);});
- const headers={'Authorization':API_LICENSE};
- if(API.token)headers['X-Auth-Token']=API.token;
+ const headers={};
+ if(API.token)headers['Authorization']='Bearer '+API.token;   // protected endpoints require the JWT as a Bearer token
  let payload;
  if(body instanceof FormData){payload=body;}                              // let the browser set multipart Content-Type + boundary
  else if(body!==undefined){headers['Content-Type']='application/json';payload=JSON.stringify(body);}
