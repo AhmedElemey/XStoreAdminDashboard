@@ -116,7 +116,7 @@ let PKGS=[
  {id:'pkg_002',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Omar Fathy',phone:'+20 115 550 0011',street:'22 Gameat El Dewal St',city:'Mohandessin'},note:'Small box of homemade sweets',submitted:'30 min ago',status:'priced',price:80,courier:null},
  {id:'pkg_003',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Nour El-Din',phone:'+20 115 550 0012',street:'5 Makram Ebeid St',city:'Nasr City'},note:'Spare laptop charger',submitted:'2h ago',status:'confirmed',price:60,courier:'Mostafa El-Sayed'},
  {id:'pkg_004',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Hana Mahmoud',phone:'+20 115 550 0013',street:'12 Baghdad St',city:'Heliopolis'},note:'Birthday gift, fragile',submitted:'4h ago',status:'pickedup',price:80,courier:'Mostafa El-Sayed'},
- {id:'pkg_005',customer:'Ahmed Hassan',phone:'+20 100 111 2233',pickup:{street:'12 Tahrir St',city:'Dokki'},drop:{name:'Tarek Nabil',phone:'+20 111 222 0044',street:'9 Abbas El Akkad St',city:'Nasr City'},note:'House keys in a padded envelope',submitted:'Yesterday',status:'delivered',price:80,courier:'Mostafa El-Sayed'},
+ {id:'pkg_005',customer:'Zamalek Boutique',phone:'+20 100 111 2233',requesterRole:'vendor',pickup:{street:'12 Tahrir St',city:'Dokki'},drop:{name:'Tarek Nabil',phone:'+20 111 222 0044',street:'9 Abbas El Akkad St',city:'Nasr City'},note:'Fulfil a store order — padded envelope',submitted:'Yesterday',status:'delivered',price:80,courier:'Mostafa El-Sayed'},
  {id:'pkg_006',customer:'Mona Adel',phone:'+20 103 444 5566',pickup:{street:'14 Sidi Gaber',city:'Alexandria'},drop:{name:'Rana Fathy',phone:'+20 111 222 0055',street:'30 El Geish Rd',city:'Alexandria'},note:'Documents folder',submitted:'Yesterday',status:'cancelled',price:60,courier:null}];
 const PSTAT={submitted:['b-grey','Submitted'],priced:['b-blue','Priced'],confirmed:['b-indigo','Confirmed'],pickedup:['b-amber','Picked up'],delivered:['b-green','Delivered'],cancelled:['b-red','Cancelled']};
 const pkgCross=p=>p.pickup.city.trim().toLowerCase()!==p.drop.city.trim().toLowerCase();
@@ -394,7 +394,7 @@ function packages(){
  const done=PKGS.filter(p=>p.status==='delivered').length;
  const rows=PKGS.map((p,i)=>`<tr data-status="${p.status}">
    <td><b style="cursor:pointer" onclick="pkgDrawer(${i})">${p.id}</b></td>
-   <td><div class="u" style="cursor:pointer" onclick="pkgDrawer(${i})">${avatar(p.customer,'50')}<div><b>${p.customer}</b><small>${p.phone}</small></div></div></td>
+   <td><div class="u" style="cursor:pointer" onclick="pkgDrawer(${i})">${avatar(p.customer,'50')}<div><b>${p.customer} ${(p.requesterRole==='vendor')?'<span class="badge-s b-indigo" style="padding:1px 7px">Vendor</span>':'<span class="badge-s b-blue" style="padding:1px 7px">Customer</span>'}</b><small>${p.phone}</small></div></div></td>
    <td class="route"><b>${p.pickup.city} → ${p.drop.city}${pkgCross(p)?' <span class="badge-s b-amber" style="padding:1px 7px">cross-city</span>':''}</b><small>${p.pickup.street} → ${p.drop.street} (${p.drop.name})</small></td>
    <td class="muted" style="max-width:200px;white-space:normal">${p.note}</td>
    <td class="muted">${p.submitted}</td>
@@ -1307,6 +1307,7 @@ function mapRequest(r){
   pickup:{street:pk.street||'',city:pk.city||''},
   drop:{name:dp.fullName||'',phone:dp.phone||'',street:dp.street||'',city:dp.city||''},
   note:r.packageNote||'',submitted:_dlvAgo(r.createdAt),status:_DLV_PSTAT[r.status]||'submitted',
+  requesterRole:(r.requesterRole==='vendor')?'vendor':'customer',
   price:r.price!=null?+r.price:null,courier:r.courierId?(courierNameById(r.courierId)||'Courier'):null,courierId:r.courierId||null};
 }
 
