@@ -101,7 +101,7 @@ const PENDING=[
 /* platform couriers ("Delivered by xStore" pilot) — owner-created accounts (role: courier).
    `cash` mirrors the app's CourierCashWallet: COD collected, not yet handed over.
    `cap` maps to kCourierCashHandoverThresholdEgp (client constant until a backend config endpoint exists). */
-const COURIERS=[
+let COURIERS=[
  {n:'Mostafa El-Sayed',phone:'+20 105 550 0003',zone:'Cairo — Nasr City & Heliopolis',status:'active',cash:3850,cap:5000,today:6,delivered30:118,failed30:7,joined:'Jun 2026'},
  {n:'Hassan Farouk',phone:'+20 101 888 2244',zone:'Giza — Dokki & Mohandessin',status:'active',cash:5200,cap:5000,today:4,delivered30:96,failed30:9,joined:'Jun 2026'},
  {n:'Mahmoud Adel',phone:'+20 102 777 5566',zone:'Cairo — Maadi',status:'off',cash:0,cap:5000,today:0,delivered30:74,failed30:4,joined:'Jul 2026'}];
@@ -111,7 +111,7 @@ const cashDue=c=>c.cash>=c.cap;
    lib/features/delivery/data/datasources/delivery_request_datasource.dart;
    pricing reference = EGP 60 base + EGP 20 cross-city (mockPackagePrice).
    The customer pays the courier in cash at pickup — no COD at the door. */
-const PKGS=[
+let PKGS=[
  {id:'pkg_001',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Laila Hassan',phone:'+20 115 550 0010',street:'8 El Merghany St',city:'Heliopolis'},note:'Envelope with signed contract — handle with care',submitted:'2 min ago',status:'submitted',price:null,courier:null},
  {id:'pkg_002',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Omar Fathy',phone:'+20 115 550 0011',street:'22 Gameat El Dewal St',city:'Mohandessin'},note:'Small box of homemade sweets',submitted:'30 min ago',status:'priced',price:80,courier:null},
  {id:'pkg_003',customer:'Sara Khelifi',phone:'+20 125 550 0002',pickup:{street:'15 Abbas El Akkad St',city:'Nasr City'},drop:{name:'Nour El-Din',phone:'+20 115 550 0012',street:'5 Makram Ebeid St',city:'Nasr City'},note:'Spare laptop charger',submitted:'2h ago',status:'confirmed',price:60,courier:'Mostafa El-Sayed'},
@@ -299,7 +299,8 @@ function couriers(){
  return `<div class="page-head"><div><h2>Delivery — Couriers</h2><p>Platform couriers collecting COD ("Delivered by xStore" pilot) · assign orders from the <a data-jump="orders" style="color:var(--primary);cursor:pointer">Orders</a> page</p></div>
    <div style="display:flex;gap:10px;align-items:center"><div class="tabs" style="margin:0"><span class="chip active">All</span><span class="chip">Active</span><span class="chip">Off duty</span></div>
    <button class="btn btn-p" onclick="openCourierForm()">+ Add courier</button></div></div>
-   <div class="grid g-4" style="margin-bottom:18px">
+   ${deliveryConnectBar()}
+   <div class="grid g-4" style="margin-bottom:18px;margin-top:18px">
      ${kpi('truck',String(COURIERS.filter(c=>c.status==='active').length),'Active couriers','','up','#2E5C6E')}
      ${kpi('cash',EGP(held),'COD cash with couriers',COURIERS.filter(cashDue).length?'collect':'ok',COURIERS.filter(cashDue).length?'down':'up','#C68A2E')}
      ${kpi('box',String(today),'Tasks today','','up','#3F7A5C')}
@@ -328,11 +329,13 @@ function recordHandover(i){
  const c=COURIERS[i];
  const amt=parseFloat(document.getElementById('hoAmt').value);
  if(isNaN(amt)||amt<=0){toast('Enter a valid amount');document.getElementById('hoAmt').focus();return;}
+ if(DELIVERY.connected)return dlvRecordHandover(i);
  c.cash=Math.max(0,Math.round((c.cash-amt)*100)/100);
  toast(c.cash===0?'Handover recorded — courier settled ✓':'Handover recorded — '+EGP(c.cash)+' still with courier');
  closeDrawer();go('couriers');refreshCourierBadge();
 }
 function courierDuty(i){
+ if(DELIVERY.connected)return dlvCourierDuty(i);
  const c=COURIERS[i];c.status=c.status==='active'?'off':'active';
  toast(c.n+(c.status==='active'?' is on duty ✓':' set off duty'));
  closeDrawer();go('couriers');
@@ -344,7 +347,7 @@ function refreshCourierBadge(){
 }
 function openCourierForm(){formDrawer('Add courier (owner-created account)',
  [{label:'Full name',ph:'Courier name',required:true},{label:'Phone',ph:'+20 1xx xxx xxxx',required:true},{label:'Zone',ph:'e.g. Cairo — Maadi',required:true}],
- 'Create courier',v=>{COURIERS.push({n:v[0],phone:v[1],zone:v[2],status:'active',cash:0,cap:5000,today:0,delivered30:0,failed30:0,joined:'Jul 2026'});toast('Courier "'+v[0]+'" created ✓ — share the login with them');closeDrawer();go('couriers');});}
+ 'Create courier',v=>{if(DELIVERY.connected)return dlvCreateCourier(v[0],v[1],v[2]);COURIERS.push({n:v[0],phone:v[1],zone:v[2],status:'active',cash:0,cap:5000,today:0,delivered30:0,failed30:0,joined:'Jul 2026'});toast('Courier "'+v[0]+'" created ✓ — share the login with them');closeDrawer();go('couriers');});}
 function assignCourierDrawer(i){
  const o=ORDERS[i];
  const rows=COURIERS.map((c,ci)=>{
@@ -405,7 +408,8 @@ function packages(){
    <p style="margin-top:8px">Backend: <code>POST /delivery-requests</code> · <code>PUT /admin/delivery-requests/{id}/price</code> · <code>POST /delivery-requests/{id}/confirm</code> · <code>POST /admin/delivery-requests/{id}/assign-courier</code> · <code>POST /delivery-requests/{id}/pickup</code> / <code>…/deliver</code> · <code>POST /delivery-requests/{id}/cancel</code>.</p></div></div>`;
  return `<div class="page-head"><div><h2>Delivery Requests</h2><p>Consumer package delivery ("send a package" pilot) · you set the price, the customer pays the courier <b>in cash at pickup</b></p></div>
    <div class="tabs"><span class="chip active">All</span><span class="chip">Submitted</span><span class="chip">Priced</span><span class="chip">Confirmed</span><span class="chip">Picked up</span><span class="chip">Delivered</span><span class="chip">Cancelled</span></div></div>
-   <div class="grid g-4" style="margin-bottom:18px">
+   ${deliveryConnectBar()}
+   <div class="grid g-4" style="margin-bottom:18px;margin-top:18px">
      ${kpi('alert',String(need),'Awaiting your price',need?'price now':'clear',need?'down':'up','#C68A2E')}
      ${kpi('users',String(wait),'Awaiting customer confirmation','','up','#356F80')}
      ${kpi('truck',String(transit),'In transit (confirmed + picked up)','','up','#2E5C6E')}
@@ -416,6 +420,7 @@ function setPkgPrice(i){
  const p=PKGS[i];
  const amt=parseFloat(document.getElementById('pkgPr-'+i).value);
  if(isNaN(amt)||amt<=0){toast('Enter a valid price');document.getElementById('pkgPr-'+i).focus();return;}
+ if(DELIVERY.connected)return dlvSetPrice(i,amt);
  const first=p.status==='submitted';
  p.price=Math.round(amt*100)/100;p.status='priced';PKG_EDIT=-1;
  toast(first?p.id+' priced at '+EGP(p.price)+' — customer asked to confirm ✓':'Price updated to '+EGP(p.price)+' — customer notified ✓');
@@ -425,6 +430,7 @@ function pkgEditPrice(i){PKG_EDIT=i;go('packages');}
 function cancelPkg(i){
  const p=PKGS[i];
  if(p.status!=='submitted'&&p.status!=='priced'){toast('Only submitted / priced requests can be cancelled');return;}
+ if(DELIVERY.connected){toast('Cancellation is customer-side in the live API');return;}
  p.status='cancelled';PKG_EDIT=-1;
  toast(p.id+' cancelled — customer notified');
  go('packages');refreshPkgBadge();
@@ -446,6 +452,7 @@ function assignPkgCourierDrawer(i){
    '<p class="muted" style="font-size:12.5px;margin-bottom:10px">Pickup <b>'+p.pickup.street+', '+p.pickup.city+'</b> → '+p.drop.street+', '+p.drop.city+'. The courier collects <b>'+EGP(p.price)+'</b> in cash from '+p.customer+' at pickup — it stays in their cash-in-hand wallet until deposited. Couriers off duty or at their cash cap can\'t take the job.</p>'+rows);
 }
 function assignPkgCourier(i,ci){
+ if(DELIVERY.connected)return dlvAssignPkgCourier(i,ci);
  PKGS[i].courier=COURIERS[ci].n;COURIERS[ci].today++;
  toast(PKGS[i].id+' assigned to '+COURIERS[ci].n+' ✓');
  closeDrawer();go('packages');
@@ -539,7 +546,7 @@ function go(v){
  if(AFTER[v]) AFTER[v]();          // views backed by live data load after render
 }
 /* post-render loaders for live-data views (see LIVE API section below) */
-const AFTER={customers:loadUsers,vendors:loadVendors,categories:loadCategories};
+const AFTER={customers:loadUsers,vendors:loadVendors,categories:loadCategories,couriers:loadCouriers,packages:loadPackages};
 document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.view));
 
 /* ---------- toast + moderation ---------- */
@@ -1221,5 +1228,136 @@ document.getElementById('searchInput').addEventListener('input',e=>searchRows(e.
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeSidebar();}});
 
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
+/* ============================================================
+   DELIVERY API — the standalone delivery-backend (Bearer JWT).
+   Couriers, package requests and cash oversight are served by
+   github.com/AhmedElemey/delivery-backend, a SEPARATE service
+   from the marketplace API above (its own base URL + token).
+   Not connected → the two delivery views show the demo seed
+   data below; connected → they manage live records.
+   ============================================================ */
+const DELIVERY_DEFAULT_BASE='http://localhost:5080';
+const DEMO_COURIERS=COURIERS.slice();
+const DEMO_PKGS=PKGS.slice();
+const DELIVERY={
+ get base(){return localStorage.getItem('xs_delivery_base')||DELIVERY_DEFAULT_BASE;},
+ set base(v){v?localStorage.setItem('xs_delivery_base',v):localStorage.removeItem('xs_delivery_base');},
+ get token(){return localStorage.getItem('xs_delivery_token')||'';},
+ set token(v){v?localStorage.setItem('xs_delivery_token',v):localStorage.removeItem('xs_delivery_token');},
+ get connected(){return !!localStorage.getItem('xs_delivery_token');}
+};
+async function deliveryFetch(path,{method='GET',body}={}){
+ const url=DELIVERY.base.replace(/\/+$/,'')+path;
+ const headers={}; if(DELIVERY.token)headers['Authorization']='Bearer '+DELIVERY.token;
+ let payload; if(body!==undefined){headers['Content-Type']='application/json';payload=JSON.stringify(body);}
+ let res;
+ try{res=await fetch(url,{method,headers,body:payload});}
+ catch(_){throw new Error('Cannot reach delivery API at '+DELIVERY.base+' (server down or CORS).');}
+ const text=await res.text(); let data=null; if(text){try{data=JSON.parse(text);}catch(_){data=text;}}
+ if(res.status===401){DELIVERY.token='';throw new Error('Delivery session expired — reconnect.');}
+ if(!res.ok)throw new Error((data&&(data.title||data.message||(typeof data.error==='string'?data.error:'')))||('Request failed ('+res.status+').'));
+ return data;
+}
+function currentView(){const a=document.querySelector('#nav a.active');return a?a.dataset.view:'';}
+function rerenderDelivery(){const v=currentView();if(v==='couriers'||v==='packages')document.getElementById('content').innerHTML=VIEWS[v]();}
+
+/* connect bar rendered at the top of both delivery views */
+function deliveryConnectBar(){
+ if(DELIVERY.connected)
+   return '<div class="card" style="padding:11px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-top:14px">'
+     +'<span class="badge-s b-green">● Live</span><span class="muted">Connected to delivery API · <code>'+esc(DELIVERY.base)+'</code></span>'
+     +'<button class="btn btn-g btn-sm" style="margin-left:auto" onclick="deliveryDisconnect()">Disconnect</button></div>';
+ return '<div class="card" style="padding:14px;margin-top:14px">'
+   +'<div style="font-size:12.5px;color:var(--text-2);margin-bottom:9px"><b style="color:var(--text)">Showing demo data.</b> Connect the delivery API (<code>delivery-backend</code>) to manage live requests, couriers and cash.</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+   +'<div class="form-row" style="margin:0;flex:2;min-width:200px"><label>Delivery API base URL</label><input id="dlvBase" value="'+esc(DELIVERY.base)+'"></div>'
+   +'<div class="form-row" style="margin:0;flex:1;min-width:150px"><label>Admin phone</label><input id="dlvPhone" placeholder="+201000000003"></div>'
+   +'<button class="btn btn-p" onclick="deliveryConnect()">Connect</button></div></div>';
+}
+async function deliveryConnect(){
+ const base=document.getElementById('dlvBase').value.trim();
+ const phone=document.getElementById('dlvPhone').value.trim();
+ if(base)DELIVERY.base=base;
+ if(!phone){toast('Enter the admin phone');return;}
+ try{
+   const data=await deliveryFetch('/api/auth/login',{method:'POST',body:{phoneNumber:phone}});
+   if(!data||!data.token)throw new Error('No token returned.');
+   if(data.role&&String(data.role).toLowerCase()!=='admin'){throw new Error('That account is not an admin.');}
+   DELIVERY.token=data.token; toast('Delivery API connected ✓'); go(currentView()||'couriers');
+ }catch(e){toast(e.message||'Connect failed');}
+}
+function deliveryDisconnect(){DELIVERY.token='';COURIERS=DEMO_COURIERS.slice();PKGS=DEMO_PKGS.slice();toast('Disconnected — showing demo data');go(currentView()||'couriers');}
+
+/* ---- DTO → view-model mappers ---- */
+function _dlvAgo(iso){
+ if(!iso)return'—'; const t=new Date(iso).getTime(); if(isNaN(t))return'—';
+ const s=Math.floor((Date.now()-t)/1000); if(s<60)return'just now';
+ const m=Math.floor(s/60); if(m<60)return m+' min ago';
+ const h=Math.floor(m/60); if(h<24)return h+'h ago';
+ const d=Math.floor(h/24); return d===1?'Yesterday':d+'d ago';
+}
+function _dlvMonthYear(iso){const dt=new Date(iso); return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',year:'numeric'});}
+const _DLV_PSTAT={submitted:'submitted',priced:'priced',confirmed:'confirmed',pickedUp:'pickedup',delivered:'delivered',cancelled:'cancelled'};
+function mapCourierSummary(c){return {apiId:c.id,n:c.name||'—',phone:c.phone||'—',zone:c.zone||'—',status:c.status==='off'?'off':'active',cash:+c.cashInHandEgp||0,cap:+c.handoverThresholdEgp||5000,today:+c.today||0,delivered30:+c.delivered30||0,failed30:+c.failed30||0,joined:_dlvMonthYear(c.joined)};}
+function courierNameById(id){const c=COURIERS.find(x=>x.apiId===id);return c?c.n:null;}
+function mapRequest(r){
+ const pk=r.pickup||{},dp=r.dropoff||{};
+ return {apiId:r.id,id:(r.id&&r.id.length>10)?r.id.slice(0,8):(r.id||'—'),
+  customer:r.consumerName||'—',phone:r.consumerPhone||'—',
+  pickup:{street:pk.street||'',city:pk.city||''},
+  drop:{name:dp.fullName||'',phone:dp.phone||'',street:dp.street||'',city:dp.city||''},
+  note:r.packageNote||'',submitted:_dlvAgo(r.createdAt),status:_DLV_PSTAT[r.status]||'submitted',
+  price:r.price!=null?+r.price:null,courier:r.courierId?(courierNameById(r.courierId)||'Courier'):null,courierId:r.courierId||null};
+}
+
+/* ---- live loaders (registered in AFTER) ---- */
+async function loadCouriers(){
+ if(!DELIVERY.connected)return;
+ try{const data=await deliveryFetch('/api/admin/couriers');
+   COURIERS=(Array.isArray(data)?data:[]).map(mapCourierSummary);
+   rerenderDelivery(); refreshCourierBadge();
+ }catch(e){toast(e.message);}
+}
+async function loadPackages(){
+ if(!DELIVERY.connected)return;
+ try{
+   if(!COURIERS.length||!COURIERS[0].apiId){try{const cs=await deliveryFetch('/api/admin/couriers');COURIERS=cs.map(mapCourierSummary);}catch(_){}}
+   const data=await deliveryFetch('/api/delivery-requests/admin');
+   PKGS=(Array.isArray(data)?data:[]).map(mapRequest);
+   rerenderDelivery(); refreshPkgBadge();
+ }catch(e){toast(e.message);}
+}
+
+/* ---- live mutation wrappers (called from the shared handlers) ---- */
+async function dlvSetPrice(i,amt){
+ const p=PKGS[i]; PKG_EDIT=-1; const price=Math.round(amt*100)/100;
+ try{await deliveryFetch('/api/delivery-requests/'+p.apiId+'/price',{method:'POST',body:{price}});
+   toast('Priced at '+EGP(price)+' — customer asked to confirm ✓'); await loadPackages();
+ }catch(e){toast(e.message);}
+}
+async function dlvAssignPkgCourier(i,ci){
+ const p=PKGS[i],c=COURIERS[ci];
+ try{await deliveryFetch('/api/delivery-requests/'+p.apiId+'/assign',{method:'POST',body:{courierId:c.apiId}});
+   toast(p.id+' assigned to '+c.n+' ✓'); closeDrawer(); await loadPackages();
+ }catch(e){toast(e.message);}
+}
+async function dlvRecordHandover(i){
+ const c=COURIERS[i];
+ try{await deliveryFetch('/api/admin/couriers/'+c.apiId+'/cash-handover',{method:'POST'});
+   toast('Handover recorded — courier settled ✓'); closeDrawer(); await loadCouriers();
+ }catch(e){toast(e.message);}
+}
+async function dlvCourierDuty(i){
+ const c=COURIERS[i],next=c.status==='active'?'off':'active';
+ try{await deliveryFetch('/api/admin/couriers/'+c.apiId+'/duty',{method:'POST',body:{status:next}});
+   toast(c.n+(next==='active'?' is on duty ✓':' set off duty')); closeDrawer(); await loadCouriers();
+ }catch(e){toast(e.message);}
+}
+async function dlvCreateCourier(name,phone,zone){
+ try{await deliveryFetch('/api/admin/couriers',{method:'POST',body:{name,phone,zone}});
+   toast('Courier "'+name+'" created ✓ — share the login with them'); closeDrawer(); await loadCouriers();
+ }catch(e){toast(e.message);}
+}
+
 /* boot — gate the console behind sign-in (live API needs the JWT) */
 if(API.token){ go('overview'); } else { renderLogin(); }
