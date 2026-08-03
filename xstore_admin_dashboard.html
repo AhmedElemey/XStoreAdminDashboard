@@ -307,7 +307,6 @@ const EGP=n=>'EGP '+n.toLocaleString('en-US');
 /* ---------- data (grounded in xStore) ---------- */
 const CATS=[['Electronics','📱',4,842,true],['Fashion','👕',4,1290,true],['Home & Garden','🛋️',4,610,true],['Beauty','✨',3,455,true],['Sports','🏋️',3,288,true],['Toys','🧸',3,176,true],['Automotive','🚗',3,203,true],['Food & Drinks','🥤',3,134,false],['Books','📚',3,97,true],['Other','📦',1,58,true]];
 const COUPONS=[['WELCOME50','50% off first order','Platform',312,true],['FREESHIP','Free delivery','Platform',890,true],['EID2026','EGP 100 off > EGP 1000','Seasonal',145,false]];
-const BANNERS=[['Ramadan Kareem — up to 40% off','Home hero','Active'],['Free delivery this week','Home strip','Active'],['New in: Electronics','Category banner','Scheduled']];
 const TEAM=[['Ahmed','Super Admin','Owner · full access'],['Ops Team','Moderator','Orders + disputes'],['Finance','Viewer','Read-only reports']];
 const VENDORS=[
  {n:'Cairo Tech Hub',owner:'Ahmed Salah',city:'Giza',cat:'Electronics',status:'active',products:214,gmv:486300,rating:4.7,vok:true,joined:'Jan 2026',wa:'+20 100 123 4567',email:'sales@cairotech.eg'},
@@ -358,6 +357,9 @@ const VCOMM={
  6:{outstanding:180,warn:100,pause:200}}; // warn
 const vcomm=i=>VCOMM[i]||(VCOMM[i]={outstanding:0,warn:100,pause:200});
 const commLevel=c=>c.outstanding>=c.pause?'paused':c.outstanding>=c.warn?'warn':'none';
+/* Sample data only — the live Moderation tab (moderation()/loadModeration()) reads
+   from modState via GET /api/admin/listings, not from this array. Kept here purely
+   to back the Overview page's "Awaiting your approval" preview widget. */
 const PENDING=[
  {t:'iPhone 13 Pro 256GB',v:'Cairo Tech Hub',vok:true,cat:'Electronics',sub:'Phones & tablets',cond:'Like new',brand:'Apple',price:48999,cmp:52999,stock:7,loc:'Giza',ship:60,emoji:'📱',submitted:'2h ago',
   desc:'Factory unlocked, 89% battery health. Includes original box, cable and adapter. Minor scuff on the frame, screen flawless.',
@@ -450,41 +452,28 @@ function overview(){
  </div>`;
 }
 
+/* Product Moderation tab — live GET /api/admin/listings + approve/reject/hot-deal
+   (rows loaded by loadModeration; status tabs filter server-side via onRemoteChip). */
 function moderation(){
- const rows=PENDING.map((p,i)=>`<div class="mod" id="mod-${i}" data-status="pending"><div class="thumb" style="cursor:pointer" onclick="productDrawer(${i})">${p.emoji}</div>
-   <div class="minfo" style="cursor:pointer" onclick="productDrawer(${i})"><b>${p.t}</b>
-     <p>${p.v}${p.vok?' <span class="badge-s b-green" style="padding:1px 7px">✓ verified</span>':' <span class="badge-s b-amber" style="padding:1px 7px">unverified</span>'} · <span class="badge-s b-grey">${p.cat}</span> · <span class="money">${EGP(p.price)}</span> · stock ${p.stock}</p>
-     <p class="muted" style="font-size:12px;margin-top:3px">Submitted ${p.submitted} · ${p.imgs.length} photos · ${p.cond}</p></div>
-   <div class="mactions">
-     <button class="btn btn-g btn-sm" onclick="productDrawer(${i})">Details</button>
-     <button class="btn btn-ok btn-sm" onclick="decide(${i},'approve')">✓ Approve</button>
-     <button class="btn btn-no btn-sm" onclick="decide(${i},'reject')">✕ Reject</button>
-   </div></div>`).join('');
+ modState.status='PENDING';modState.page=1;modState.items=null;
+ const tabs=MOD_STATUS_TABS.map((t,i)=>`<span class="chip${i===0?' active':''}">${t[0]}</span>`).join('');
  return `<div class="page-head"><div><h2>Product Moderation</h2><p>New listings go live only after admin approval — click any product to see full details</p></div>
-   <div class="tabs"><span class="chip active">Pending</span><span class="chip">Approved</span><span class="chip">Rejected</span></div></div>
-   <div class="grid g-4" style="margin-bottom:18px">
-     ${kpi('shield',String(PENDING.length),'Pending review','','down','#C68A2E')}
-     ${kpi('box','48','Approved (7d)','+12','up','#3F7A5C')}
-     ${kpi('alert','5','Rejected (7d)','','down','#B4472E')}
-     ${kpi('chart','3.2h','Avg review time','-0.4h','up','#2E5C6E')}</div>
-   <div class="grid" style="gap:14px" id="modList"><b id="pendCount" style="display:none">${PENDING.length}</b>${rows}</div>`;
+   <div class="tabs" data-remote="moderation">${tabs}</div></div>
+   <div class="grid" style="gap:14px" id="modHost">${stateLoading('Loading pending listings…')}</div>`;
 }
 
 function productDrawer(i){
- const p=PENDING[i];
- const imgs=p.imgs.map(e=>`<div style="width:74px;height:74px;border-radius:11px;background:linear-gradient(135deg,#EAF0F1,#DAE6E9);display:flex;align-items:center;justify-content:center;font-size:32px;flex:0 0 74px">${e}</div>`).join('');
- const specs=Object.keys(p.specs).map(k=>kv(k,p.specs[k])).join('');
- const cmp=p.cmp?` <span style="text-decoration:line-through;color:var(--text-3);font-size:15px;font-weight:500">${EGP(p.cmp)}</span> <span class="badge-s b-red">-${Math.round((1-p.price/p.cmp)*100)}%</span>`:'';
+ const p=(modState.items||[])[i]; if(!p)return; const m=mapListing(p);
+ const cmp=m.compareAt?` <span style="text-decoration:line-through;color:var(--text-3);font-size:15px;font-weight:500">${EGP(m.compareAt)}</span>`:'';
  openDrawer('Review product',
-   `<div style="display:flex;gap:8px;overflow:auto;margin-bottom:16px">${imgs}</div>
-    <h3 style="font-size:17px;margin-bottom:6px">${p.t}</h3>
-    <div style="font-size:22px;font-weight:800;color:var(--primary)">${EGP(p.price)}${cmp}</div>
-    <div style="margin:12px 0;display:flex;gap:6px;flex-wrap:wrap"><span class="badge-s b-amber">Pending approval</span><span class="badge-s b-grey">${p.cond}</span><span class="badge-s b-indigo">Stock: ${p.stock}</span></div>
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">${p.desc}</p>
-    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:4px">Product details</h3>
-    ${kv('Vendor (business)',p.v+(p.vok?' · ✓ verified':' · unverified'))}${kv('Category',p.cat+' › '+p.sub)}${kv('Brand',p.brand)}${kv('Condition',p.cond)}${kv('Location',p.loc)}${kv('Shipping',p.ship?EGP(p.ship):'Free')}${kv('Submitted',p.submitted)}
-    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin:16px 0 4px">Specifications</h3>${specs}`,
-   `<button class="btn btn-ok" style="flex:1;justify-content:center" onclick="decide(${i},'approve');closeDrawer()">Approve</button><button class="btn btn-g" style="flex:1;justify-content:center" onclick="decide(${i},'changes');closeDrawer()">Request changes</button><button class="btn btn-no" style="flex:1;justify-content:center" onclick="decide(${i},'reject');closeDrawer()">Reject</button>`);
+   (m.image?`<div style="width:100%;height:160px;border-radius:11px;overflow:hidden;margin-bottom:16px"><img src="${esc(m.image)}" style="width:100%;height:100%;object-fit:cover"></div>`:'')
+   +`<h3 style="font-size:17px;margin-bottom:6px">${esc(m.title)}</h3>`
+   +`<div style="font-size:22px;font-weight:800;color:var(--primary)">${m.price==null?'—':EGP(m.price)}${cmp}</div>`
+   +`<div style="margin:12px 0;display:flex;gap:6px;flex-wrap:wrap"><span class="badge-s b-amber">Pending approval</span><span class="badge-s b-grey">${esc(m.condition)}</span><span class="badge-s b-indigo">Stock: ${m.stock==null?'—':m.stock}</span>${m.isHot?'<span class="badge-s b-red">🔥 Hot deal</span>':''}</div>`
+   +(m.description?`<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">${esc(m.description)}</p>`:'')
+   +`<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:4px">Product details</h3>`
+   +kv('Vendor (business)',esc(m.vendor))+kv('Category',esc(m.category))+kv('Brand',esc(m.brand))+kv('Condition',esc(m.condition))+kv('Location',esc(m.location))+(m.submitted?kv('Submitted',esc(m.submitted)):'')+(m.id?kv('Listing ID',esc(m.id)):''),
+   `<button class="btn btn-ok" style="flex:1;justify-content:center" onclick="decide(${i},'approve')">Approve</button><button class="btn btn-g" style="flex:1;justify-content:center" onclick="toggleHotDeal(${i})">${m.isHot?'🔥 Unset hot':'🔥 Mark hot deal'}</button><button class="btn btn-no" style="flex:1;justify-content:center" onclick="decide(${i},'reject')">Reject</button>`);
 }
 
 /* Vendors tab — live GET /api/users?role=VENDOR + PUT approve/reject
@@ -760,14 +749,16 @@ function coupons(){
      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="createCouponInline()">Create coupon</button></div></div></div>`;
 }
 
+/* Content & Banners tab — live GET/POST/PUT/DELETE /api/banners (rows loaded by
+   loadBanners). Push broadcast has no backend endpoint yet, so it stays a UI stub
+   (marked "Not wired" — see BACKEND_HANDOFF.md, POST /admin/broadcasts is unbuilt). */
 function content(){
- const B=BANNERS;
- const rows=B.map((b,i)=>`<div class="banner"><div class="bimg"></div><div style="flex:1"><b>${b[0]}</b><br><small class="muted">${b[1]}</small></div><span class="badge-s ${b[2]==='Active'?'b-green':'b-amber'}">${b[2]}</span><button class="btn btn-g btn-sm" onclick="editBanner(${i})">Edit</button><button class="btn btn-no btn-sm" onclick="deleteBanner(${i})">Delete</button></div>`).join('');
- return `<div class="page-head"><div><h2>Content &amp; Banners</h2><p>Merchandise the app home feed and send push broadcasts</p></div><button class="btn btn-p" onclick="openBannerForm()">+ New banner</button></div>
-   <div class="split"><div class="card"><div class="c-head"><h3>Home banners</h3></div><div class="c-body" style="display:flex;flex-direction:column;gap:12px">${rows}</div></div>
-   <div class="card"><div class="c-head"><h3>Push broadcast</h3></div><div class="c-body">
-     <div class="form-row"><label>Title</label><input placeholder="Flash sale ends tonight!"></div>
-     <div class="form-row"><label>Audience</label><select><option>All buyers</option><option>Cairo / Giza</option><option>Lapsed buyers</option></select></div>
+ bannerState.items=null;
+ return `<div class="page-head"><div><h2>Content &amp; Banners</h2><p>Merchandise the app home feed — live via <b>/api/banners</b></p></div><button class="btn btn-p" onclick="openBannerForm()">+ New banner</button></div>
+   <div class="split"><div class="card"><div class="c-head"><h3>Home banners</h3></div><div class="c-body" id="bannerHost" style="display:flex;flex-direction:column;gap:12px">${stateLoading('Loading banners…')}</div></div>
+   <div class="card"><div class="c-head"><h3>Push broadcast</h3><span class="badge-s b-grey" title="No backend endpoint exists yet">Not wired</span></div><div class="c-body">
+     <div class="form-row"><label>Title</label><input id="pbTitle" placeholder="Flash sale ends tonight!"></div>
+     <div class="form-row"><label>Audience</label><select id="pbAud"><option>All buyers</option><option>Cairo / Giza</option><option>Lapsed buyers</option></select></div>
      <div class="form-row"><label>Message</label><input placeholder="Up to 40% off electronics…"></div>
      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="sendBroadcast()">Send push</button></div></div></div>`;
 }
@@ -815,12 +806,35 @@ function go(v){
  if(AFTER[v]) AFTER[v]();          // views backed by live data load after render
 }
 /* post-render loaders for live-data views (see LIVE API section below) */
-const AFTER={customers:loadUsers,vendors:loadVendors,categories:loadCategories};
+const AFTER={customers:loadUsers,vendors:loadVendors,categories:loadCategories,moderation:loadModeration,content:loadBanners};
 document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.view));
 
 /* ---------- toast + moderation ---------- */
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
-function decide(i,action){const el=document.getElementById('mod-'+i);if(!el)return;el.style.transition='.3s';el.style.opacity='0';el.style.transform='translateX(30px)';setTimeout(()=>{el.remove();const c=document.getElementById('pendCount');const n=c?Math.max(0,(+c.textContent)-1):0;if(c)c.textContent=n;const b=document.querySelector('#nav a[data-view=moderation] .badge');if(b){if(n>0)b.textContent=n;else b.remove();}},300);const msg={approve:'Product approved — now live ✓',reject:'Product rejected — vendor notified',changes:'Sent back to vendor for changes'};toast(msg[action]||'Done');}
+async function decide(i,action){
+ const p=(modState.items||[])[i]; if(!p)return; const m=mapListing(p);
+ if(!m.id){toast('Missing listing id');return;}
+ let reason;
+ if(action==='reject'){
+   reason=prompt('Reason for rejecting “'+m.title+'”? (shown to the vendor)','');
+   if(reason===null)return;                     // cancelled
+ }
+ try{
+   if(action==='approve') await apiFetch('/api/admin/listings/'+encodeURIComponent(m.id)+'/approve',{method:'PUT',body:{}});
+   else await apiFetch('/api/admin/listings/'+encodeURIComponent(m.id)+'/reject',{method:'PUT',body:{rejectionReason:reason}});
+   toast(action==='approve'?'Product approved — now live ✓':'Product rejected — vendor notified');
+   closeDrawer(); loadModeration();
+ }catch(e){ if(e.status===401)return; toast((action==='approve'?'Approve':'Reject')+' failed: '+(e.message||'error')); }
+}
+async function toggleHotDeal(i){
+ const p=(modState.items||[])[i]; if(!p)return; const m=mapListing(p);
+ if(!m.id){toast('Missing listing id');return;}
+ try{
+   await apiFetch('/api/admin/listings/'+encodeURIComponent(m.id)+'/hot-deal',{method:'PUT'});
+   p.isHotDeal=!m.isHot; renderModeration();
+   toast(m.isHot?'Removed hot-deal tag':'Marked as hot deal 🔥');
+ }catch(e){ if(e.status===401)return; toast('Hot-deal toggle failed: '+(e.message||'error')); }
+}
 
 /* ---------- detail drawer ---------- */
 function openDrawer(title,html,actions){
@@ -1158,12 +1172,141 @@ async function saveCategory(i){
    closeDrawer(); loadCategories();
  }catch(e){ if(e.status===401)return; toast((editing?'Update':'Create')+' failed: '+(e.message||'error')); if(btn){btn.disabled=false;btn.textContent=editing?'Save changes':'Add category';} }
 }
+/* ============================================================
+   Product Moderation (live) — Postman "Admin Listings" folder
+     GET /api/admin/listings?status&page&pageSize
+     PUT /api/admin/listings/{id}/approve   (json: {})
+     PUT /api/admin/listings/{id}/reject    (json: {rejectionReason})
+     PUT /api/admin/listings/{id}/hot-deal
+   Status enum values beyond the documented default "PENDING" are assumed
+   (APPROVED/REJECTED) — verify against the backend if the Approved/Rejected
+   tabs come back empty on a listing you know exists.
+   ============================================================ */
+const MOD_STATUS_TABS=[['Pending','PENDING'],['Approved','APPROVED'],['Rejected','REJECTED']];
+const modState={status:'PENDING',page:1,pageSize:20,total:0,totalPages:1,items:null};
+function gotoModerationPage(p){if(p<1||p>modState.totalPages||p===modState.page)return;modState.page=p;loadModeration();}
+async function loadModeration(){
+ const host=document.getElementById('modHost'); if(!host)return;
+ host.innerHTML=stateLoading('Loading listings…');
+ try{
+   const data=await apiFetch('/api/admin/listings',{query:{status:modState.status,page:modState.page,pageSize:modState.pageSize}});
+   const p=readPage(data,modState.pageSize);
+   modState.items=p.items; modState.total=p.total; modState.totalPages=p.totalPages;
+   renderModeration();
+ }catch(e){ if(e.status===401)return; host.innerHTML=stateError(e.message,'loadModeration()'); }
+}
+function mapListing(p){
+ let img=_fne(p.imageUrl,p.thumbnailUrl,Array.isArray(p.images)?p.images[0]:null,Array.isArray(p.imageUrls)?p.imageUrls[0]:null);
+ if(img&&!/^https?:\/\//i.test(String(img))) img=API.base.replace(/\/+$/,'')+'/'+String(img).replace(/^\/+/,'');
+ return{
+   id:_fne(p.id,p.listingId,p._id),
+   title:_fne(p.titleEn,p.title,p.titleAr)||'Untitled',
+   vendor:_fne(p.vendorName,p.storeNameEn,p.vendor)||'—',
+   category:_fne(p.categoryName,p.category)||'—',
+   price:_numOr(p.price),
+   compareAt:_numOr(p.compareAtPrice,p.compareAt)||null,
+   stock:_numOr(p.stockQuantity,p.stock),
+   condition:_fne(p.condition)||'—',
+   brand:_fne(p.brand)||'—',
+   location:_fne(p.location)||'—',
+   description:_fne(p.descriptionEn,p.description)||'',
+   submitted:_fne(p.createdAt,p.submittedAt)||'',
+   isHot:!!(p.isHotDeal||p.hotDeal),
+   image:img
+ };
+}
+function renderModeration(){
+ const host=document.getElementById('modHost'); if(!host)return;
+ const items=modState.items||[];
+ if(modState.status==='PENDING'){
+   const b=document.querySelector('#nav a[data-view=moderation] .badge');
+   if(b){ if(modState.total>0) b.textContent=modState.total; else b.remove(); }
+ }
+ if(!items.length){host.innerHTML=stateEmpty('No '+MOD_STATUS_TABS.find(t=>t[1]===modState.status)[0].toLowerCase()+' listings.');return;}
+ const rows=items.map((p,i)=>{const m=mapListing(p);
+   return `<div class="mod" data-status="${modState.status.toLowerCase()}"><div class="thumb" style="cursor:pointer" onclick="productDrawer(${i})">${m.image?'<img src="'+esc(m.image)+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">':'📦'}</div>
+   <div class="minfo" style="cursor:pointer" onclick="productDrawer(${i})"><b>${esc(m.title)}</b>
+     <p>${esc(m.vendor)} · <span class="badge-s b-grey">${esc(m.category)}</span> · <span class="money">${m.price==null?'—':EGP(m.price)}</span> · stock ${m.stock==null?'—':m.stock}${m.isHot?' · <span class="badge-s b-red">🔥 Hot</span>':''}</p>
+     <p class="muted" style="font-size:12px;margin-top:3px">${m.submitted?esc(m.submitted)+' · ':''}${esc(m.condition)}</p></div>
+   <div class="mactions">
+     <button class="btn btn-g btn-sm" onclick="productDrawer(${i})">Details</button>
+     <button class="btn btn-g btn-sm" onclick="toggleHotDeal(${i})">🔥</button>
+     ${modState.status==='PENDING'?`<button class="btn btn-ok btn-sm" onclick="decide(${i},'approve')">✓ Approve</button><button class="btn btn-no btn-sm" onclick="decide(${i},'reject')">✕ Reject</button>`:''}
+   </div></div>`;
+ }).join('');
+ host.innerHTML='<div class="grid" style="gap:14px">'+rows+'</div>'+pager('moderation');
+}
 function openCouponForm(){formDrawer('New coupon',
  [{label:'Code',ph:'SUMMER25',required:true},{label:'Offer description',ph:'25% off orders over EGP 500',required:true},{label:'Scope',type:'select',options:['Platform','Seasonal']}],
  'Create coupon',v=>{COUPONS.push([v[0].toUpperCase(),v[1],v[2],0,true]);toast('Coupon "'+v[0].toUpperCase()+'" created ✓');closeDrawer();go('coupons');});}
-function openBannerForm(){formDrawer('New banner',
- [{label:'Banner title',ph:'Summer Sale — up to 40% off',required:true},{label:'Placement',type:'select',options:['Home hero','Home strip','Category banner']},{label:'Status',type:'select',options:['Active','Scheduled']}],
- 'Add banner',v=>{BANNERS.push([v[0],v[1],v[2]]);toast('Banner added ✓');closeDrawer();go('content');});}
+/* ============================================================
+   Content & Banners (live) — Postman "Banners" folder
+     GET    /api/banners
+     POST   /api/banners           (multipart: nameEn,nameAr,image)
+     PUT    /api/banners/{id}      (multipart: nameEn,nameAr,image)
+     DELETE /api/banners/{id}
+   ============================================================ */
+const bannerState={items:null};
+async function loadBanners(){
+ const host=document.getElementById('bannerHost'); if(!host)return;
+ host.innerHTML=stateLoading('Loading banners…');
+ try{
+   const data=await apiFetch('/api/banners');
+   bannerState.items=Array.isArray(data)?data:readPage(data,200).items;
+   renderBanners();
+ }catch(e){ if(e.status===401)return; host.innerHTML=stateError(e.message,'loadBanners()'); }
+}
+function mapBanner(b){
+ let img=_fne(b.imageUrl,b.image,b.imagePath);
+ if(img&&!/^https?:\/\//i.test(String(img))) img=API.base.replace(/\/+$/,'')+'/'+String(img).replace(/^\/+/,'');
+ return{ id:_fne(b.id,b.bannerId,b._id), nameEn:_fne(b.nameEn,b.name)||'Untitled', nameAr:_fne(b.nameAr)||'', image:img };
+}
+function renderBanners(){
+ const host=document.getElementById('bannerHost'); if(!host)return;
+ const items=bannerState.items||[];
+ if(!items.length){host.innerHTML=stateEmpty('No banners yet — add your first one.');return;}
+ host.innerHTML=items.map((b,i)=>{const m=mapBanner(b);
+   return '<div class="banner">'+(m.image?'<img class="bimg" src="'+esc(m.image)+'" alt="" style="object-fit:cover">':'<div class="bimg"></div>')
+     +'<div style="flex:1"><b>'+esc(m.nameEn)+'</b>'+(m.nameAr?'<br><small class="muted"><bdi>'+esc(m.nameAr)+'</bdi></small>':'')+'</div>'
+     +'<button class="btn btn-g btn-sm" onclick="openBannerForm('+i+')">Edit</button>'
+     +'<button class="btn btn-no btn-sm" onclick="deleteBanner('+i+')">Delete</button></div>';
+ }).join('');
+}
+function openBannerForm(i){
+ const editing=(i!==undefined&&i!==null);
+ const m=editing?mapBanner(bannerState.items[i]):{nameEn:'',nameAr:''};
+ openDrawer(editing?'Edit banner':'New banner',
+   '<div class="form-row"><label>Name (English) *</label><input id="banEn" value="'+esc(m.nameEn)+'" placeholder="Ramadan Kareem — up to 40% off"></div>'
+   +'<div class="form-row"><label>Name (Arabic) *</label><input id="banAr" dir="rtl" value="'+esc(m.nameAr)+'" placeholder="رمضان كريم"></div>'
+   +'<div class="form-row"><label>Image '+(editing?'<span class="muted" style="font-weight:400">(leave empty to keep current)</span>':'<span class="muted" style="font-weight:400">(jpg, png, webp)</span>')+'</label><input id="banImg" type="file" accept="image/jpeg,image/png,image/webp"></div>',
+   '<button class="btn btn-g" style="flex:1;justify-content:center" onclick="closeDrawer()">Cancel</button><button class="btn btn-p" style="flex:1;justify-content:center" id="banSaveBtn" onclick="saveBanner('+(editing?i:'null')+')">'+(editing?'Save changes':'Add banner')+'</button>');
+}
+async function saveBanner(i){
+ const editing=(i!==null&&i!==undefined);
+ const en=document.getElementById('banEn').value.trim();
+ const ar=document.getElementById('banAr').value.trim();
+ const fileEl=document.getElementById('banImg'); const file=fileEl&&fileEl.files&&fileEl.files[0];
+ if(!en||!ar){toast('Enter both English and Arabic names');return;}
+ if(!editing&&!file){toast('Pick a banner image');return;}   // image is required on create
+ const btn=document.getElementById('banSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
+ const fd=new FormData();
+ fd.append('nameEn',en); fd.append('nameAr',ar);
+ if(file) fd.append('image',file);
+ try{
+   if(editing){ const id=mapBanner(bannerState.items[i]).id; await apiFetch('/api/banners/'+encodeURIComponent(id),{method:'PUT',body:fd}); }
+   else { await apiFetch('/api/banners',{method:'POST',body:fd}); }
+   toast(editing?'Banner updated ✓':'Banner “'+en+'” added ✓');
+   closeDrawer(); loadBanners();
+ }catch(e){ if(e.status===401)return; toast((editing?'Update':'Create')+' failed: '+(e.message||'error')); if(btn){btn.disabled=false;btn.textContent=editing?'Save changes':'Add banner';} }
+}
+async function deleteBanner(i){
+ const m=mapBanner(bannerState.items[i]); if(!m.id){toast('Missing banner id');return;}
+ if(!confirm('Delete banner “'+m.nameEn+'”? This cannot be undone.'))return;
+ try{
+   await apiFetch('/api/banners/'+encodeURIComponent(m.id),{method:'DELETE'});
+   toast('Banner deleted'); loadBanners();
+ }catch(e){ if(e.status===401)return; toast('Delete failed: '+(e.message||'error')); }
+}
 function openInviteForm(){formDrawer('Invite team member',
  [{label:'Full name',ph:'Full name',required:true},{label:'Email',ph:'name@xstore.eg',required:true},{label:'Role',type:'select',options:['Super Admin','Moderator','Viewer']}],
  'Send invite',v=>{const d={'Super Admin':'Full access','Moderator':'Orders + disputes','Viewer':'Read-only reports'}[v[2]]||'';TEAM.push([v[0],v[2],d]);toast('Invite sent to '+v[1]+' ✓');closeDrawer();go('settings');});}
@@ -1184,12 +1327,7 @@ function editCoupon(i){const c=COUPONS[i];formDrawer('Edit coupon',
  [{label:'Code',required:true},{label:'Offer description',required:true},{label:'Scope',type:'select',options:['Platform','Seasonal']}],
  'Save changes',v=>{COUPONS[i]=[v[0].toUpperCase(),v[1],v[2],c[3],c[4]];toast('Coupon "'+v[0].toUpperCase()+'" updated ✓');closeDrawer();go('coupons');},
  [c[0],c[1],c[2]]);}
-function editBanner(i){const b=BANNERS[i];formDrawer('Edit banner',
- [{label:'Banner title',required:true},{label:'Placement',type:'select',options:['Home hero','Home strip','Category banner']},{label:'Status',type:'select',options:['Active','Scheduled']}],
- 'Save changes',v=>{BANNERS[i]=[v[0],v[1],v[2]];toast('Banner updated ✓');closeDrawer();go('content');},
- [b[0],b[1],b[2]]);}
 function deleteCoupon(i){const c=COUPONS[i][0];COUPONS.splice(i,1);toast('Coupon "'+c+'" deleted');go('coupons');}
-function deleteBanner(i){BANNERS.splice(i,1);toast('Banner deleted');go('content');}
 
 /* ---------- filter chips ---------- */
 const STATUSES=['pending','confirmed','processing','shipped','delivered','cancelled','active','suspended','open','review','resolved','approved','rejected','live','out','off','submitted','priced','pickedup'];
@@ -1306,11 +1444,26 @@ async function doLogin(ev){
    const data=await apiFetch('/api/auth/login',{method:'POST',noAuthRedirect:true,body:{phoneNumber:phone,password:pass,rememberMe:true}});
    const token=data&&(data.token||data.accessToken);
    if(!token)throw new ApiError(0,'Server did not return a token.');
-   API.token=token; hideLogin(); go('customers'); toast('Signed in ✓');
+   API.token=token; hideLogin(); go('customers'); toast('Signed in ✓'); loadAdminProfile();
  }catch(e){ err.textContent=e.message||'Sign in failed.'; }
  finally{ btn.disabled=false; btn.textContent='Sign in'; }
 }
-function logout(){API.token='';renderLogin('Signed out.');}
+/* GET /api/auth/get-profile — replaces the hardcoded "Ahmed (Owner)" sidebar
+   label with the signed-in admin's real name once available. Non-critical:
+   a failure here just leaves the placeholder in place. */
+async function loadAdminProfile(){
+ try{
+   const p=await apiFetch('/api/auth/get-profile',{noAuthRedirect:true});
+   const name=_fne(p&&(p.fullNameEn||p.fullName||p.name))||'';
+   if(!name)return;
+   const nameEl=document.querySelector('.side-foot b'); if(nameEl)nameEl.textContent=name;
+   const avEls=document.querySelectorAll('.side-foot .avatar,.topbar .avatar'); avEls.forEach(a=>a.textContent=(name.trim()[0]||'A').toUpperCase());
+ }catch(_){ /* keep the placeholder */ }
+}
+async function logout(){
+ try{ await apiFetch('/api/auth/logout',{method:'POST',noAuthRedirect:true}); }catch(_){ /* clear the local session regardless */ }
+ API.token=''; renderLogin('Signed out.');
+}
 
 /* ---------- shared helpers (live views) ---------- */
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1333,8 +1486,8 @@ function readPage(data,pageSize){
  return{items,total,totalPages};
 }
 function pager(kind){
- const st=kind==='users'?usersState:vendorsState;
- const fn=kind==='users'?'gotoUsersPage':'gotoVendorsPage';
+ const st=kind==='users'?usersState:kind==='vendors'?vendorsState:modState;
+ const fn=kind==='users'?'gotoUsersPage':kind==='vendors'?'gotoVendorsPage':'gotoModerationPage';
  const from=st.total===0?0:(st.page-1)*st.pageSize+1, to=Math.min(st.page*st.pageSize,st.total);
  return '<div class="pager"><span>'+from+'–'+to+' of '+st.total.toLocaleString('en-US')+'</span>'
    +'<div class="pg-btns">'
@@ -1348,6 +1501,10 @@ function onRemoteChip(kind,chip){
  if(kind==='vendors'){
    const t=VENDOR_STATUS_TABS.find(x=>x[0]===label);
    vendorsState.vendorStatus=t?t[1]:''; vendorsState.statusLabel=label; vendorsState.page=1; loadVendors();
+ }
+ else if(kind==='moderation'){
+   const t=MOD_STATUS_TABS.find(x=>x[0]===label);
+   modState.status=t?t[1]:'PENDING'; modState.page=1; loadModeration();
  }
 }
 
@@ -1501,8 +1658,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();close
 
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
 /* boot — gate the console behind sign-in (live API needs the JWT) */
-if(API.token){ go('overview'); } else { renderLogin(); }
-
+if(API.token){ go('overview'); loadAdminProfile(); } else { renderLogin(); }
 </script>
 </body>
 </html>
