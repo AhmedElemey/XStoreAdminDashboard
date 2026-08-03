@@ -1178,11 +1178,11 @@ async function saveCategory(i){
      PUT /api/admin/listings/{id}/approve   (json: {})
      PUT /api/admin/listings/{id}/reject    (json: {rejectionReason})
      PUT /api/admin/listings/{id}/hot-deal
-   Status enum values beyond the documented default "PENDING" are assumed
-   (APPROVED/REJECTED) — verify against the backend if the Approved/Rejected
-   tabs come back empty on a listing you know exists.
+   Status values match the backend's ListingStatus enum (xStoreECommerce.Core.Enums) —
+   confirmed against source: Pending/Active/Rejected (there is no "Approved" member;
+   an approved listing moves to Active). Query-string enum binding is case-insensitive.
    ============================================================ */
-const MOD_STATUS_TABS=[['Pending','PENDING'],['Approved','APPROVED'],['Rejected','REJECTED']];
+const MOD_STATUS_TABS=[['Pending','PENDING'],['Approved','ACTIVE'],['Rejected','REJECTED']];
 const modState={status:'PENDING',page:1,pageSize:20,total:0,totalPages:1,items:null};
 function gotoModerationPage(p){if(p<1||p>modState.totalPages||p===modState.page)return;modState.page=p;loadModeration();}
 async function loadModeration(){
