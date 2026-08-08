@@ -1,8 +1,18 @@
 # xStore Admin Dashboard — Backend Handoff
 
-Front-end design prototype (no build step, plain HTML/CSS/JS). All data is currently
-hard-coded in `src/app.js` and all actions are simulated (toasts/drawers). This doc lists
-the endpoints and payload shapes the dashboard expects so the backend can wire it up.
+Front-end design prototype (no build step, plain HTML/CSS/JS). Most data below is still
+hard-coded in `app.js` and most actions are simulated (toasts/drawers) — this doc was
+written before any wiring existed and the endpoint paths/shapes below are **aspirational**,
+not the real xStoreEcommerce contract. This doc lists the endpoints and payload shapes the
+dashboard expects so the backend can wire it up.
+
+**Actually live today** (real `xStoreEcommerce` paths, not the `/admin/*` ones documented
+below — see the "LIVE API INTEGRATION" comment blocks in `app.js` for the exact paths/shapes
+in use): Users/Vendors list + approve/reject, Categories CRUD, Product Moderation
+(GET/approve/reject/hot-deal via `/api/admin/listings/...`), Content & Banners CRUD via
+`/api/banners`, admin login/get-profile/logout. Everything else below (Orders, Disputes,
+Coupons, Analytics, Settings, Commission settlement, push broadcast) is still a UI stub with
+no backend endpoint.
 
 Base path assumed: `/admin` (admin-authenticated). Currency is EGP, payment is Cash on Delivery.
 
