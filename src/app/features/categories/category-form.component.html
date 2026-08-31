@@ -7,6 +7,15 @@
   <input [ngModel]="nameAr()" (ngModelChange)="nameAr.set($event)" name="nameAr" dir="rtl" placeholder="إلكترونيات" />
 </div>
 <div class="form-row">
+  <label>Parent category <span class="muted" style="font-weight:400">(optional — leave as "None" for a top-level category)</span></label>
+  <select [ngModel]="parentId()" (ngModelChange)="parentId.set($event)" name="parentId">
+    <option value="">None (top-level)</option>
+    @for (c of parentOptions(); track c.id) {
+      <option [value]="c.id">{{ c.nameEn }}</option>
+    }
+  </select>
+</div>
+<div class="form-row">
   <label>Image
     @if (editing()) {
       <span class="muted" style="font-weight:400">(leave empty to keep current)</span>

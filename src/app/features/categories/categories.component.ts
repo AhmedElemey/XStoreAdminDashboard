@@ -88,14 +88,17 @@ export class CategoriesComponent implements OnInit {
     const editing = i !== undefined;
     const raw = editing ? (this.items() || [])[i!] : null;
     const initial = raw ? this.mapped(raw) : null;
+    const parentOptions = (this.items() || []).map((r) => this.mapped(r)).filter((c) => !initial || c.id !== initial.id);
     this.drawer.show(editing ? 'Edit category' : 'Add category', CategoryFormComponent, {
       editing,
       initial,
-      onSave: async (en: string, ar: string, active: boolean, file: File | null) => {
+      parentOptions,
+      onSave: async (en: string, ar: string, active: boolean, parentId: string, file: File | null) => {
         const fd = new FormData();
         fd.append('nameEn', en);
         fd.append('nameAr', ar);
         fd.append('isActive', active ? 'true' : 'false');
+        if (parentId) fd.append('parentId', parentId);
         if (file) fd.append('image', file);
         if (editing) {
           fd.append('id', initial!.id);

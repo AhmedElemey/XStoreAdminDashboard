@@ -51,6 +51,7 @@ export function mapCategory(c: Dto, apiBase: string): MappedCategory {
     nameAr: firstNonEmpty(c['nameAr'], c['nameEn']),
     image: absoluteImage(img, apiBase),
     active: c['isActive'] === undefined || c['isActive'] === null ? true : !!c['isActive'],
+    parentId: firstNonEmpty(c['parentId'], c['parentCategoryId']) || null,
     products: numOr(c['productsCount'], c['listingsCount'], c['liveProducts'], c['products']),
     subs: numOr(c['subcategoriesCount'], c['subCategoriesCount'], c['subcategories']),
   };

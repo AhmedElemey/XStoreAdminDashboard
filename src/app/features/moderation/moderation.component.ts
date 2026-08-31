@@ -11,6 +11,7 @@ import { ApiError } from '../../core/api-error';
 import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
+import { IconComponent } from '../../shared/icon.component';
 import { ProductDrawerComponent } from './product-drawer.component';
 
 const STATUS_TABS: [string, string][] = [
@@ -19,9 +20,11 @@ const STATUS_TABS: [string, string][] = [
   ['Rejected', 'REJECTED'],
 ];
 
+let searchTimer: ReturnType<typeof setTimeout>;
+
 @Component({
   selector: 'app-moderation',
-  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent],
+  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent],
   templateUrl: './moderation.component.html',
 })
 export class ModerationComponent implements OnInit {
@@ -33,6 +36,7 @@ export class ModerationComponent implements OnInit {
   protected egp = egp;
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected status = signal('PENDING');
+  protected name = signal('');
   protected page = signal(1);
   protected pageSize = 20;
   protected total = signal(0);
@@ -43,6 +47,15 @@ export class ModerationComponent implements OnInit {
 
   ngOnInit() {
     this.load();
+  }
+
+  protected onSearch(v: string) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      this.name.set(v.trim());
+      this.page.set(1);
+      this.load();
+    }, 350);
   }
 
   protected activeLabel() {
@@ -69,7 +82,7 @@ export class ModerationComponent implements OnInit {
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.listings({ status: this.status(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.listings({ status: this.status(), name: this.name(), page: this.page(), pageSize: this.pageSize });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);

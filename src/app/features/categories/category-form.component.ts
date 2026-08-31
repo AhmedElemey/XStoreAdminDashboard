@@ -12,7 +12,9 @@ import { ToastService } from '../../core/toast.service';
 export class CategoryFormComponent implements OnInit {
   editing = input(false);
   initial = input<MappedCategory | null>(null);
-  onSave = input.required<(en: string, ar: string, active: boolean, file: File | null) => Promise<void>>();
+  /** other top-level categories, offered as optional parents — excludes self when editing */
+  parentOptions = input<MappedCategory[]>([]);
+  onSave = input.required<(en: string, ar: string, active: boolean, parentId: string, file: File | null) => Promise<void>>();
 
   protected drawer = inject(DrawerService);
   private toast = inject(ToastService);
@@ -21,6 +23,7 @@ export class CategoryFormComponent implements OnInit {
   protected nameEn = signal('');
   protected nameAr = signal('');
   protected active = signal(true);
+  protected parentId = signal('');
   protected busy = signal(false);
 
   ngOnInit() {
@@ -29,6 +32,7 @@ export class CategoryFormComponent implements OnInit {
       this.nameEn.set(i.nameEn);
       this.nameAr.set(i.nameAr);
       this.active.set(i.active);
+      this.parentId.set(i.parentId ?? '');
     }
   }
 
@@ -46,7 +50,7 @@ export class CategoryFormComponent implements OnInit {
     }
     this.busy.set(true);
     try {
-      await this.onSave()(en, ar, this.active(), file);
+      await this.onSave()(en, ar, this.active(), this.parentId(), file);
       this.drawer.close();
     } catch (e) {
       this.toast.show(`${this.editing() ? 'Update' : 'Create'} failed: ${(e as Error).message || 'error'}`);

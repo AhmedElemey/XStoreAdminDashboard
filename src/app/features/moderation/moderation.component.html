@@ -6,12 +6,19 @@
   <app-chip-tabs [labels]="tabLabels" [active]="activeLabel()" (select)="selectTab($event)" />
 </div>
 
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search listings by name…" (input)="onSearch($any($event.target).value)" />
+  </div>
+</div>
+
 @if (loadState() === 'loading') {
   <app-state-block kind="loading" message="Loading pending listings…" />
 } @else if (loadState() === 'error') {
   <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
 } @else if (!items()?.length) {
-  <app-state-block kind="empty" [message]="'No ' + activeLabel().toLowerCase() + ' listings.'" />
+  <app-state-block kind="empty" [message]="name() ? 'No listings match “' + name() + '”.' : 'No ' + activeLabel().toLowerCase() + ' listings.'" />
 } @else {
   <div class="grid" style="gap:14px">
     @for (raw of items(); track $index) {

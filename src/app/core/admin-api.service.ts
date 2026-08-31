@@ -22,6 +22,7 @@ export interface VendorsQuery {
 
 export interface ListingsQuery {
   status: string;
+  name?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;

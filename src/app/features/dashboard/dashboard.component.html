@@ -1,11 +1,19 @@
 <div class="page-head">
   <div>
     <h2>Marketplace Overview</h2>
-    <p>Last 30 days · All vendors · EGP · Cash on Delivery</p>
+    <p>{{ from() || to() ? 'Custom range' : 'Last 30 days' }} · All vendors · EGP · Cash on Delivery</p>
   </div>
-  <div style="display:flex;gap:10px">
-    <button class="btn btn-g">Export</button>
-    <button class="btn btn-p">+ New announcement</button>
+  <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-row" style="margin:0">
+      <label>From</label>
+      <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" name="from" />
+    </div>
+    <div class="form-row" style="margin:0">
+      <label>To</label>
+      <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" name="to" />
+    </div>
+    <button class="btn btn-g" (click)="clearRange()">Reset</button>
+    <button class="btn btn-p" (click)="applyRange()">Apply</button>
   </div>
 </div>
 

@@ -15,6 +15,7 @@ export interface MappedCategory {
   nameAr: string;
   image: string | null;
   active: boolean;
+  parentId: string | null;
   products: number | null;
   subs: number | null;
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { AvatarComponent } from '../../shared/avatar.component';
@@ -11,7 +12,7 @@ import { ApiError } from '../../core/api-error';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [KpiCardComponent, AvatarComponent, StateBlockComponent],
+  imports: [KpiCardComponent, AvatarComponent, StateBlockComponent, FormsModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -26,6 +27,10 @@ export class DashboardComponent implements OnInit {
   protected pendingApprovals = signal<MappedListing[]>([]);
   protected pendingTotal = signal(0);
 
+  /** yyyy-mm-dd, blank = let the backend default to its trailing 30-day window */
+  protected from = signal('');
+  protected to = signal('');
+
   ngOnInit() {
     this.load();
   }
@@ -34,7 +39,7 @@ export class DashboardComponent implements OnInit {
     this.loadState.set('loading');
     try {
       const [overviewData, ordersData, listingsData] = await Promise.all([
-        this.api.overview(),
+        this.api.overview(this.from() || undefined, this.to() || undefined),
         this.api.orders({ page: 1, pageSize: 5 }),
         this.api.listings({ status: 'PENDING', page: 1, pageSize: 4 }),
       ]);
@@ -75,6 +80,15 @@ export class DashboardComponent implements OnInit {
   protected maxCategoryCount() {
     const c = this.overview()?.categories ?? [];
     return c.length ? Math.max(...c.map((x) => x.count)) : 1;
+  }
+
+  protected applyRange() {
+    this.load();
+  }
+  protected clearRange() {
+    this.from.set('');
+    this.to.set('');
+    this.load();
   }
 
   protected goto(view: string) {
