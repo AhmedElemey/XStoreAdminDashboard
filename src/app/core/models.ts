@@ -40,6 +40,7 @@ export interface MappedBanner {
   id: string;
   nameEn: string;
   nameAr: string;
+  sortOrder: number;
   image: string | null;
 }
 
@@ -74,18 +75,13 @@ export interface MappedVendor {
   isPending: boolean;
 }
 
-/* ---------- demo data models (Orders / Couriers / Packages / Vendors / Settings) ---------- */
-export interface DemoOrder {
-  id: string;
-  buyer: string;
-  phone: string;
-  addr: string;
-  vendor: string;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  courier?: string;
-  items: [string, number, number][];
+export interface MappedCommission {
+  outstanding: number;
+  warn: number;
+  pause: number;
 }
 
+/* ---------- demo data models (Couriers / Packages) ---------- */
 export interface DemoCourier {
   n: string;
   phone: string;

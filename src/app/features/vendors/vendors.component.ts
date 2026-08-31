@@ -12,12 +12,12 @@ import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
 import { VendorDrawerComponent } from './vendor-drawer.component';
 
+/** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected (no Suspended). */
 const STATUS_TABS: [string, string][] = [
   ['All', ''],
-  ['Pending', '0'],
-  ['Active', '1'],
-  ['Rejected', '2'],
-  ['Suspended', '3'],
+  ['Pending', '1'],
+  ['Approved', '2'],
+  ['Rejected', '3'],
 ];
 
 let searchTimer: ReturnType<typeof setTimeout>;
@@ -78,7 +78,7 @@ export class VendorsComponent implements OnInit {
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.users({ keyword: this.keyword(), role: 'VENDOR', vendorStatus: this.vendorStatus(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.vendors({ keyword: this.keyword(), vendorStatus: this.vendorStatus(), page: this.page(), pageSize: this.pageSize });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
@@ -111,8 +111,8 @@ export class VendorsComponent implements OnInit {
     }
     if (action === 'reject' && !confirm(`Reject vendor "${m.store}"? They will be notified.`)) return;
     try {
-      if (action === 'approve') await this.api.approveUser(m.id);
-      else await this.api.rejectUser(m.id);
+      if (action === 'approve') await this.api.approveVendor(m.id);
+      else await this.api.rejectVendor(m.id);
       this.toast.show(action === 'approve' ? 'Vendor approved — now selling ✓' : 'Vendor rejected — notified');
       this.drawer.close();
       this.load();

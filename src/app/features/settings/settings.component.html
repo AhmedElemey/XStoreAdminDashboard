@@ -31,3 +31,31 @@
     </div>
   </div>
 </div>
+
+<div class="card mt">
+  <div class="c-head"><h3>Commission &amp; payout</h3></div>
+  <div class="c-body">
+    @if (settingsState() === 'loading') {
+      <app-state-block kind="loading" message="Loading system settings…" />
+    } @else if (settingsState() === 'error') {
+      <app-state-block kind="error" [message]="errorMsg()" (retry)="loadSettings()" />
+    } @else {
+      <p class="muted" style="font-size:12.5px;margin-bottom:14px">Platform-wide defaults — per-vendor thresholds can still be overridden from that vendor's Commission wallet.</p>
+      <div class="grid g-3">
+        <div class="form-row">
+          <label>Commission per order (%)</label>
+          <input inputmode="numeric" [ngModel]="commissionValue()" (ngModelChange)="commissionValue.set(+$event)" name="commissionValue" />
+        </div>
+        <div class="form-row">
+          <label>Warn threshold (EGP)</label>
+          <input inputmode="numeric" [ngModel]="warnThreshold()" (ngModelChange)="warnThreshold.set(+$event)" name="warnThreshold" />
+        </div>
+        <div class="form-row">
+          <label>Pause threshold (EGP)</label>
+          <input inputmode="numeric" [ngModel]="pauseThreshold()" (ngModelChange)="pauseThreshold.set(+$event)" name="pauseThreshold" />
+        </div>
+      </div>
+      <button class="btn btn-p" [disabled]="saving()" (click)="saveSettings()">{{ saving() ? 'Saving…' : 'Save settings' }}</button>
+    }
+  </div>
+</div>

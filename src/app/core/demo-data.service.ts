@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { DemoCourier, DemoOrder, DemoPackage } from './models';
+import { DemoCourier, DemoPackage } from './models';
 import { DeliveryApiService } from './delivery-api.service';
 import { mapCourierSummary, mapRequest } from './delivery-mappers';
 
@@ -18,46 +18,28 @@ const SEED_PKGS: DemoPackage[] = [
   { id: 'pkg_006', customer: 'Mona Adel', phone: '+20 103 444 5566', pickup: { street: '14 Sidi Gaber', city: 'Alexandria' }, drop: { name: 'Rana Fathy', phone: '+20 111 222 0055', street: '30 El Geish Rd', city: 'Alexandria' }, note: 'Documents folder', submitted: 'Yesterday', status: 'cancelled', price: 60, courier: null },
 ];
 
-const SEED_ORDERS: DemoOrder[] = [
-  { id: 'XS-2026-4471', buyer: 'Ahmed Hassan', phone: '+20 100 111 2233', addr: '12 Tahrir St, Dokki, Giza', vendor: 'Cairo Tech Hub', status: 'delivered', courier: 'Mostafa El-Sayed', items: [['iPhone 13 Pro 256GB', 1, 48999]] },
-  { id: 'XS-2026-4470', buyer: 'Sara Mostafa', phone: '+20 101 222 3344', addr: '8 Nile Corniche, Maadi, Cairo', vendor: 'Zamalek Boutique', status: 'shipped', courier: 'Mostafa El-Sayed', items: [['Handmade Linen Abaya', 2, 1250]] },
-  { id: 'XS-2026-4469', buyer: 'Karim Fouad', phone: '+20 102 333 4455', addr: '25 Gameat Ad Dowal, Mohandessin, Giza', vendor: 'Giza Gadgets', status: 'processing', items: [['Wireless Earbuds Pro', 1, 1899]] },
-  { id: 'XS-2026-4468', buyer: 'Mona Adel', phone: '+20 103 444 5566', addr: '14 Sidi Gaber, Alexandria', vendor: 'Alexandria Beauty Bar', status: 'confirmed', items: [['Vitamin-C Serum 30ml', 2, 480]] },
-  { id: 'XS-2026-4467', buyer: 'Youssef Ali', phone: '+20 104 555 6677', addr: '3 Makram Ebeid, Nasr City, Cairo', vendor: 'Cairo Tech Hub', status: 'pending', items: [['Smart Watch Series 8', 1, 15499]] },
-  { id: 'XS-2026-4466', buyer: 'Nour Ibrahim', phone: '+20 105 666 7788', addr: '40 Haram St, Giza', vendor: 'Zamalek Boutique', status: 'delivered', items: [['Silk Scarf', 3, 1250]] },
-  { id: 'XS-2026-4465', buyer: 'Omar Sherif', phone: '+20 106 777 8899', addr: '7 Roxy Sq, Heliopolis, Cairo', vendor: 'Heliopolis Sportswear', status: 'cancelled', items: [['Running Shoes', 1, 890]] },
-];
-
 const SEED_TEAM: [string, string, string][] = [
   ['Ahmed', 'Super Admin', 'Owner · full access'],
   ['Ops Team', 'Moderator', 'Orders + disputes'],
   ['Finance', 'Viewer', 'Read-only reports'],
 ];
 
-/** Demo / seed-data store for the sections that don't have a confirmed live backend yet
- *  (Orders, Settings roster) plus the shared mutable state for the delivery pilot
- *  (Couriers / Delivery Requests), which swaps between this seed data and the live
- *  delivery-backend API — mirrors the legacy prototype's module-level `let COURIERS`,
- *  `let PKGS`, `TEAM`, etc. */
+/** Demo / seed-data store for Settings' team roster (no backend endpoint for it) plus the
+ *  shared mutable state for the delivery pilot (Couriers / Delivery Requests), which
+ *  swaps between this seed data and the live delivery-backend API — mirrors the legacy
+ *  prototype's module-level `let COURIERS`, `let PKGS`, `TEAM`, etc. */
 @Injectable({ providedIn: 'root' })
 export class DemoDataService {
   private deliveryApi = inject(DeliveryApiService);
 
-  readonly orders = signal<DemoOrder[]>(SEED_ORDERS);
   readonly team = signal<[string, string, string][]>(SEED_TEAM);
 
   readonly couriers = signal<DemoCourier[]>(SEED_COURIERS);
   readonly packages = signal<DemoPackage[]>(SEED_PKGS);
 
   /* ---------- helpers ---------- */
-  orderTotal(o: DemoOrder): number {
-    return o.items.reduce((s, it) => s + it[1] * it[2], 0);
-  }
   cashDue(c: DemoCourier): boolean {
     return c.cash >= c.cap;
-  }
-  courierAssignable(o: DemoOrder): boolean {
-    return !o.courier && ['confirmed', 'processing'].includes(o.status);
   }
   pkgCross(p: DemoPackage): boolean {
     return p.pickup.city.trim().toLowerCase() !== p.drop.city.trim().toLowerCase();
@@ -66,12 +48,7 @@ export class DemoDataService {
     return 60 + (this.pkgCross(p) ? 20 : 0);
   }
 
-  /* ---------- orders / couriers (COD pilot) ---------- */
-  assignOrderCourier(orderIdx: number, courierIdx: number) {
-    const courier = this.couriers()[courierIdx];
-    this.orders.update((list) => list.map((o, idx) => (idx === orderIdx ? { ...o, courier: courier.n } : o)));
-    this.couriers.update((list) => list.map((c, idx) => (idx === courierIdx ? { ...c, today: c.today + 1 } : c)));
-  }
+  /* ---------- couriers ---------- */
   courierDuty(i: number) {
     if (this.deliveryApi.connected()) {
       const c = this.couriers()[i];

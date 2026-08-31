@@ -7,6 +7,18 @@
   <input [ngModel]="nameAr()" (ngModelChange)="nameAr.set($event)" name="nameAr" dir="rtl" placeholder="رمضان كريم" />
 </div>
 <div class="form-row">
+  <label>Sort order *</label>
+  <input inputmode="numeric" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set(+$event)" name="sortOrder" placeholder="1" />
+</div>
+<div class="form-row">
+  <label>Show only on categories <span class="muted" style="font-weight:400">(optional, comma-separated ids)</span></label>
+  <input [ngModel]="categoryIds()" (ngModelChange)="categoryIds.set($event)" name="categoryIds" placeholder="1,2" />
+</div>
+<div class="form-row">
+  <label>Show only for stores <span class="muted" style="font-weight:400">(optional, comma-separated ids)</span></label>
+  <input [ngModel]="storeIds()" (ngModelChange)="storeIds.set($event)" name="storeIds" placeholder="1,2" />
+</div>
+<div class="form-row">
   <label>Image
     @if (editing()) {
       <span class="muted" style="font-weight:400">(leave empty to keep current)</span>

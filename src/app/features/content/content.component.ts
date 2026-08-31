@@ -74,10 +74,14 @@ export class ContentComponent implements OnInit {
     this.drawer.show(editing ? 'Edit banner' : 'New banner', BannerFormComponent, {
       editing,
       initial,
-      onSave: async (en: string, ar: string, file: File | null) => {
+      onSave: async (en: string, ar: string, sortOrder: number, categoryIds: string, storeIds: string, file: File | null) => {
         const fd = new FormData();
         fd.append('nameEn', en);
         fd.append('nameAr', ar);
+        fd.append('sortOrder', String(sortOrder));
+        fd.append('isActive', 'true');
+        if (categoryIds) fd.append('categoryIds', categoryIds);
+        if (storeIds) fd.append('storeIds', storeIds);
         if (file) fd.append('image', file);
         if (editing) await this.api.updateBanner(initial!.id, fd);
         else await this.api.createBanner(fd);

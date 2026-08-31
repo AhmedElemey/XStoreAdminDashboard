@@ -1,4 +1,4 @@
-import { Dto, MappedBanner, MappedCategory, MappedListing, MappedUser, MappedVendor, Page } from './models';
+import { Dto, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, Page } from './models';
 import { egp } from './format';
 
 /** first non-empty of a list of candidate values (mirrors legacy _fne). */
@@ -83,6 +83,7 @@ export function mapBanner(b: Dto, apiBase: string): MappedBanner {
     id: firstNonEmpty(b['id'], b['bannerId'], b['_id']),
     nameEn: firstNonEmpty(b['nameEn'], b['name']) || 'Untitled',
     nameAr: firstNonEmpty(b['nameAr']),
+    sortOrder: numOr(b['sortOrder']) ?? 0,
     image: absoluteImage(img, apiBase),
   };
 }
@@ -107,11 +108,11 @@ export function mapUser(u: Dto): MappedUser {
   };
 }
 
+/** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected. */
 const VSTATUS: Record<number, [string, string]> = {
-  0: ['b-amber', 'Pending'],
-  1: ['b-green', 'Active'],
-  2: ['b-red', 'Rejected'],
-  3: ['b-grey', 'Suspended'],
+  1: ['b-amber', 'Pending'],
+  2: ['b-green', 'Approved'],
+  3: ['b-red', 'Rejected'],
 };
 
 export function mapVendor(v: Dto): MappedVendor {
@@ -123,15 +124,7 @@ export function mapVendor(v: Dto): MappedVendor {
     st = VSTATUS[Number(sv)] || ['b-grey', 'Status ' + sv];
   } else {
     const k = String(sv).toLowerCase();
-    st = k.includes('pend')
-      ? VSTATUS[0]
-      : k.includes('active') || k.includes('approv')
-        ? VSTATUS[1]
-        : k.includes('reject')
-          ? VSTATUS[2]
-          : k.includes('suspend')
-            ? VSTATUS[3]
-            : ['b-grey', String(sv)];
+    st = k.includes('pend') ? VSTATUS[1] : k.includes('approv') || k.includes('active') ? VSTATUS[2] : k.includes('reject') ? VSTATUS[3] : ['b-grey', String(sv)];
   }
   return {
     id: firstNonEmpty(v['id'], v['userId'], v['_id']),
@@ -148,5 +141,115 @@ export function mapVendor(v: Dto): MappedVendor {
     statusClass: st[0],
     statusLabel: st[1],
     isPending: st[1] === 'Pending',
+  };
+}
+
+export interface MappedOrder {
+  id: string;
+  buyer: string;
+  phone: string;
+  addr: string;
+  vendor: string;
+  statusNum: number;
+  statusKey: string;
+  statusLabel: string;
+  statusClass: string;
+  total: number | null;
+  courier: string | null;
+  items: { name: string; qty: number; price: number }[];
+}
+
+/** OrderStatus enum per the real admin API: 0=Pending,1=Confirmed,2=Processing,3=Shipped,4=Delivered,5=Cancelled. */
+export const ORDER_STATUS: [string, string, string][] = [
+  ['pending', 'Pending', 'b-grey'],
+  ['confirmed', 'Confirmed', 'b-blue'],
+  ['processing', 'Processing', 'b-indigo'],
+  ['shipped', 'Shipped', 'b-amber'],
+  ['delivered', 'Delivered', 'b-green'],
+  ['cancelled', 'Cancelled', 'b-red'],
+];
+
+/** Response shape for GET /api/admin/orders (list + by-id) isn't documented in the
+ *  Postman collection beyond the OrderStatus enum, so this is tolerant to aliases like
+ *  every other mapper here. Works for both the list-row shape and the fuller by-id shape
+ *  (address/items are simply absent on the former until the drawer fetches the detail). */
+export function mapOrder(o: Dto): MappedOrder {
+  const statusNum = numOr(o['status']) ?? 0;
+  const [statusKey, statusLabel, statusClass] = ORDER_STATUS[statusNum] ?? ORDER_STATUS[0];
+  const rawItems = Array.isArray(o['items']) ? o['items'] : Array.isArray(o['orderItems']) ? o['orderItems'] : [];
+  return {
+    id: firstNonEmpty(o['id'], o['orderId'], o['_id']),
+    buyer: firstNonEmpty(o['buyerName'], o['consumerName'], o['customerName'], o['fullNameEn'], o['fullName']) || '—',
+    phone: firstNonEmpty(o['phoneNumber'], o['buyerPhone'], o['consumerPhone'], o['phone']) || '—',
+    addr: firstNonEmpty(o['address'], o['deliveryAddress'], o['shippingAddress'], o['addressLine']),
+    vendor: firstNonEmpty(o['vendorName'], o['storeNameEn'], o['storeName']) || '—',
+    statusNum,
+    statusKey,
+    statusLabel,
+    statusClass,
+    total: numOr(o['totalAmount'], o['total'], o['amount'], o['grandTotal']),
+    courier: firstNonEmpty(o['courierName'], o['courier']) || null,
+    items: rawItems.map((it: Dto) => ({
+      name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName']) || 'Item',
+      qty: numOr(it['quantity'], it['qty']) ?? 1,
+      price: numOr(it['price'], it['unitPrice']) ?? 0,
+    })),
+  };
+}
+
+export interface MappedSystemSettings {
+  commissionValueOnOrder: number;
+  warnThresholdEgp: number;
+  pauseThresholdEgp: number;
+}
+
+/** GET /api/admin/system-settings response shape isn't documented beyond the PUT body
+ *  it accepts — tolerant to aliases like every other mapper here. */
+export function mapSystemSettings(s: Dto): MappedSystemSettings {
+  return {
+    commissionValueOnOrder: numOr(s['commissionValueOnOrder'], s['commissionValue'], s['commissionPercent']) ?? 0,
+    warnThresholdEgp: numOr(s['warnThresholdEgp'], s['warnThreshold']) ?? 0,
+    pauseThresholdEgp: numOr(s['pauseThresholdEgp'], s['pauseThreshold']) ?? 0,
+  };
+}
+
+export interface MappedOverview {
+  gmv: number | null;
+  orders: number | null;
+  activeVendors: number | null;
+  revenueTrend: number[];
+  categories: { name: string; count: number }[];
+}
+
+/** Response shape for GET /api/admin/overview isn't documented beyond "30-day GMV/orders,
+ *  vendor counts, daily revenue trend, and sales grouped by category" — tolerant to
+ *  aliases like every other mapper here, and safe to render even if a field is missing. */
+export function mapOverview(o: Dto): MappedOverview {
+  const trendRaw = o['revenueTrend'] ?? o['dailyRevenue'] ?? o['trend'] ?? o['gmvTrend'] ?? [];
+  const revenueTrend = (Array.isArray(trendRaw) ? trendRaw : [])
+    .map((v) => (typeof v === 'object' && v !== null ? numOr((v as Dto)['value'], (v as Dto)['amount'], (v as Dto)['gmv']) : num(v)))
+    .filter((v): v is number => v != null);
+  const catsRaw = o['salesByCategory'] ?? o['categoryBreakdown'] ?? o['categories'] ?? [];
+  const categories = (Array.isArray(catsRaw) ? catsRaw : []).map((c: Dto) => ({
+    name: firstNonEmpty(c['categoryName'], c['name'], c['nameEn']) || '—',
+    count: numOr(c['count'], c['orders'], c['sales'], c['value']) ?? 0,
+  }));
+  return {
+    gmv: numOr(o['gmv'], o['gmvEgp'], o['totalGmv']),
+    orders: numOr(o['orders'], o['ordersCount'], o['totalOrders']),
+    activeVendors: numOr(o['activeVendors'], o['activeVendorsCount'], o['vendorsCount']),
+    revenueTrend,
+    categories,
+  };
+}
+
+/** Response shape for GET /api/admin/vendors/{id}/commission isn't documented in the
+ *  Postman collection (only the PATCH/POST request bodies are) — tolerant to aliases
+ *  like every other mapper here. */
+export function mapCommission(c: Dto): MappedCommission {
+  return {
+    outstanding: numOr(c['outstandingEgp'], c['outstandingBalanceEgp'], c['balanceEgp'], c['outstanding']) ?? 0,
+    warn: numOr(c['warnThresholdEgp'], c['warnThreshold'], c['warn']) ?? 0,
+    pause: numOr(c['pauseThresholdEgp'], c['pauseThreshold'], c['pause']) ?? 0,
   };
 }

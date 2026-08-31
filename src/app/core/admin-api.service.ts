@@ -12,6 +12,14 @@ export interface UsersQuery {
   [key: string]: string | number | undefined;
 }
 
+export interface VendorsQuery {
+  keyword?: string;
+  vendorStatus?: string;
+  page: number;
+  pageSize: number;
+  [key: string]: string | number | undefined;
+}
+
 export interface ListingsQuery {
   status: string;
   page: number;
@@ -19,8 +27,15 @@ export interface ListingsQuery {
   [key: string]: string | number | undefined;
 }
 
-/** Endpoint wrappers for the marketplace admin API — Postman "xStoreEcommerce Admin
- *  Dashboard" collection. Ported 1:1 from the legacy prototype's live-data loaders. */
+export interface OrdersQuery {
+  status?: string;
+  page: number;
+  pageSize: number;
+  [key: string]: string | number | undefined;
+}
+
+/** Endpoint wrappers for the marketplace admin API — matches the real
+ *  "xStoreEcommerce Admin & Super Admin" Postman collection. */
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private auth = inject(AuthService);
@@ -29,15 +44,65 @@ export class AdminApiService {
     return this.auth.base;
   }
 
-  /* ---------- Users / Vendors — GET /api/users ---------- */
+  /* ---------- Users (customers) — GET /api/users ---------- */
   users(q: UsersQuery) {
     return this.auth.apiFetch<unknown>('/api/users', { query: q });
   }
-  approveUser(id: string) {
-    return this.auth.apiFetch(`/api/users/${encodeURIComponent(id)}/approve`, { method: 'PUT' });
+  user(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/users/${encodeURIComponent(id)}`);
   }
-  rejectUser(id: string) {
-    return this.auth.apiFetch(`/api/users/${encodeURIComponent(id)}/reject`, { method: 'PUT' });
+
+  /* ---------- Vendors — GET /api/admin/vendors (its own surface, not /api/users) ---------- */
+  vendors(q: VendorsQuery) {
+    return this.auth.apiFetch<unknown>('/api/admin/vendors', { query: q });
+  }
+  vendor(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}`);
+  }
+  approveVendor(id: string) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/approve`, { method: 'PUT' });
+  }
+  rejectVendor(id: string) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/reject`, { method: 'PUT' });
+  }
+  vendorCommission(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission`);
+  }
+  updateVendorCommissionThresholds(id: string, warnThresholdEgp: number, pauseThresholdEgp: number) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission`, {
+      method: 'PATCH',
+      body: { warnThresholdEgp, pauseThresholdEgp },
+    });
+  }
+  settleVendorCommission(id: string, amountEgp?: number) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settle`, {
+      method: 'POST',
+      body: amountEgp === undefined ? {} : { amountEgp },
+    });
+  }
+
+  /* ---------- Admin orders (ADMINISTRATOR only) — GET /api/admin/orders ---------- */
+  orders(q: OrdersQuery) {
+    return this.auth.apiFetch<unknown>('/api/admin/orders', { query: q });
+  }
+  order(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/orders/${encodeURIComponent(id)}`);
+  }
+  cancelOrder(id: string, reason: string) {
+    return this.auth.apiFetch(`/api/admin/orders/${encodeURIComponent(id)}/cancel`, { method: 'POST', body: { reason } });
+  }
+
+  /* ---------- Dashboard overview ---------- */
+  overview(from?: string, to?: string) {
+    return this.auth.apiFetch<unknown>('/api/admin/overview', { query: { from, to } });
+  }
+
+  /* ---------- System settings ---------- */
+  systemSettings() {
+    return this.auth.apiFetch<unknown>('/api/admin/system-settings');
+  }
+  updateSystemSettings(body: { commissionValueOnOrder: number; warnThresholdEgp: number; pauseThresholdEgp: number }) {
+    return this.auth.apiFetch('/api/admin/system-settings', { method: 'PUT', body });
   }
 
   /* ---------- Categories ---------- */

@@ -48,7 +48,11 @@ export class AuthService {
       });
     }
     const headers: Record<string, string> = {};
-    if (this.token) headers['Authorization'] = 'Bearer ' + this.token;
+    if (this.token) {
+      // The backend accepts either — sent both to match the Postman collection exactly.
+      headers['Authorization'] = 'Bearer ' + this.token;
+      headers['X-Auth-Token'] = this.token;
+    }
     let payload: BodyInit | undefined;
     if (body instanceof FormData) {
       payload = body;

@@ -12,7 +12,7 @@ import { ToastService } from '../../core/toast.service';
 export class BannerFormComponent implements OnInit {
   editing = input(false);
   initial = input<MappedBanner | null>(null);
-  onSave = input.required<(en: string, ar: string, file: File | null) => Promise<void>>();
+  onSave = input.required<(en: string, ar: string, sortOrder: number, categoryIds: string, storeIds: string, file: File | null) => Promise<void>>();
 
   protected drawer = inject(DrawerService);
   private toast = inject(ToastService);
@@ -20,6 +20,9 @@ export class BannerFormComponent implements OnInit {
 
   protected nameEn = signal('');
   protected nameAr = signal('');
+  protected sortOrder = signal(1);
+  protected categoryIds = signal('');
+  protected storeIds = signal('');
   protected busy = signal(false);
 
   ngOnInit() {
@@ -27,6 +30,7 @@ export class BannerFormComponent implements OnInit {
     if (i) {
       this.nameEn.set(i.nameEn);
       this.nameAr.set(i.nameAr);
+      this.sortOrder.set(i.sortOrder || 1);
     }
   }
 
@@ -38,13 +42,17 @@ export class BannerFormComponent implements OnInit {
       this.toast.show('Enter both English and Arabic names');
       return;
     }
+    if (!this.sortOrder() || this.sortOrder() < 1) {
+      this.toast.show('Enter a valid sort order');
+      return;
+    }
     if (!this.editing() && !file) {
       this.toast.show('Pick a banner image');
       return;
     }
     this.busy.set(true);
     try {
-      await this.onSave()(en, ar, file);
+      await this.onSave()(en, ar, this.sortOrder(), this.categoryIds().trim(), this.storeIds().trim(), file);
       this.drawer.close();
     } catch (e) {
       this.toast.show(`${this.editing() ? 'Update' : 'Create'} failed: ${(e as Error).message || 'error'}`);

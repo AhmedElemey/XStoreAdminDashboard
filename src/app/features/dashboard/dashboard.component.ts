@@ -1,65 +1,80 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { AvatarComponent } from '../../shared/avatar.component';
-import { DemoDataService } from '../../core/demo-data.service';
+import { StateBlockComponent } from '../../shared/state-block.component';
+import { AdminApiService } from '../../core/admin-api.service';
 import { egp } from '../../core/format';
-import { DemoOrder } from '../../core/models';
-
-const CATS_PREVIEW: [string, string, number][] = [
-  ['Electronics', '📱', 842],
-  ['Fashion', '👕', 1290],
-  ['Home & Garden', '🛋️', 610],
-  ['Beauty', '✨', 455],
-  ['Sports', '🏋️', 288],
-  ['Toys', '🧸', 176],
-];
-
-const PENDING_PREVIEW: { t: string; v: string; cat: string }[] = [
-  { t: 'iPhone 13 Pro 256GB', v: 'Cairo Tech Hub', cat: 'Electronics' },
-  { t: 'Handmade Linen Abaya', v: 'Zamalek Boutique', cat: 'Fashion' },
-  { t: 'Ergonomic Office Chair', v: 'Nile Home Décor', cat: 'Home & Garden' },
-  { t: 'Vitamin-C Serum 30ml', v: 'Alexandria Beauty Bar', cat: 'Beauty' },
-];
-
-const OSTAT: Record<string, [string, string]> = {
-  pending: ['b-grey', 'Pending'],
-  confirmed: ['b-blue', 'Confirmed'],
-  processing: ['b-indigo', 'Processing'],
-  shipped: ['b-amber', 'Shipped'],
-  delivered: ['b-green', 'Delivered'],
-  cancelled: ['b-red', 'Cancelled'],
-};
-
-const REVENUE = [62, 58, 71, 69, 84, 78, 96, 102, 94, 115, 108, 124];
+import { Dto, MappedListing } from '../../core/models';
+import { MappedOrder, MappedOverview, mapListing, mapOrder, mapOverview, readPage } from '../../core/mappers';
+import { ApiError } from '../../core/api-error';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [KpiCardComponent, AvatarComponent],
+  imports: [KpiCardComponent, AvatarComponent, StateBlockComponent],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private router = inject(Router);
-  protected demo = inject(DemoDataService);
+  private api = inject(AdminApiService);
   protected egp = egp;
-  protected OSTAT = OSTAT;
 
-  protected catBars = CATS_PREVIEW.map(([name, emoji, count]) => ({
-    name,
-    emoji,
-    count,
-    pct: Math.round((count / 1290) * 100),
-  }));
-  protected pending = PENDING_PREVIEW;
-  protected recentOrders = () => this.demo.orders().slice(0, 5);
+  protected loadState = signal<'loading' | 'error' | null>('loading');
+  protected errorMsg = signal('');
+  protected overview = signal<MappedOverview | null>(null);
+  protected recentOrders = signal<MappedOrder[]>([]);
+  protected pendingApprovals = signal<MappedListing[]>([]);
+  protected pendingTotal = signal(0);
 
-  protected max = Math.max(...REVENUE);
-  protected points = REVENUE.map((v, i) => `${20 + i * (560 / 11)},${180 - (v / this.max) * 150}`).join(' ');
-  protected area = `20,180 ${this.points} 580,180`;
-  protected dots = REVENUE.map((v, i) => ({ cx: 20 + i * (560 / 11), cy: 180 - (v / this.max) * 150 }));
+  ngOnInit() {
+    this.load();
+  }
 
-  protected orderTotal(o: DemoOrder) {
-    return this.demo.orderTotal(o);
+  async load() {
+    this.loadState.set('loading');
+    try {
+      const [overviewData, ordersData, listingsData] = await Promise.all([
+        this.api.overview(),
+        this.api.orders({ page: 1, pageSize: 5 }),
+        this.api.listings({ status: 'PENDING', page: 1, pageSize: 4 }),
+      ]);
+      this.overview.set(mapOverview(overviewData as Dto));
+      this.recentOrders.set(readPage<Dto>(ordersData, 5).items.map(mapOrder));
+      const listingsPage = readPage<Dto>(listingsData, 4);
+      this.pendingApprovals.set(listingsPage.items.map((raw) => mapListing(raw, this.api.apiBase)));
+      this.pendingTotal.set(listingsPage.total);
+      this.loadState.set(null);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.loadState.set('error');
+      this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');
+    }
+  }
+
+  protected maxTrend() {
+    const t = this.overview()?.revenueTrend ?? [];
+    return t.length ? Math.max(...t) : 1;
+  }
+  protected trendPoints() {
+    const t = this.overview()?.revenueTrend ?? [];
+    const max = this.maxTrend();
+    if (!t.length) return '';
+    const step = t.length > 1 ? 560 / (t.length - 1) : 0;
+    return t.map((v, i) => `${20 + i * step},${180 - (v / max) * 150}`).join(' ');
+  }
+  protected trendArea() {
+    const pts = this.trendPoints();
+    return pts ? `20,180 ${pts} 580,180` : '';
+  }
+  protected trendDots() {
+    const t = this.overview()?.revenueTrend ?? [];
+    const max = this.maxTrend();
+    const step = t.length > 1 ? 560 / (t.length - 1) : 0;
+    return t.map((v, i) => ({ cx: 20 + i * step, cy: 180 - (v / max) * 150 }));
+  }
+  protected maxCategoryCount() {
+    const c = this.overview()?.categories ?? [];
+    return c.length ? Math.max(...c.map((x) => x.count)) : 1;
   }
 
   protected goto(view: string) {
