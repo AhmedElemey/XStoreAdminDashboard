@@ -1,0 +1,81 @@
+<div class="page-head">
+  <div>
+    <h2>Marketplace Overview</h2>
+    <p>Last 30 days · All vendors · EGP · Cash on Delivery</p>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-g">Export</button>
+    <button class="btn btn-p">+ New announcement</button>
+  </div>
+</div>
+
+<div class="grid g-4">
+  <app-kpi-card icon="chart" [value]="egp(1240000)" label="GMV (30d)" trend="+14%" dir="up" color="#2E5C6E" />
+  <app-kpi-card icon="box" value="3,482" label="Orders (30d)" trend="+9%" dir="up" color="#C68A2E" />
+  <app-kpi-card icon="store" value="128" label="Active vendors" trend="+6" dir="up" color="#3F7A5C" />
+  <app-kpi-card icon="shield" value="17" label="Pending approvals" trend="Action" dir="down" color="#B4472E" />
+</div>
+
+<div class="grid g-2 mt">
+  <div class="card">
+    <div class="c-head"><h3>Revenue trend</h3><span class="badge-s b-green">▲ 14% vs last month</span></div>
+    <div class="c-body">
+      <svg viewBox="0 0 600 190" width="100%" height="190">
+        <defs>
+          <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2E5C6E" stop-opacity=".28" />
+            <stop offset="1" stop-color="#2E5C6E" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon [attr.points]="area" fill="url(#ag)" />
+        <polyline [attr.points]="points" fill="none" stroke="#2E5C6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        @for (d of dots; track $index) {
+          <circle [attr.cx]="d.cx" [attr.cy]="d.cy" r="3" fill="#2E5C6E" />
+        }
+      </svg>
+      <div class="legend"><span><i style="background:#2E5C6E"></i>Monthly GMV (EGP, thousands)</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="c-head"><h3>Sales by category</h3></div>
+    <div class="c-body">
+      <div class="bars">
+        @for (c of catBars; track c.name) {
+          <div class="bar-row">
+            <span class="muted">{{ c.emoji }} {{ c.name }}</span>
+            <div class="bar-track"><div class="bar-fill" [style.width.%]="c.pct"></div></div>
+            <b class="r">{{ c.count }}</b>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid g-2 mt">
+  <div class="card">
+    <div class="c-head"><h3>Recent orders</h3><a class="muted" style="cursor:pointer;font-size:12.5px" (click)="goto('orders')">View all →</a></div>
+    <div class="c-body" style="padding-top:6px">
+      @for (o of recentOrders(); track o.id) {
+        <div class="list-row" style="cursor:pointer" (click)="goto('orders')">
+          <app-avatar [name]="o.buyer" />
+          <div style="flex:1"><b>{{ o.id }}</b><small class="muted">{{ o.buyer }}</small></div>
+          <span class="money">{{ egp(orderTotal(o)) }}</span>
+          <span class="badge-s" [class]="OSTAT[o.status][0]" style="margin-left:12px">{{ OSTAT[o.status][1] }}</span>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="card">
+    <div class="c-head"><h3>Awaiting your approval</h3><a class="muted" style="cursor:pointer;font-size:12.5px" (click)="goto('moderation')">Review →</a></div>
+    <div class="c-body" style="padding-top:6px">
+      @for (p of pending; track p.t) {
+        <div class="list-row" style="cursor:pointer" (click)="goto('moderation')">
+          <app-avatar [name]="p.v" />
+          <div style="flex:1"><b>{{ p.t }}</b><small class="muted">{{ p.v }} · {{ p.cat }}</small></div>
+          <span class="badge-s b-amber">Pending</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="page-head">
+  <div>
+    <h2>Categories</h2>
+    <p>Server-driven taxonomy — <b>GET /api/categories</b>. Add, edit, show/hide and delete all sync to the backend.</p>
+  </div>
+  <button class="btn btn-p" (click)="openForm()">+ Add category</button>
+</div>
+
+@if (loadState() === 'loading') {
+  <app-state-block kind="loading" message="Loading categories…" />
+} @else if (loadState() === 'error') {
+  <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+} @else if (!items()?.length) {
+  <div class="card"><div class="c-body"><app-state-block kind="empty" message="No categories yet — add your first one." /></div></div>
+} @else {
+  <div class="card">
+    <div class="c-body">
+      <div class="cat-grid">
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <div class="cat">
+            @if (m.image) {
+              <img class="ci-img" [src]="m.image" alt="" />
+            } @else {
+              <div class="ci">{{ (m.nameEn[0] || '📦').toUpperCase() }}</div>
+            }
+            <div class="cmeta">
+              <b>{{ m.nameEn }}</b>
+              <small>
+                @if (m.nameAr) { <bdi>{{ m.nameAr }}</bdi> · }
+                {{ (m.products != null ? m.products + ' products' : null) || (m.subs != null ? m.subs + ' subcategories' : null) || '—' }}
+              </small>
+            </div>
+            <div class="cat-actions">
+              <div class="switch" [class.off]="!m.active" title="Show / hide" (click)="toggle($index)"></div>
+              <button class="btn btn-g btn-sm" (click)="openForm($index)">Edit</button>
+              <button class="btn btn-no btn-sm" (click)="remove($index)">Delete</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,66 @@
+<div class="page-head">
+  <div>
+    <h2>Delivery — Couriers</h2>
+    <p>Platform couriers collecting COD ("Delivered by xStore" pilot) · assign orders from the Orders page</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <app-chip-tabs [labels]="tabs" [active]="activeTab()" (select)="activeTab.set($event)" />
+    <button class="btn btn-p" (click)="openAddCourier()">+ Add courier</button>
+  </div>
+</div>
+
+<app-delivery-connect-bar />
+
+<div class="grid g-4" style="margin-bottom:18px;margin-top:18px">
+  <app-kpi-card icon="truck" [value]="activeCount().toString()" label="Active couriers" dir="up" color="#2E5C6E" />
+  <app-kpi-card icon="cash" [value]="egp(held())" label="COD cash with couriers" [trend]="cashDueCount() ? 'collect' : 'ok'" [dir]="cashDueCount() ? 'down' : 'up'" color="#C68A2E" />
+  <app-kpi-card icon="box" [value]="today().toString()" label="Tasks today" dir="up" color="#3F7A5C" />
+  <app-kpi-card icon="alert" [value]="failRate() + '%'" label="Failed deliveries (30d)" trend="watch" dir="down" color="#B4472E" />
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Courier</th><th>Zone</th><th>Status</th><th>Today</th><th>Delivered (30d)</th><th>Cash in hand</th><th class="r">Action</th></tr>
+    </thead>
+    <tbody>
+      @for (c of demo.couriers(); track c.n; let i = $index) {
+        <tr [hidden]="rowHidden(c.status)">
+          <td><div class="u" style="cursor:pointer" (click)="openDrawer(i)"><app-avatar [name]="c.n" [round]="true" /><div><b>{{ c.n }}</b><small>{{ c.phone }}</small></div></div></td>
+          <td class="muted">{{ c.zone }}</td>
+          <td><span class="badge-s" [class]="c.status === 'active' ? 'b-green' : 'b-grey'"><span class="dotb" style="background:currentColor"></span>{{ c.status === 'active' ? 'Active' : 'Off duty' }}</span></td>
+          <td>{{ c.today }}</td>
+          <td>{{ c.delivered30 }} <small class="muted">/ {{ c.failed30 }} failed</small></td>
+          <td>
+            @if (demo.cashDue(c)) {
+              <span class="money" style="color:#B4472E">{{ egp(c.cash) }}</span> <span class="badge-s b-red">Cap reached</span>
+            } @else {
+              <span class="money">{{ egp(c.cash) }}</span>
+            }
+          </td>
+          <td class="r">
+            <button class="btn btn-g btn-sm" (click)="openDrawer(i)">Details</button>
+            @if (c.cash > 0) {
+              <button class="btn btn-ok btn-sm" (click)="openDrawer(i)">Collect cash</button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="card mt">
+  <div class="c-body" style="font-size:12.5px;line-height:1.7;color:var(--text-2)">
+    <b style="color:var(--text)">How "Delivered by xStore" works</b>
+    <p style="margin-top:6px">
+      Couriers are <b>owner-created accounts</b> (role: courier — no self-registration). They pick parcels up from the vendor, collect COD at the door, and the cash
+      stays in their <b>cash-in-hand wallet</b> until deposited with xStore. Vendors on courier-delivered orders are paid net of commission — no owed-balance chasing.
+    </p>
+    <p style="margin-top:8px">Each courier has a cash cap (<b>{{ egp(5000) }}</b>). At/above the cap they must deposit before taking new COD orders — record it here with <b>Collect cash</b>.</p>
+    <p style="margin-top:8px">
+      Backend: <code>POST /admin/couriers</code> (create account) · <code>POST /orders/&#123;id&#125;/assign-courier</code> · <code>GET /orders/courier/&#123;id&#125;</code>
+      (app run list) · <code>POST /admin/couriers/&#123;id&#125;/cash-handover</code>. Cap maps to <code>kCourierCashHandoverThresholdEgp</code>.
+    </p>
+  </div>
+</div>

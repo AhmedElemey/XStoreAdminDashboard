@@ -1,0 +1,58 @@
+<div class="page-head">
+  <div>
+    <h2>Vendors</h2>
+    <p><b>Business</b> accounts — sellers on the marketplace (role: vendor). Individual buyers are under Users.</p>
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="statusLabel()" (select)="selectTab($event)" />
+</div>
+
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search vendors by store, owner, phone…" (input)="onSearch($any($event.target).value)" />
+  </div>
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading vendors…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items()?.length) {
+    <app-state-block kind="empty" [message]="keyword() ? 'No vendors match “' + keyword() + '”.' : 'No vendors with status “' + statusLabel() + '”.'" />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Vendor</th><th>Account type</th><th>Status</th><th>Products</th><th>Rating</th><th class="r">Action</th></tr>
+      </thead>
+      <tbody>
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <tr>
+            <td>
+              <div class="u" style="cursor:pointer" (click)="openDrawer($index)">
+                <app-avatar [name]="m.store" />
+                <div><b>{{ m.store }}</b><small>{{ m.owner }} · {{ m.city }}</small></div>
+              </div>
+            </td>
+            <td><span class="badge-s b-indigo">🏢 Business</span></td>
+            <td>
+              <span class="badge-s" [class]="m.statusClass"><span class="dotb" style="background:currentColor"></span>{{ m.statusLabel }}</span>
+              @if (m.verified) { <span class="badge-s b-green">✓</span> }
+            </td>
+            <td>{{ m.products == null ? '—' : m.products }}</td>
+            <td>{{ m.rating == null ? '—' : '⭐ ' + m.rating }}</td>
+            <td class="r">
+              <button class="btn btn-g btn-sm" (click)="openDrawer($index)">Details</button>
+              @if (m.isPending) {
+                <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">Approve</button>
+                <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">Reject</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>

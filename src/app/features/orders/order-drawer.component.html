@@ -1,0 +1,39 @@
+<div class="kv"><span>Status</span><b>{{ OSTAT[order().status][1] }}</b></div>
+<div class="kv"><span>Buyer (customer)</span><b>{{ order().buyer }}</b></div>
+<div class="kv"><span>Phone</span><b>{{ order().phone }}</b></div>
+<div class="kv"><span>Vendor (business)</span><b>{{ order().vendor }}</b></div>
+<div class="kv"><span>Payment</span><b>Cash on Delivery</b></div>
+<div class="kv"><span>Delivery</span><b>{{ order().courier ? '🚚 Delivered by xStore — ' + order().courier : 'Vendor self-delivery' }}</b></div>
+
+<h3 class="sec-h">Delivery address</h3>
+<p class="muted" style="font-size:13px">{{ order().addr }}</p>
+
+<h3 class="sec-h">Items</h3>
+@for (it of order().items; track it[0]) {
+  <div class="kv"><span>{{ it[0] }} × {{ it[1] }}</span><b>{{ egp(it[1] * it[2]) }}</b></div>
+}
+<div class="kv"><span><b>Total</b></span><b>{{ egp(total()) }}</b></div>
+
+<h3 class="sec-h">Fulfilment timeline</h3>
+@if (order().status === 'cancelled') {
+  <div class="list-row"><span class="dotb" style="width:11px;height:11px;background:var(--error)"></span><span style="color:var(--error)">Cancelled</span></div>
+} @else {
+  @for (s of steps; track s; let x = $index) {
+    <div class="list-row">
+      <span class="dotb" style="width:11px;height:11px" [style.background]="x <= currentStep() ? 'var(--success)' : 'var(--line)'"></span>
+      <span [style.color]="x <= currentStep() ? '' : 'var(--text-3)'">{{ s }}</span>
+    </div>
+  }
+}
+
+<div class="d-actions">
+  <button class="btn btn-p" style="flex:1;justify-content:center" (click)="contactVendor()">Contact vendor</button>
+  @if (assignable()) {
+    <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close(); onAssignCourier()?.()">Assign courier</button>
+  }
+  @if (canCancel()) {
+    <button class="btn btn-no" style="flex:1;justify-content:center" (click)="cancelOrder()">Cancel order</button>
+  } @else {
+    <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
+  }
+</div>

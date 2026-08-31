@@ -1,0 +1,37 @@
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+  <app-avatar [name]="vendor().store" />
+  <div><b style="font-size:16px">{{ vendor().store }}</b><div class="muted" style="font-size:12.5px">{{ vendor().owner }} · {{ vendor().city }}</div></div>
+</div>
+<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap">
+  <span class="badge-s b-indigo">🏢 Business</span>
+  <span class="badge-s" [class]="vendor().statusClass">{{ vendor().statusLabel }}</span>
+  @if (vendor().verified) {
+    <span class="badge-s b-green">✓ verified</span>
+  } @else {
+    <span class="badge-s b-amber">unverified</span>
+  }
+</div>
+<h3 class="sec-h">Business profile</h3>
+<div class="kv"><span>Owner</span><b>{{ vendor().owner }}</b></div>
+<div class="kv"><span>Category</span><b>{{ vendor().category }}</b></div>
+<div class="kv"><span>Location</span><b>{{ vendor().city }}</b></div>
+<div class="kv"><span>Joined</span><b>{{ vendor().joined }}</b></div>
+<div class="kv"><span>Products</span><b>{{ vendor().products == null ? '—' : vendor().products }}</b></div>
+<div class="kv"><span>Rating</span><b>{{ vendor().rating == null ? '—' : '⭐ ' + vendor().rating }}</b></div>
+<h3 class="sec-h">Contact</h3>
+<div class="kv"><span>Phone</span><b>{{ vendor().phone }}</b></div>
+@if (vendor().email) {
+  <div class="kv"><span>Email</span><b>{{ vendor().email }}</b></div>
+}
+@if (vendor().id) {
+  <div class="kv"><span>User ID</span><b>{{ vendor().id }}</b></div>
+}
+
+<div class="d-actions">
+  @if (vendor().isPending) {
+    <button class="btn btn-ok" style="flex:1;justify-content:center" (click)="onApprove()?.()">Approve vendor</button>
+    <button class="btn btn-no" style="flex:1;justify-content:center" (click)="onReject()?.()">Reject</button>
+  } @else {
+    <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
+  }
+</div>

@@ -1,0 +1,46 @@
+<div class="app">
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <div class="brand">
+      <div class="logo">x</div>
+      <div><b>xStore</b><span>Admin Console</span></div>
+    </div>
+    <div class="nav">
+      @for (g of navGroups; track g.group) {
+        <div class="nav-group">{{ g.group }}</div>
+        @for (link of g.links; track link.view) {
+          <a [routerLink]="link.view" routerLinkActive="active" (click)="closeSidebar()">
+            <app-icon [name]="link.icon" />
+            <span>{{ link.label }}</span>
+            @if (link.badge && link.badge(); as n) {
+              <span class="badge">{{ n }}</span>
+            }
+          </a>
+        }
+      }
+    </div>
+    <div class="side-foot" title="Sign out" (click)="signOut()">
+      <div class="avatar">{{ auth.adminName().trim()[0] || 'A' }}</div>
+      <div><b style="color:#fff;font-size:13px">{{ auth.adminName() }}</b><small>Super Admin · sign out</small></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="icon-btn menu-btn" (click)="toggleSidebar()"><app-icon name="menu" /></div>
+      <h1>{{ topTitle() }}</h1>
+      <div class="search"><app-icon name="search" /><input placeholder="Search this page…" /></div>
+      <div class="top-actions">
+        <div class="icon-btn" (click)="onIconAction('bell')"><app-icon name="bell" /><span class="dot"></span></div>
+        <div class="icon-btn hide-sm" (click)="onIconAction('help')"><app-icon name="help" /></div>
+        <div class="avatar" style="background:var(--primary)">{{ auth.adminName().trim()[0] || 'A' }}</div>
+      </div>
+    </div>
+    <div class="content">
+      <router-outlet />
+    </div>
+  </div>
+</div>
+
+<div class="overlay" [class.show]="sidebarOpen()" (click)="closeSidebar()"></div>
+<app-drawer-host />
+<app-toast />

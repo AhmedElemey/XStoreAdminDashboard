@@ -1,0 +1,28 @@
+<div class="form-row">
+  <label>Name (English) *</label>
+  <input [ngModel]="nameEn()" (ngModelChange)="nameEn.set($event)" name="nameEn" placeholder="Electronics" />
+</div>
+<div class="form-row">
+  <label>Name (Arabic) *</label>
+  <input [ngModel]="nameAr()" (ngModelChange)="nameAr.set($event)" name="nameAr" dir="rtl" placeholder="إلكترونيات" />
+</div>
+<div class="form-row">
+  <label>Image
+    @if (editing()) {
+      <span class="muted" style="font-weight:400">(leave empty to keep current)</span>
+    } @else {
+      <span class="muted" style="font-weight:400">(jpg, png, webp)</span>
+    }
+  </label>
+  <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" />
+</div>
+<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-top:4px">
+  <input type="checkbox" [ngModel]="active()" (ngModelChange)="active.set($event)" name="active" /> Active (visible to shoppers)
+</label>
+
+<div class="d-actions">
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Cancel</button>
+  <button class="btn btn-p" style="flex:1;justify-content:center" [disabled]="busy()" (click)="save()">
+    {{ busy() ? 'Saving…' : editing() ? 'Save changes' : 'Add category' }}
+  </button>
+</div>

@@ -1,0 +1,17 @@
+<p class="muted" style="font-size:12.5px;margin-bottom:10px">
+  Order will switch to <b>Delivered by xStore</b>: the courier collects {{ egp(total()) }} COD and the vendor is paid net of commission.
+  Couriers at their cash cap must deposit first.
+</p>
+@for (c of demo.couriers(); track c.n; let ci = $index) {
+  <div class="list-row">
+    <app-avatar [name]="c.n" [round]="true" />
+    <div style="flex:1"><b>{{ c.n }}</b><small class="muted">{{ c.zone }} · {{ c.today }} tasks today · holding {{ egp(c.cash) }}</small></div>
+    @if (c.status !== 'active') {
+      <span class="badge-s b-grey">Off duty</span>
+    } @else if (demo.cashDue(c)) {
+      <span class="badge-s b-red">Cash cap</span>
+    } @else {
+      <button class="btn btn-p btn-sm" (click)="assign(ci)">Assign</button>
+    }
+  </div>
+}

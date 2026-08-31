@@ -1,0 +1,48 @@
+<div class="page-head">
+  <div>
+    <h2>Product Moderation</h2>
+    <p>New listings go live only after admin approval — click any product to see full details</p>
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="activeLabel()" (select)="selectTab($event)" />
+</div>
+
+@if (loadState() === 'loading') {
+  <app-state-block kind="loading" message="Loading pending listings…" />
+} @else if (loadState() === 'error') {
+  <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+} @else if (!items()?.length) {
+  <app-state-block kind="empty" [message]="'No ' + activeLabel().toLowerCase() + ' listings.'" />
+} @else {
+  <div class="grid" style="gap:14px">
+    @for (raw of items(); track $index) {
+      @let m = mapped(raw);
+      <div class="mod">
+        <div class="thumb" style="cursor:pointer" (click)="openDrawer($index)">
+          @if (m.image) {
+            <img [src]="m.image" />
+          } @else {
+            📦
+          }
+        </div>
+        <div class="minfo" style="cursor:pointer" (click)="openDrawer($index)">
+          <b>{{ m.title }}</b>
+          <p>
+            {{ m.vendor }} · <span class="badge-s b-grey">{{ m.category }}</span> ·
+            <span class="money">{{ m.price == null ? '—' : egp(m.price) }}</span> · stock {{ m.stock == null ? '—' : m.stock }}
+            @if (m.isHot) { · <span class="badge-s b-red">🔥 Hot</span> }
+          </p>
+          <p class="muted" style="font-size:12px;margin-top:3px">{{ m.submitted ? m.submitted + ' · ' : '' }}{{ m.condition }}</p>
+        </div>
+        <div class="mactions">
+          <button class="btn btn-g btn-sm" (click)="openDrawer($index)">Details</button>
+          <button class="btn btn-g btn-sm" (click)="toggleHot($index)">🔥</button>
+          @if (status() === 'PENDING') {
+            <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">✓ Approve</button>
+            <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">✕ Reject</button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+}

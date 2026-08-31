@@ -1,0 +1,33 @@
+<div class="page-head">
+  <div>
+    <h2>Settings</h2>
+    <p>Marketplace rules &amp; launch configuration</p>
+  </div>
+</div>
+
+<div class="split">
+  <div class="card">
+    <div class="c-head"><h3>Marketplace policies</h3></div>
+    <div class="c-body" style="padding-top:4px">
+      @for (t of toggles(); track t.label; let i = $index) {
+        <div class="list-row">
+          <div style="flex:1"><b>{{ t.label }}</b></div>
+          <div class="switch" [class.off]="!t.on" (click)="toggle(i)"></div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="card">
+    <div class="c-head"><h3>Roles &amp; access</h3></div>
+    <div class="c-body">
+      @for (t of demo.team(); track t[0]) {
+        <div class="list-row">
+          <app-avatar [name]="t[0]" />
+          <div style="flex:1"><b>{{ t[0] }}</b><small class="muted">{{ t[2] }}</small></div>
+          <span class="badge-s" [class]="roleBadgeClass(t[1])">{{ t[1] }}</span>
+        </div>
+      }
+      <button class="btn btn-g mt" style="width:100%;justify-content:center" (click)="openInvite()">+ Invite team member</button>
+    </div>
+  </div>
+</div>

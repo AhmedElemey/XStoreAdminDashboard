@@ -1,0 +1,17 @@
+<div class="form-row">
+  <label>Full name *</label>
+  <input [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" placeholder="Courier name" />
+</div>
+<div class="form-row">
+  <label>Phone *</label>
+  <input [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" placeholder="+20 1xx xxx xxxx" />
+</div>
+<div class="form-row">
+  <label>Zone *</label>
+  <input [ngModel]="zone()" (ngModelChange)="zone.set($event)" name="zone" placeholder="e.g. Cairo — Maadi" />
+</div>
+
+<div class="d-actions">
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Cancel</button>
+  <button class="btn btn-p" style="flex:1;justify-content:center" [disabled]="busy()" (click)="submit()">{{ busy() ? 'Creating…' : 'Create courier' }}</button>
+</div>

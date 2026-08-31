@@ -1,0 +1,24 @@
+@if (deliveryApi.connected()) {
+  <div class="card" style="padding:11px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-top:14px">
+    <span class="badge-s b-green">● Live</span>
+    <span class="muted">Connected to delivery API · <code>{{ deliveryApi.base }}</code></span>
+    <button class="btn btn-g btn-sm" style="margin-left:auto" (click)="disconnect()">Disconnect</button>
+  </div>
+} @else {
+  <div class="card" style="padding:14px;margin-top:14px">
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:9px">
+      <b style="color:var(--text)">Showing demo data.</b> Connect the delivery API (<code>delivery-backend</code>) to manage live requests, couriers and cash.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-row" style="margin:0;flex:2;min-width:200px">
+        <label>Delivery API base URL</label>
+        <input [ngModel]="base()" (ngModelChange)="base.set($event)" name="dlvBase" />
+      </div>
+      <div class="form-row" style="margin:0;flex:1;min-width:150px">
+        <label>Admin phone</label>
+        <input [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="dlvPhone" placeholder="+201000000003" />
+      </div>
+      <button class="btn btn-p" [disabled]="busy()" (click)="connect()">{{ busy() ? 'Connecting…' : 'Connect' }}</button>
+    </div>
+  </div>
+}
