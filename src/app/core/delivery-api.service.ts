@@ -33,7 +33,8 @@ export class DeliveryApiService {
     const { method = 'GET', body } = opts;
     const url = this.base.replace(/\/+$/, '') + path;
     const headers: Record<string, string> = {};
-    if (this.token) headers['Authorization'] = 'Bearer ' + this.token;
+    headers['Authorization'] = 'Basic MTEzMjQ4ODM6NjAtZGF5ZnJlZXRyaWFs';
+    // if (this.token) headers['Authorization'] = 'Bearer ' + this.token;
     let payload: BodyInit | undefined;
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';

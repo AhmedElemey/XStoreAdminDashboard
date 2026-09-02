@@ -1,9 +1,13 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { ApiError } from './api-error';
 
-const API_DEFAULT_BASE = 'https://xstoreegy-001-site1.jtempurl.com';
+const API_DEFAULT_BASE = '';
 const BASE_KEY = 'xs_admin_base';
 const TOKEN_KEY = 'xs_admin_token';
+
+for (const stale of ['https://xstoreegy-001-site1.jtempurl.com', 'http://xstoreegy-001-site1.jtempurl.com', 'http://localhost:4200', 'http://xstoreegy002-001-site1.etempurl.com', 'https://xstoreegy002-001-site1.etempurl.com']) {
+  if (localStorage.getItem(BASE_KEY) === stale) localStorage.removeItem(BASE_KEY);
+}
 
 /** Admin marketplace API session — token/base persisted in localStorage, exactly like the
  *  legacy prototype's `API` object. Kept separate from the delivery-backend session below. */
@@ -36,9 +40,10 @@ export class AuthService {
     opts: { method?: string; query?: Record<string, string | number | undefined | null>; body?: unknown; noAuthRedirect?: boolean } = {},
   ): Promise<T> {
     const { method = 'GET', query, body, noAuthRedirect = false } = opts;
+    const base = this.base.replace(/\/+$/, '');
     let url: URL;
     try {
-      url = new URL(this.base.replace(/\/+$/, '') + path);
+      url = base ? new URL(base + path) : new URL(path, window.location.origin);
     } catch {
       throw new ApiError(0, 'Invalid API base URL.');
     }
@@ -48,9 +53,10 @@ export class AuthService {
       });
     }
     const headers: Record<string, string> = {};
+    headers['Authorization'] = 'Basic MTEzMjQ4ODM6NjAtZGF5ZnJlZXRyaWFs';
     if (this.token) {
       // The backend accepts either — sent both to match the Postman collection exactly.
-      headers['Authorization'] = 'Bearer ' + this.token;
+      // headers['Authorization'] = 'Bearer ' + this.token;
       headers['X-Auth-Token'] = this.token;
     }
     let payload: BodyInit | undefined;
