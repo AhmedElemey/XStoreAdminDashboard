@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://xstoreegy002-001-site1.etempurl.com",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

@@ -1,0 +1,52 @@
+<div class="page-head">
+  <div>
+    <h2>Orders</h2>
+    <p>Every order across the marketplace · payment: Cash on Delivery · 🚚 = Delivered by xStore</p>
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="statusLabel()" (select)="selectTab($event)" />
+</div>
+
+<div class="grid g-4" style="margin-bottom:18px">
+  <app-kpi-card icon="box" [value]="total().toLocaleString('en-US')" label="Total orders" dir="up" color="#2E5C6E" />
+  <app-kpi-card icon="chart" value="EGP 356" label="Avg order value" trend="+3%" dir="up" color="#3F7A5C" />
+  <app-kpi-card icon="alert" value="12%" label="COD refusal rate" trend="watch" dir="down" color="#C68A2E" />
+  <app-kpi-card icon="shield" value="98.1%" label="Fulfillment rate" trend="+1%" dir="up" color="#356F80" />
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading orders…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items()?.length) {
+    <app-state-block kind="empty" message="No orders found." />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Order</th><th>Buyer</th><th>Vendor</th><th>Total</th><th>Payment</th><th>Delivery</th><th>Status</th><th class="r"></th></tr>
+      </thead>
+      <tbody>
+        @for (raw of items(); track $index) {
+          @let o = mapped(raw);
+          <tr>
+            <td><b>{{ o.id }}</b></td>
+            <td><div class="u"><app-avatar [name]="o.buyer" /><b>{{ o.buyer }}</b></div></td>
+            <td class="muted">{{ o.vendor }}</td>
+            <td class="money">{{ o.total == null ? '—' : egp(o.total) }}</td>
+            <td><span class="badge-s b-grey">COD</span></td>
+            <td>
+              @if (o.courier) {
+                <span class="badge-s b-indigo" title="Delivered by xStore">🚚 {{ o.courier.split(' ')[0] }}</span>
+              } @else {
+                <span class="muted" style="font-size:12px">Vendor</span>
+              }
+            </td>
+            <td><span class="badge-s" [class]="o.statusClass">{{ o.statusLabel }}</span></td>
+            <td class="r"><button class="btn btn-g btn-sm" (click)="openOrder($index)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>

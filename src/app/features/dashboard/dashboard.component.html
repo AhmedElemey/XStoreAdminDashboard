@@ -1,0 +1,111 @@
+<div class="page-head">
+  <div>
+    <h2>Marketplace Overview</h2>
+    <p>{{ from() || to() ? 'Custom range' : 'Last 30 days' }} · All vendors · EGP · Cash on Delivery</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-row" style="margin:0">
+      <label>From</label>
+      <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" name="from" />
+    </div>
+    <div class="form-row" style="margin:0">
+      <label>To</label>
+      <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" name="to" />
+    </div>
+    <button class="btn btn-g" (click)="clearRange()">Reset</button>
+    <button class="btn btn-p" (click)="applyRange()">Apply</button>
+  </div>
+</div>
+
+@if (loadState() === 'loading') {
+  <app-state-block kind="loading" message="Loading dashboard…" />
+} @else if (loadState() === 'error') {
+  <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+} @else if (overview(); as ov) {
+  <div class="grid g-4">
+    <app-kpi-card icon="chart" [value]="ov.gmv == null ? '—' : egp(ov.gmv)" label="GMV (30d)" dir="up" color="#2E5C6E" />
+    <app-kpi-card icon="box" [value]="ov.orders == null ? '—' : ov.orders.toLocaleString('en-US')" label="Orders (30d)" dir="up" color="#C68A2E" />
+    <app-kpi-card icon="store" [value]="ov.activeVendors == null ? '—' : ov.activeVendors.toLocaleString('en-US')" label="Active vendors" dir="up" color="#3F7A5C" />
+    <app-kpi-card icon="shield" [value]="pendingTotal().toLocaleString('en-US')" label="Pending approvals" trend="Action" dir="down" color="#B4472E" />
+  </div>
+
+  <div class="grid g-2 mt">
+    <div class="card">
+      <div class="c-head"><h3>Revenue trend</h3></div>
+      <div class="c-body">
+        @if (ov.revenueTrend.length) {
+          <svg viewBox="0 0 600 190" width="100%" height="190">
+            <defs>
+              <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#2E5C6E" stop-opacity=".28" />
+                <stop offset="1" stop-color="#2E5C6E" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon [attr.points]="trendArea()" fill="url(#ag)" />
+            <polyline [attr.points]="trendPoints()" fill="none" stroke="#2E5C6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            @for (d of trendDots(); track $index) {
+              <circle [attr.cx]="d.cx" [attr.cy]="d.cy" r="3" fill="#2E5C6E" />
+            }
+          </svg>
+          <div class="legend"><span><i style="background:#2E5C6E"></i>Daily GMV (EGP)</span></div>
+        } @else {
+          <p class="muted" style="font-size:13px">No trend data yet.</p>
+        }
+      </div>
+    </div>
+    <div class="card">
+      <div class="c-head"><h3>Sales by category</h3></div>
+      <div class="c-body">
+        @if (ov.categories.length) {
+          <div class="bars">
+            @for (c of ov.categories; track c.name) {
+              <div class="bar-row">
+                <span class="muted">{{ c.name }}</span>
+                <div class="bar-track"><div class="bar-fill" [style.width.%]="(c.count / maxCategoryCount()) * 100"></div></div>
+                <b class="r">{{ c.count }}</b>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="muted" style="font-size:13px">No category data yet.</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-2 mt">
+    <div class="card">
+      <div class="c-head"><h3>Recent orders</h3><a class="muted" style="cursor:pointer;font-size:12.5px" (click)="goto('orders')">View all →</a></div>
+      <div class="c-body" style="padding-top:6px">
+        @if (recentOrders().length) {
+          @for (o of recentOrders(); track o.id) {
+            <div class="list-row" style="cursor:pointer" (click)="goto('orders')">
+              <app-avatar [name]="o.buyer" />
+              <div style="flex:1"><b>{{ o.id }}</b><small class="muted">{{ o.buyer }}</small></div>
+              <span class="money">{{ o.total == null ? '—' : egp(o.total) }}</span>
+              <span class="badge-s" [class]="o.statusClass" style="margin-left:12px">{{ o.statusLabel }}</span>
+            </div>
+          }
+        } @else {
+          <p class="muted" style="font-size:13px">No orders yet.</p>
+        }
+      </div>
+    </div>
+    <div class="card">
+      <div class="c-head"><h3>Awaiting your approval</h3><a class="muted" style="cursor:pointer;font-size:12.5px" (click)="goto('moderation')">Review →</a></div>
+      <div class="c-body" style="padding-top:6px">
+        @if (pendingApprovals().length) {
+          @for (p of pendingApprovals(); track p.id) {
+            <div class="list-row" style="cursor:pointer" (click)="goto('moderation')">
+              <app-avatar [name]="p.vendor" />
+              <div style="flex:1"><b>{{ p.title }}</b><small class="muted">{{ p.vendor }} · {{ p.category }}</small></div>
+              <span class="badge-s b-amber">Pending</span>
+            </div>
+          }
+        } @else {
+          <p class="muted" style="font-size:13px">Nothing pending — all caught up.</p>
+        }
+      </div>
+    </div>
+  </div>
+}

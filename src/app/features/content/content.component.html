@@ -1,0 +1,64 @@
+<div class="page-head">
+  <div>
+    <h2>Content &amp; Banners</h2>
+    <p>Merchandise the app home feed — live via <b>/api/banners</b></p>
+  </div>
+  <button class="btn btn-p" (click)="openForm()">+ New banner</button>
+</div>
+
+<div class="split">
+  <div class="card">
+    <div class="c-head"><h3>Home banners</h3></div>
+    <div class="c-body" style="display:flex;flex-direction:column;gap:12px">
+      @if (loadState() === 'loading') {
+        <app-state-block kind="loading" message="Loading banners…" />
+      } @else if (loadState() === 'error') {
+        <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+      } @else if (!items()?.length) {
+        <app-state-block kind="empty" message="No banners yet — add your first one." />
+      } @else {
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <div class="banner">
+            @if (m.image) {
+              <img class="bimg" [src]="m.image" alt="" />
+            } @else {
+              <div class="bimg"></div>
+            }
+            <div style="flex:1">
+              <b>{{ m.nameEn }}</b>
+              @if (m.nameAr) {
+                <br /><small class="muted"><bdi>{{ m.nameAr }}</bdi></small>
+              }
+            </div>
+            <button class="btn btn-g btn-sm" (click)="openForm($index)">Edit</button>
+            <button class="btn btn-no btn-sm" (click)="remove($index)">Delete</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="c-head"><h3>Push broadcast</h3><span class="badge-s b-grey" title="No backend endpoint exists yet">Not wired</span></div>
+    <div class="c-body">
+      <div class="form-row">
+        <label>Title</label>
+        <input [ngModel]="pbTitle()" (ngModelChange)="pbTitle.set($event)" name="pbTitle" placeholder="Flash sale ends tonight!" />
+      </div>
+      <div class="form-row">
+        <label>Audience</label>
+        <select [ngModel]="pbAud()" (ngModelChange)="pbAud.set($event)" name="pbAud">
+          <option>All buyers</option>
+          <option>Cairo / Giza</option>
+          <option>Lapsed buyers</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Message</label>
+        <input placeholder="Up to 40% off electronics…" />
+      </div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" (click)="sendBroadcast()">Send push</button>
+    </div>
+  </div>
+</div>

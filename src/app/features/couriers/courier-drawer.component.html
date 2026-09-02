@@ -1,0 +1,43 @@
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+  <app-avatar [name]="courier().n" [round]="true" />
+  <div><b style="font-size:16px">{{ courier().n }}</b><div class="muted" style="font-size:12.5px">Platform courier · role: courier</div></div>
+</div>
+<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap">
+  <span class="badge-s b-indigo">🚚 Courier</span>
+  <span class="badge-s" [class]="courier().status === 'active' ? 'b-green' : 'b-grey'">{{ courier().status === 'active' ? 'Active' : 'Off duty' }}</span>
+  @if (due()) { <span class="badge-s b-red">Cash cap reached</span> }
+</div>
+
+<h3 class="sec-h">Profile</h3>
+<div class="kv"><span>Phone</span><b>{{ courier().phone }}</b></div>
+<div class="kv"><span>Zone</span><b>{{ courier().zone }}</b></div>
+<div class="kv"><span>Joined</span><b>{{ courier().joined }}</b></div>
+<div class="kv"><span>Tasks today</span><b>{{ courier().today }}</b></div>
+<div class="kv"><span>Delivered (30d)</span><b>{{ courier().delivered30 }}</b></div>
+<div class="kv"><span>Failed (30d)</span><b>{{ courier().failed30 }}</b></div>
+
+<h3 class="sec-h">Cash in hand</h3>
+<div class="kv"><span>Holding now</span><b [style.color]="due() ? '#B4472E' : ''">{{ egp(courier().cash) }}</b></div>
+<div class="kv"><span>Handover cap</span><b>{{ egp(courier().cap) }}</b></div>
+@if (due()) {
+  <div style="margin-top:10px;padding:10px 12px;background:var(--error-bg);color:#8A3A24;border-radius:9px;font-size:12.5px">
+    <b>Cap reached</b> — no new COD orders until the cash is deposited.
+  </div>
+}
+
+@if (courier().cash > 0) {
+  <div class="form-row" style="margin-top:10px">
+    <label>Cash received from courier (EGP)</label>
+    <input inputmode="numeric" [ngModel]="amount()" (ngModelChange)="amount.set(+$event)" name="amount" />
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ok" style="flex:1;justify-content:center" [disabled]="busy()" (click)="handover()">Record handover</button>
+  </div>
+} @else {
+  <div style="padding:12px 14px;background:var(--success-bg);color:#2C6347;border-radius:11px;font-size:13px;font-weight:600;margin-top:10px">✓ No cash with this courier.</div>
+}
+
+<div class="d-actions">
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="toggleDuty()">{{ courier().status === 'active' ? 'Set off duty' : 'Set on duty' }}</button>
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
+</div>
