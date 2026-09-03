@@ -79,7 +79,7 @@ export class DashboardComponent implements OnInit {
   }
   protected maxCategoryCount() {
     const c = this.overview()?.categories ?? [];
-    return c.length ? Math.max(...c.map((x) => x.count)) : 1;
+    return c.length ? Math.max(...c.map((x) => x.count), 1) : 1;
   }
 
   protected applyRange() {

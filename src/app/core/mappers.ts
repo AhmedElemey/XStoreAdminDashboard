@@ -191,7 +191,7 @@ export function mapOrder(o: Dto): MappedOrder {
     total: numOr(o['totalAmount'], o['total'], o['amount'], o['grandTotal']),
     courier: firstNonEmpty(o['courierName'], o['courier']) || null,
     items: rawItems.map((it: Dto) => ({
-      name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName']) || 'Item',
+      name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName'], it['titleSnapshot']) || 'Item',
       qty: numOr(it['quantity'], it['qty']) ?? 1,
       price: numOr(it['price'], it['unitPrice']) ?? 0,
     })),
@@ -233,11 +233,11 @@ export function mapOverview(o: Dto): MappedOverview {
   const catsRaw = o['salesByCategory'] ?? o['categoryBreakdown'] ?? o['categories'] ?? [];
   const categories = (Array.isArray(catsRaw) ? catsRaw : []).map((c: Dto) => ({
     name: firstNonEmpty(c['categoryName'], c['name'], c['nameEn']) || '—',
-    count: numOr(c['count'], c['orders'], c['sales'], c['value']) ?? 0,
+    count: numOr(c['count'], c['ordersCount'], c['orders'], c['sales'], c['value']) ?? 0,
   }));
   return {
-    gmv: numOr(o['gmv'], o['gmvEgp'], o['totalGmv']),
-    orders: numOr(o['orders'], o['ordersCount'], o['totalOrders']),
+    gmv: numOr(o['gmv'], o['gmv30d'], o['gmvEgp'], o['totalGmv']),
+    orders: numOr(o['orders'], o['orders30d'], o['ordersCount'], o['totalOrders']),
     activeVendors: numOr(o['activeVendors'], o['activeVendorsCount'], o['vendorsCount']),
     revenueTrend,
     categories,
