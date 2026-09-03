@@ -10,6 +10,7 @@ import { PagerComponent } from '../../shared/pager.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
+import { NavBadgesService } from '../../core/nav-badges.service';
 import { VendorDrawerComponent } from './vendor-drawer.component';
 
 /** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected (no Suspended). */
@@ -31,6 +32,7 @@ export class VendorsComponent implements OnInit {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
   private drawer = inject(DrawerService);
+  private badges = inject(NavBadgesService);
 
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected statusLabel = signal('All');
@@ -84,6 +86,7 @@ export class VendorsComponent implements OnInit {
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
+      if (this.vendorStatus() === '1') this.badges.vendorsPending.set(p.total > 0 ? p.total : null);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');

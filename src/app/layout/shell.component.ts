@@ -59,7 +59,7 @@ export class ShellComponent {
       group: 'Marketplace',
       links: [
         { view: 'moderation', icon: 'shield', label: 'Product Moderation', badge: () => this.badges.moderationPending() },
-        { view: 'vendors', icon: 'store', label: 'Vendors', badge: () => 3 },
+        { view: 'vendors', icon: 'store', label: 'Vendors', badge: () => this.badges.vendorsPending() },
         { view: 'categories', icon: 'tag', label: 'Categories' },
         { view: 'orders', icon: 'box', label: 'Orders' },
         { view: 'couriers', icon: 'truck', label: 'Delivery', badge: () => this.couriersCashDue() },
