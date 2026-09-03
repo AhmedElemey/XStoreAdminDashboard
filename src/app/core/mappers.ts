@@ -191,7 +191,7 @@ export function mapOrder(o: Dto): MappedOrder {
     total: numOr(o['totalAmount'], o['total'], o['amount'], o['grandTotal']),
     courier: firstNonEmpty(o['courierName'], o['courier']) || null,
     items: rawItems.map((it: Dto) => ({
-      name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName']) || 'Item',
+      name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName'], it['titleSnapshot']) || 'Item',
       qty: numOr(it['quantity'], it['qty']) ?? 1,
       price: numOr(it['price'], it['unitPrice']) ?? 0,
     })),
