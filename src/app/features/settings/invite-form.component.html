@@ -1,0 +1,21 @@
+<div class="form-row">
+  <label>Full name *</label>
+  <input [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" placeholder="Full name" />
+</div>
+<div class="form-row">
+  <label>Email *</label>
+  <input [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" placeholder="name@xstore.eg" />
+</div>
+<div class="form-row">
+  <label>Role</label>
+  <select [ngModel]="role()" (ngModelChange)="role.set($event)" name="role">
+    <option>Super Admin</option>
+    <option>Moderator</option>
+    <option>Viewer</option>
+  </select>
+</div>
+
+<div class="d-actions">
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Cancel</button>
+  <button class="btn btn-p" style="flex:1;justify-content:center" (click)="submit()">Send invite</button>
+</div>

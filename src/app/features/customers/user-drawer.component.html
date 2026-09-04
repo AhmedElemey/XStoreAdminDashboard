@@ -1,0 +1,30 @@
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+  <span class="ua" style="width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--primary-light);color:#fff;font-weight:700;font-size:13px">
+    {{ user().name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() }}
+  </span>
+  <div><b style="font-size:16px">{{ user().name }}</b><div class="muted" style="font-size:12.5px">Customer · role: {{ user().role }}</div></div>
+</div>
+<div style="margin-bottom:8px">
+  <span class="badge-s b-blue">👤 Customer</span>
+  @if (user().verified) {
+    <span class="badge-s b-green">✓ Verified</span>
+  } @else {
+    <span class="badge-s b-grey">Unverified</span>
+  }
+</div>
+<h3 class="sec-h">Account</h3>
+<div class="kv"><span>City</span><b>{{ user().city }}</b></div>
+<div class="kv"><span>Phone</span><b>{{ user().phone }}</b></div>
+@if (user().email) {
+  <div class="kv"><span>Email</span><b>{{ user().email }}</b></div>
+}
+<div class="kv"><span>Joined</span><b>{{ user().joined }}</b></div>
+<div class="kv"><span>Total orders</span><b>{{ user().orders }}</b></div>
+<div class="kv"><span>Lifetime spend</span><b>{{ user().spend }}</b></div>
+@if (user().id) {
+  <div class="kv"><span>User ID</span><b>{{ user().id }}</b></div>
+}
+
+<div class="d-actions">
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
+</div>

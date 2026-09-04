@@ -1,0 +1,28 @@
+<div class="gate">
+  <form class="gate-card" (submit)="$event.preventDefault(); submit()">
+    <div class="logo">x</div>
+    <h2>xStore Admin</h2>
+    <p>Sign in to manage the marketplace.</p>
+    <div class="gate-err">{{ error() }}</div>
+    <div class="form-row">
+      <label>Phone number</label>
+      <input inputmode="tel" autocomplete="username" placeholder="01012345678" [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" />
+    </div>
+    <div class="form-row">
+      <label>Password</label>
+      <input type="password" autocomplete="current-password" placeholder="••••••" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" />
+    </div>
+    <button class="btn btn-p" type="submit" style="width:100%;justify-content:center;margin-top:6px" [disabled]="busy()">
+      {{ busy() ? 'Signing in…' : 'Sign in' }}
+    </button>
+    <div style="margin-top:14px;font-size:12px;color:var(--text-3)">
+      Advanced: <a style="color:var(--primary);cursor:pointer" (click)="toggleBaseRow()">change API server</a>
+    </div>
+    @if (showBaseRow()) {
+      <div class="form-row" style="margin-top:10px">
+        <label>API base URL</label>
+        <input [ngModel]="base()" (ngModelChange)="base.set($event)" name="base" />
+      </div>
+    }
+  </form>
+</div>

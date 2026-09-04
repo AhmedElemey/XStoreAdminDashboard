@@ -1,18 +1,24 @@
 # xStore Admin Dashboard — Backend Handoff
 
-Front-end design prototype (no build step, plain HTML/CSS/JS). Most data below is still
-hard-coded in `app.js` and most actions are simulated (toasts/drawers) — this doc was
-written before any wiring existed and the endpoint paths/shapes below are **aspirational**,
-not the real xStoreEcommerce contract. This doc lists the endpoints and payload shapes the
-dashboard expects so the backend can wire it up.
+> **Superseded.** This doc predates both the Angular rewrite and the real
+> "xStoreEcommerce Admin & Super Admin" Postman collection, and its endpoint paths below
+> were explicitly aspirational guesses (`/admin/...`), not the real contract (which is
+> `/api/admin/...`, `/api/users`, `/api/categories`, `/api/banners`). **Treat that Postman
+> collection as the source of truth** for paths, query params, and enums — this file is
+> kept only for the response-shape sketches it guessed at, several of which are now
+> confirmed close-but-not-exact (see `src/app/core/mappers.ts` in the Angular app for what
+> each endpoint's response is actually mapped tolerantly against).
+>
+> What's real now, per the Angular app's `AdminApiService` (`src/app/core/admin-api.service.ts`):
+> Dashboard overview, Product Moderation, Vendors (list, approve/reject, and the
+> Commission wallet), Orders (list/detail/cancel), Categories CRUD, Users list, Content &
+> Banners CRUD, and System Settings (commission %, warn/pause thresholds). Still not
+> backed by any real endpoint: Disputes, Coupons, Analytics (all three are also not in the
+> app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
+> and team roster.
 
-**Actually live today** (real `xStoreEcommerce` paths, not the `/admin/*` ones documented
-below — see the "LIVE API INTEGRATION" comment blocks in `app.js` for the exact paths/shapes
-in use): Users/Vendors list + approve/reject, Categories CRUD, Product Moderation
-(GET/approve/reject/hot-deal via `/api/admin/listings/...`), Content & Banners CRUD via
-`/api/banners`, admin login/get-profile/logout. Everything else below (Orders, Disputes,
-Coupons, Analytics, Settings, Commission settlement, push broadcast) is still a UI stub with
-no backend endpoint.
+Original front-end design prototype (no build step, plain HTML/CSS/JS) description below,
+kept for historical context on what each view was originally trying to model.
 
 Base path assumed: `/admin` (admin-authenticated). Currency is EGP, payment is Cash on Delivery.
 

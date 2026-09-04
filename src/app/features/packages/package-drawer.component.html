@@ -1,0 +1,40 @@
+<div class="kv"><span>Status</span><b>{{ PSTAT[pkg().status][1] }}</b></div>
+<div class="kv"><span>Customer</span><b>{{ pkg().customer }}</b></div>
+<div class="kv"><span>Phone</span><b>{{ pkg().phone }}</b></div>
+<div class="kv"><span>Price</span><b>{{ pkg().price != null ? egp(pkg().price!) : '— not set yet' }}</b></div>
+<div class="kv"><span>Payment</span><b>Cash to courier at pickup</b></div>
+@if (pkg().courier) {
+  <div class="kv"><span>Courier</span><b>🚚 {{ pkg().courier }}</b></div>
+}
+
+<h3 class="sec-h">Pickup</h3>
+<p class="muted" style="font-size:13px">{{ pkg().pickup.street }}, {{ pkg().pickup.city }}</p>
+<h3 class="sec-h">Drop-off</h3>
+<p class="muted" style="font-size:13px">{{ pkg().drop.street }}, {{ pkg().drop.city }} — {{ pkg().drop.name }} ({{ pkg().drop.phone }})</p>
+<h3 class="sec-h">Package</h3>
+<p class="muted" style="font-size:13px">{{ pkg().note }}</p>
+
+<h3 class="sec-h">Timeline</h3>
+@if (pkg().status === 'cancelled') {
+  <div class="list-row">
+    <span class="dotb" style="width:11px;height:11px;background:var(--error)"></span>
+    <span style="color:var(--error)">Cancelled{{ pkg().price != null ? ' (was priced at ' + egp(pkg().price!) + ')' : '' }}</span>
+  </div>
+} @else {
+  @for (s of steps; track s; let x = $index) {
+    <div class="list-row">
+      <span class="dotb" style="width:11px;height:11px" [style.background]="x <= currentStep() ? 'var(--success)' : 'var(--line)'"></span>
+      <span [style.color]="x <= currentStep() ? '' : 'var(--text-3)'">{{ s }}{{ s === 'Picked up' && x <= currentStep() ? ' — ' + egp(pkg().price!) + ' cash collected' : '' }}</span>
+    </div>
+  }
+}
+
+<div class="d-actions">
+  @if (pkg().status === 'confirmed') {
+    <button class="btn btn-p" style="flex:1;justify-content:center" (click)="drawer.close(); onAssignCourier()?.()">{{ pkg().courier ? 'Reassign courier' : 'Assign courier' }}</button>
+  }
+  @if (pkg().status === 'submitted' || pkg().status === 'priced') {
+    <button class="btn btn-no" style="flex:1;justify-content:center" (click)="cancel()">Cancel request</button>
+  }
+  <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
+</div>

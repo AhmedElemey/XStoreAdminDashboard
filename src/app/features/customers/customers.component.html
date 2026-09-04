@@ -1,0 +1,60 @@
+<div class="page-head">
+  <div>
+    <h2>Users</h2>
+    <p>Individual <b>customer</b> accounts — normal buyers (role: consumer). <b>Business</b> accounts are managed under Vendors.</p>
+  </div>
+  <button class="btn btn-g" (click)="exportCsv()">Export CSV</button>
+</div>
+
+<div class="tabs" style="margin-bottom:18px">
+  <span class="chip active">👤 Customers</span>
+</div>
+
+<div class="grid g-3" style="margin-bottom:18px">
+  <app-kpi-card icon="users" [value]="total().toLocaleString('en-US')" label="Total customers" trend="live" dir="up" color="#2E5C6E" />
+  <app-kpi-card icon="chart" value="2.4" label="Orders per customer" trend="+0.2" dir="up" color="#C68A2E" />
+  <app-kpi-card icon="box" value="63%" label="Repeat rate" trend="+4%" dir="up" color="#3F7A5C" />
+</div>
+
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search customers by name, phone, email…" (input)="onSearch($any($event.target).value)" />
+  </div>
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading customers…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items()?.length) {
+    <app-state-block kind="empty" [message]="keyword() ? 'No customers match “' + keyword() + '”.' : 'No customer accounts found.'" />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>User</th><th>City</th><th>Account type</th><th>Orders</th><th>Lifetime spend</th><th>Status</th><th class="r"></th></tr>
+      </thead>
+      <tbody>
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <tr>
+            <td>
+              <div class="u" style="cursor:pointer" (click)="openDrawer($index)">
+                <app-avatar [name]="m.name" [round]="true" />
+                <div><b>{{ m.name }}</b><small>{{ m.sub }}</small></div>
+              </div>
+            </td>
+            <td class="muted">{{ m.city }}</td>
+            <td><span class="badge-s b-blue">👤 Customer</span></td>
+            <td>{{ m.orders }}</td>
+            <td class="money">{{ m.spend }}</td>
+            <td><span class="badge-s" [class]="m.verified ? 'b-green' : 'b-grey'">{{ m.verified ? '✓ Verified' : 'Unverified' }}</span></td>
+            <td class="r"><button class="btn btn-g btn-sm" (click)="openDrawer($index)">Profile</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>

@@ -1,0 +1,104 @@
+<div class="page-head">
+  <div>
+    <h2>Delivery Requests</h2>
+    <p>Consumer package delivery ("send a package" pilot) · you set the price, the customer pays the courier <b>in cash at pickup</b></p>
+  </div>
+</div>
+
+<app-delivery-connect-bar />
+
+<div class="grid g-4" style="margin-bottom:18px;margin-top:18px">
+  <app-kpi-card icon="alert" [value]="need().toString()" label="Awaiting your price" [trend]="need() ? 'price now' : 'clear'" [dir]="need() ? 'down' : 'up'" color="#C68A2E" />
+  <app-kpi-card icon="users" [value]="wait().toString()" label="Awaiting customer confirmation" dir="up" color="#356F80" />
+  <app-kpi-card icon="truck" [value]="transit().toString()" label="In transit (confirmed + picked up)" dir="up" color="#2E5C6E" />
+  <app-kpi-card icon="box" [value]="done().toString()" label="Delivered (30d)" dir="up" color="#3F7A5C" />
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Request</th><th>Customer</th><th>Route</th><th>Package</th><th>Submitted</th><th>Price</th><th>Status</th><th class="r">Action</th></tr>
+    </thead>
+    <tbody>
+      @for (p of demo.packages(); track p.id; let i = $index) {
+        <tr>
+          <td><b style="cursor:pointer" (click)="openDrawer(i)">{{ p.id }}</b></td>
+          <td>
+            <div class="u" style="cursor:pointer" (click)="openDrawer(i)">
+              <app-avatar [name]="p.customer" [round]="true" />
+              <div>
+                <b>{{ p.customer }}
+                  @if (p.requesterRole === 'vendor') {
+                    <span class="badge-s b-indigo" style="padding:1px 7px">Vendor</span>
+                  } @else {
+                    <span class="badge-s b-blue" style="padding:1px 7px">Customer</span>
+                  }
+                </b>
+                <small>{{ p.phone }}</small>
+              </div>
+            </div>
+          </td>
+          <td class="route">
+            <b>{{ p.pickup.city }} → {{ p.drop.city }} @if (demo.pkgCross(p)) { <span class="badge-s b-amber" style="padding:1px 7px">cross-city</span> }</b>
+            <small>{{ p.pickup.street }} → {{ p.drop.street }} ({{ p.drop.name }})</small>
+          </td>
+          <td class="muted" style="max-width:200px;white-space:normal">{{ p.note }}</td>
+          <td class="muted">{{ p.submitted }}</td>
+          <td class="money">{{ p.price != null ? egp(p.price) : '—' }}</td>
+          <td><span class="badge-s" [class]="PSTAT[p.status][0]">{{ PSTAT[p.status][1] }}</span></td>
+          <td class="r">
+            @if (p.status === 'submitted' || (p.status === 'priced' && editIdx() === i)) {
+              <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">
+                <input class="pkg-in" inputmode="numeric" [ngModel]="editIdx() === i ? priceDraft() : (p.price ?? demo.pkgSuggest(p))" (ngModelChange)="priceDraft.set(+$event)" (focus)="editIdx() !== i && startPrice(i)" />
+                <button class="btn btn-p btn-sm" (click)="editIdx() !== i && startPrice(i); savePrice(i)">{{ p.status === 'submitted' ? 'Set price' : 'Save' }}</button>
+                @if (p.status === 'submitted') {
+                  <button class="btn btn-no btn-sm" (click)="cancelPkg(i)" title="Cancel request">✕</button>
+                } @else {
+                  <button class="btn btn-g btn-sm" (click)="cancelEdit()">Back</button>
+                }
+              </div>
+              <small class="hint">{{ priceHint(p) }}</small>
+            } @else if (p.status === 'priced') {
+              <button class="btn btn-g btn-sm" (click)="startPrice(i)">Edit price</button>
+              <button class="btn btn-no btn-sm" (click)="cancelPkg(i)">✕ Cancel</button>
+              <small class="hint">Waiting for the customer to confirm {{ egp(p.price!) }}</small>
+            } @else if (p.status === 'confirmed') {
+              @if (p.courier) {
+                <span class="badge-s b-indigo" title="Assigned courier">🚚 {{ p.courier.split(' ')[0] }}</span>
+                <button class="btn btn-g btn-sm" (click)="openAssign(i)">Reassign</button>
+              } @else {
+                <button class="btn btn-p btn-sm" (click)="openAssign(i)">Assign courier</button>
+              }
+              <small class="hint">Courier collects {{ egp(p.price!) }} in cash at pickup</small>
+            } @else if (p.status === 'pickedup' || p.status === 'delivered') {
+              <span class="badge-s b-indigo" title="Assigned courier">🚚 {{ p.courier!.split(' ')[0] }}</span>
+              <button class="btn btn-g btn-sm" (click)="openDrawer(i)">View</button>
+              <small class="hint">💵 Cash collected at pickup: {{ egp(p.price!) }}</small>
+            } @else {
+              <button class="btn btn-g btn-sm" (click)="openDrawer(i)">View</button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="card mt">
+  <div class="c-body" style="font-size:12.5px;line-height:1.7;color:var(--text-2)">
+    <b style="color:var(--text)">How package delivery requests work</b>
+    <p style="margin-top:6px">
+      A customer submits a pickup + destination. <b>You set the price</b> (reference: <b>EGP 60</b> base + <b>EGP 20</b> cross-city surcharge). The customer confirms and
+      pays the courier <b>in cash at pickup</b>, then your assigned courier delivers the package. Lifecycle: <b>submitted → priced → confirmed → picked up → delivered</b>;
+      cancelling is possible while submitted / priced.
+    </p>
+    <p style="margin-top:8px">
+      Pickup cash goes into the courier's <b>cash-in-hand wallet</b> — the same ledger as COD, counting toward the {{ egp(5000) }} cap. Collect it from Delivery → Collect cash.
+    </p>
+    <p style="margin-top:8px">
+      Backend: <code>POST /delivery-requests</code> · <code>PUT /admin/delivery-requests/&#123;id&#125;/price</code> · <code>POST /delivery-requests/&#123;id&#125;/confirm</code> ·
+      <code>POST /admin/delivery-requests/&#123;id&#125;/assign-courier</code> · <code>POST /delivery-requests/&#123;id&#125;/pickup</code> / <code>…/deliver</code> ·
+      <code>POST /delivery-requests/&#123;id&#125;/cancel</code>.
+    </p>
+  </div>
+</div>
