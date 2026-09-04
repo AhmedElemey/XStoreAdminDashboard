@@ -35,6 +35,7 @@ export interface MappedListing {
   submitted: string;
   isHot: boolean;
   image: string | null;
+  images: string[];
 }
 
 export interface MappedBanner {

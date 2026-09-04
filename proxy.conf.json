@@ -3,5 +3,13 @@
     "target": "https://xstoreegy002-001-site1.etempurl.com",
     "secure": false,
     "changeOrigin": true
+  },
+  "/uploads": {
+    "target": "https://xstoreegy002-001-site1.etempurl.com",
+    "secure": false,
+    "changeOrigin": true,
+    "headers": {
+      "Authorization": "Basic MTEzMjQ4ODM6NjAtZGF5ZnJlZXRyaWFs"
+    }
   }
 }

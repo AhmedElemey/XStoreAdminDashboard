@@ -25,8 +25,8 @@
       @let m = mapped(raw);
       <div class="mod">
         <div class="thumb" style="cursor:pointer" (click)="openDrawer($index)">
-          @if (m.image) {
-            <img [src]="m.image" />
+          @if (thumb(raw)) {
+            <img [src]="thumb(raw)" />
           } @else {
             📦
           }
@@ -35,14 +35,20 @@
           <b>{{ m.title }}</b>
           <p>
             {{ m.vendor }} · <span class="badge-s b-grey">{{ m.category }}</span> ·
-            <span class="money">{{ m.price == null ? '—' : egp(m.price) }}</span> · stock {{ m.stock == null ? '—' : m.stock }}
+            <span class="money">{{ m.price == null ? '—' : egp(m.price) }}</span>
+            @if (m.compareAt) {
+              <span style="text-decoration:line-through;opacity:0.5;margin-left:4px">{{ egp(m.compareAt) }}</span>
+            }
+             · stock {{ m.stock == null ? '—' : m.stock }}
             @if (m.isHot) { · <span class="badge-s b-red">🔥 Hot</span> }
           </p>
-          <p class="muted" style="font-size:12px;margin-top:3px">{{ m.submitted ? m.submitted + ' · ' : '' }}{{ m.condition }}</p>
+          <p class="muted" style="font-size:12px;margin-top:3px">{{ m.submitted ? formatDate(m.submitted) + ' · ' : '' }}{{ m.condition }}</p>
         </div>
         <div class="mactions">
           <button class="btn btn-g btn-sm" (click)="openDrawer($index)">Details</button>
-          <button class="btn btn-g btn-sm" (click)="toggleHot($index)">🔥</button>
+          @if (status() === 'ACTIVE') {
+            <button class="btn btn-sm" [class.btn-no]="m.isHot" [class.btn-g]="!m.isHot" (click)="toggleHot($index)">{{ m.isHot ? '🔥 Remove' : '🔥 Hot' }}</button>
+          }
           @if (status() === 'PENDING') {
             <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">✓ Approve</button>
             <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">✕ Reject</button>
@@ -52,4 +58,17 @@
     }
   </div>
   <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+}
+
+@if (rejectOpen()) {
+  <div class="overlay show" (click)="closeReject()"></div>
+  <div class="modal-card">
+    <h3 style="font-size:16px;margin-bottom:4px">Reject "{{ rejectTitle() }}"</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:12px">This reason will be shown to the vendor.</p>
+    <textarea class="modal-ta" rows="4" placeholder="Enter rejection reason…" [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="btn btn-g" (click)="closeReject()">Cancel</button>
+      <button class="btn btn-no" (click)="confirmReject()">Reject</button>
+    </div>
+  </div>
 }

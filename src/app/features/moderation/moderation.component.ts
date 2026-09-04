@@ -3,6 +3,7 @@ import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
 import { DrawerService } from '../../core/drawer.service';
 import { NavBadgesService } from '../../core/nav-badges.service';
+import { ImageService } from '../../core/image.service';
 import { readPage } from '../../core/mappers';
 import { mapListing } from '../../core/mappers';
 import { Dto, MappedListing } from '../../core/models';
@@ -32,8 +33,16 @@ export class ModerationComponent implements OnInit {
   private toast = inject(ToastService);
   private drawer = inject(DrawerService);
   private badges = inject(NavBadgesService);
+  private images = inject(ImageService);
 
   protected egp = egp;
+
+  protected formatDate(v: string): string {
+    if (!v) return '';
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? v : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected status = signal('PENDING');
   protected name = signal('');
@@ -44,6 +53,10 @@ export class ModerationComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  protected rejectOpen = signal(false);
+  protected rejectReason = signal('');
+  protected rejectIndex = signal(-1);
+  protected rejectTitle = signal('');
 
   ngOnInit() {
     this.load();
@@ -79,6 +92,10 @@ export class ModerationComponent implements OnInit {
     return mapListing(p, this.api.apiBase);
   }
 
+  protected thumb(p: Dto): string | null {
+    return this.images.resolveSync(this.mapped(p).image);
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
@@ -89,10 +106,23 @@ export class ModerationComponent implements OnInit {
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
       if (this.status() === 'PENDING') this.badges.moderationPending.set(p.total > 0 ? p.total : null);
+      this.resolveThumbs();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');
+    }
+  }
+
+  private async resolveThumbs() {
+    for (const raw of this.items() || []) {
+      const m = mapListing(raw, this.api.apiBase);
+      if (m.image) {
+        this.images.resolve(m.image).then((resolved) => {
+          if (resolved !== m.image) raw['__thumb'] = resolved;
+          this.items.update((list) => (list ? [...list] : list));
+        });
+      }
     }
   }
 
@@ -101,6 +131,7 @@ export class ModerationComponent implements OnInit {
     if (!raw) return;
     this.drawer.show('Review product', ProductDrawerComponent, {
       listing: this.mapped(raw),
+      status: this.status(),
       onApprove: () => this.decide(i, 'approve'),
       onReject: () => this.decide(i, 'reject'),
       onToggleHot: () => this.toggleHot(i),
@@ -115,22 +146,43 @@ export class ModerationComponent implements OnInit {
       this.toast.show('Missing listing id');
       return;
     }
-    let reason = '';
     if (action === 'reject') {
-      const r = prompt(`Reason for rejecting "${m.title}"? (shown to the vendor)`, '');
-      if (r === null) return;
-      reason = r;
+      this.rejectIndex.set(i);
+      this.rejectTitle.set(m.title);
+      this.rejectReason.set('');
+      this.rejectOpen.set(true);
+      return;
     }
     try {
-      if (action === 'approve') await this.api.approveListing(m.id);
-      else await this.api.rejectListing(m.id, reason);
-      this.toast.show(action === 'approve' ? 'Product approved — now live ✓' : 'Product rejected — vendor notified');
+      await this.api.approveListing(m.id);
+      this.toast.show('Product approved — now live ✓');
       this.drawer.close();
       this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
-      this.toast.show(`${action === 'approve' ? 'Approve' : 'Reject'} failed: ${(e as Error).message || 'error'}`);
+      this.toast.show(`Approve failed: ${(e as Error).message || 'error'}`);
     }
+  }
+
+  protected async confirmReject() {
+    const i = this.rejectIndex();
+    const raw = (this.items() || [])[i];
+    if (!raw) { this.rejectOpen.set(false); return; }
+    const m = this.mapped(raw);
+    this.rejectOpen.set(false);
+    try {
+      await this.api.rejectListing(m.id, this.rejectReason());
+      this.toast.show('Product rejected — vendor notified');
+      this.drawer.close();
+      this.load();
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.toast.show(`Reject failed: ${(e as Error).message || 'error'}`);
+    }
+  }
+
+  protected closeReject() {
+    this.rejectOpen.set(false);
   }
 
   protected async toggleHot(i: number) {
@@ -142,9 +194,11 @@ export class ModerationComponent implements OnInit {
       return;
     }
     try {
-      await this.api.toggleHotDeal(m.id);
+      await this.api.toggleHotDeal(m.id, !m.isHot);
       raw['isHotDeal'] = !m.isHot;
       this.items.update((list) => (list ? [...list] : list));
+      const updated = this.mapped(raw);
+      this.drawer.updateInputs({ listing: updated });
       this.toast.show(m.isHot ? 'Removed hot-deal tag' : 'Marked as hot deal 🔥');
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

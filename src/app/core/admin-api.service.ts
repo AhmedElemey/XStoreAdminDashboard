@@ -133,8 +133,8 @@ export class AdminApiService {
   rejectListing(id: string, rejectionReason: string) {
     return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/reject`, { method: 'PUT', body: { rejectionReason } });
   }
-  toggleHotDeal(id: string) {
-    return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/hot-deal`, { method: 'PUT' });
+  toggleHotDeal(id: string, isHotDeal: boolean) {
+    return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/hot-deal`, { method: 'PUT', body: { isHotDeal } });
   }
 
   /* ---------- Banners ---------- */

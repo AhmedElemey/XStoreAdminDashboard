@@ -57,24 +57,35 @@ export function mapCategory(c: Dto, apiBase: string): MappedCategory {
   };
 }
 
+/** ListingCondition enum: 1=New, 2=Like New, 3=Good, 4=Used for Parts. */
+const CONDITION_LABELS: Record<number, string> = { 1: 'New', 2: 'Like New', 3: 'Good', 4: 'Used for Parts' };
+
 export function mapListing(p: Dto, apiBase: string): MappedListing {
   const img =
     firstNonEmpty(p['imageUrl'], p['thumbnailUrl'], Array.isArray(p['images']) ? p['images'][0] : null, Array.isArray(p['imageUrls']) ? p['imageUrls'][0] : null) || null;
+  const condRaw = p['condition'];
+  const condNum = typeof condRaw === 'number' ? condRaw : Number(condRaw);
+  const condLabel = Number.isFinite(condNum) && CONDITION_LABELS[condNum]
+    ? CONDITION_LABELS[condNum]
+    : firstNonEmpty(condRaw) || '—';
+  const rawImages = Array.isArray(p['imageUrls']) ? p['imageUrls'] : Array.isArray(p['images']) ? p['images'] : [];
+  const images = rawImages.length ? rawImages : firstNonEmpty(p['imageUrl'], p['thumbnailUrl']) ? [firstNonEmpty(p['imageUrl'], p['thumbnailUrl'])] : [];
   return {
     id: firstNonEmpty(p['id'], p['listingId'], p['_id']),
     title: firstNonEmpty(p['titleEn'], p['title'], p['titleAr']) || 'Untitled',
-    vendor: firstNonEmpty(p['vendorName'], p['storeNameEn'], p['vendor']) || '—',
-    category: firstNonEmpty(p['categoryName'], p['category']) || '—',
+    vendor: firstNonEmpty(p['vendorName'], p['storeNameEn'], p['storeName'], p['userName'], p['vendor']) || '—',
+    category: firstNonEmpty(p['categoryName'], p['categoryNameEn'], p['category']) || '—',
     price: numOr(p['price']),
     compareAt: numOr(p['compareAtPrice'], p['compareAt']) || null,
     stock: numOr(p['stockQuantity'], p['stock']),
-    condition: firstNonEmpty(p['condition']) || '—',
+    condition: condLabel,
     brand: firstNonEmpty(p['brand']) || '—',
-    location: firstNonEmpty(p['location']) || '—',
+    location: firstNonEmpty(p['location'], [p['governorateNameEn'], p['detailedAddressByUser']].filter(Boolean).join(', ')) || '—',
     description: firstNonEmpty(p['descriptionEn'], p['description']),
     submitted: firstNonEmpty(p['createdAt'], p['submittedAt']),
     isHot: !!(p['isHotDeal'] || p['hotDeal']),
-    image: absoluteImage(img, apiBase),
+    image: images.length ? absoluteImage(images[0], apiBase) : null,
+    images: images.map((u: string) => absoluteImage(u, apiBase) || u),
   };
 }
 
