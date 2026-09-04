@@ -1,7 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { ApiError } from './api-error';
 
-const API_DEFAULT_BASE = 'https://xstoreegy002-001-site1.etempurl.com';
+const API_DEFAULT_BASE = '';
 const BASE_KEY = 'xs_admin_base';
 const TOKEN_KEY = 'xs_admin_token';
 
