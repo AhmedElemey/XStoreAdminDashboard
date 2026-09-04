@@ -1,5 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { ApiError } from './api-error';
+import { PLATFORM_ACCESS_KEY, isTrustedPlatformHost } from './platform-key';
 
 const API_DEFAULT_BASE = '';
 const BASE_KEY = 'xs_admin_base';
@@ -53,10 +54,9 @@ export class AuthService {
       });
     }
     const headers: Record<string, string> = {};
-    headers['Authorization'] = 'Basic MTEzMjQ4ODM6NjAtZGF5ZnJlZXRyaWFs';
+    if (isTrustedPlatformHost(url)) headers['Authorization'] = PLATFORM_ACCESS_KEY;
     if (this.token) {
       // The backend accepts either — sent both to match the Postman collection exactly.
-      // headers['Authorization'] = 'Bearer ' + this.token;
       headers['X-Auth-Token'] = this.token;
     }
     let payload: BodyInit | undefined;
