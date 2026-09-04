@@ -1,0 +1,1 @@
+var r=[`#2E5C6E`,`#C68A2E`,`#3F7A5C`,`#356F80`,`#EC4899`,`#14B8A6`,`#8B5CF6`,`#C68A2E`];function o(t){return r[[...t].reduce((e,i)=>e+i.charCodeAt(0),0)%r.length]}function s(t){return t.split(` `).slice(0,2).map(n=>n[0]).join(``).toUpperCase()}function C(t){return`EGP `+t.toLocaleString(`en-US`)}export{o as n,s as r,C as t};
