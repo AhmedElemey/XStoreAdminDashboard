@@ -8,16 +8,5 @@
       "source": "/uploads/:path*",
       "destination": "https://xstoreegy002-001-site1.etempurl.com/uploads/:path*"
     }
-  ],
-  "headers": [
-    {
-      "source": "/uploads/:path*",
-      "headers": [
-        {
-          "key": "Authorization",
-          "value": "Basic MTEzMjQ4ODM6NjAtZGF5ZnJlZXRyaWFs"
-        }
-      ]
-    }
   ]
 }

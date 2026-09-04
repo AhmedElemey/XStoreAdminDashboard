@@ -5,7 +5,7 @@ const API_DEFAULT_BASE = '';
 const BASE_KEY = 'xs_admin_base';
 const TOKEN_KEY = 'xs_admin_token';
 
-for (const stale of ['https://xstoreegy-001-site1.jtempurl.com', 'http://xstoreegy-001-site1.jtempurl.com', 'http://localhost:4200', 'http://xstoreegy002-001-site1.etempurl.com']) {
+for (const stale of ['https://xstoreegy-001-site1.jtempurl.com', 'http://xstoreegy-001-site1.jtempurl.com', 'http://localhost:4200', 'http://xstoreegy002-001-site1.etempurl.com', 'https://xstoreegy002-001-site1.etempurl.com']) {
   if (localStorage.getItem(BASE_KEY) === stale) localStorage.removeItem(BASE_KEY);
 }
 
