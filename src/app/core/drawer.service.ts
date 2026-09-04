@@ -19,6 +19,10 @@ export class DrawerService {
     this.open.set(true);
   }
 
+  updateInputs(patch: Record<string, unknown>) {
+    this.state.update((s) => ({ ...s, inputs: { ...s.inputs, ...patch } }));
+  }
+
   close() {
     this.open.set(false);
   }
