@@ -19,6 +19,10 @@ function num(v: unknown): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+/** null when the key is absent from the DTO — distinct from a real `false`. */
+function boolOrUnknown(v: unknown): boolean | null {
+  return v === undefined ? null : !!v;
+}
 
 function absoluteImage(img: string | null, apiBase: string): string | null {
   if (!img) return null;
@@ -113,7 +117,7 @@ export function mapUser(u: Dto): MappedUser {
     phone,
     email,
     role: firstNonEmpty(u['role']) || 'consumer',
-    verified: !!u['isVerified'],
+    verified: boolOrUnknown(u['isVerified']),
     orders: orders == null ? '—' : orders,
     spend: spend == null ? '—' : egp(spend),
     joined: firstNonEmpty(u['joinedAt'], u['createdAt'], u['joinDate']) || '—',
@@ -146,7 +150,7 @@ export function mapVendor(v: Dto): MappedVendor {
     phone: firstNonEmpty(v['phoneNumber'], v['whatsAppNumber'], v['phone']) || '—',
     email: firstNonEmpty(v['email']),
     category: firstNonEmpty(v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
-    verified: !!v['isVerified'],
+    verified: boolOrUnknown(v['isVerified']),
     products: numOr(v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['rating']),
     joined: firstNonEmpty(v['joinedAt'], v['createdAt']) || '—',
