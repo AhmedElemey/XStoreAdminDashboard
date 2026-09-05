@@ -18,7 +18,34 @@
 > and team roster.
 
 Original front-end design prototype (no build step, plain HTML/CSS/JS) description below,
-kept for historical context on what each view was originally trying to model.
+kept for historical context on what each view was originally trying to model. That prototype
+now lives under `legacy/` (superseded by the Angular app above), but at the time it was retired
+it had its own **"Actually live today"** wiring (see the "LIVE API INTEGRATION" / live-section
+comment blocks in `legacy/app.js` for the exact paths/shapes used): Users/Vendors list +
+approve/reject, Categories CRUD, Product Moderation (GET/approve/reject/hot-deal via
+`/api/admin/listings/...`), Content & Banners CRUD via `/api/banners`, admin
+login/get-profile/logout, **Orders** (list/detail/cancel via `/api/admin/orders/...`), the
+**per-vendor commission wallet** (`GET`/`PATCH` `/api/admin/vendors/{id}/commission` + `POST
+.../commission/settle`, reached from the vendor drawer's "💳 Commission wallet" button), and
+platform-wide **System Settings** (`GET`/`PUT /api/admin/system-settings`).
+
+> **Auth caveat for Orders / commission wallet / System Settings.** Their **paths** come from
+> the "xStoreEcommerce Admin & Super Admin" Postman collection (Administrator role), but that
+> collection's requests carry both an `Authorization: Bearer` header *and* an `X-Auth-Token`
+> header. The hosted backend actually in use (`https://xstoreegy-001-site1.jtempurl.com`) is
+> confirmed — via the already-working Users/Vendors/Categories/Moderation/Banners calls in
+> `apiFetch()` — to accept **Bearer-only** auth, with no `X-Auth-Token`. These three
+> integrations deliberately combine the collection's *paths* with the confirmed-live
+> *Bearer-only* auth scheme, rather than blindly copying either spec end-to-end. That
+> combination was **unverified against a real server** at the time — no admin credentials were
+> available to test with while making this change. If Orders, the commission wallet, or System
+> Settings start returning 401/404 once tested against a real login (in the current Angular
+> `AdminApiService` too, since it uses the same paths), check whether the backend actually
+> requires the extra `X-Auth-Token` header before assuming the request paths are wrong.
+>
+> Order-to-courier assignment remains unwired — the Postman collection has no confirmed
+> endpoint for it. (A separate, abandoned branch once called `/api/orders/{id}/assign-courier`,
+> but that path is unconfirmed and used the old broken dual-auth scheme; don't resurrect it.)
 
 Base path assumed: `/admin` (admin-authenticated). Currency is EGP, payment is Cash on Delivery.
 
