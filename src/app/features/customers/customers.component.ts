@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
-import { DrawerService } from '../../core/drawer.service';
 import { readPage, mapUser } from '../../core/mappers';
 import { Dto, MappedUser } from '../../core/models';
 import { ApiError } from '../../core/api-error';
@@ -11,7 +11,6 @@ import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
-import { UserDrawerComponent } from './user-drawer.component';
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
@@ -33,7 +32,7 @@ const VERIFIED_TABS: [string, string][] = [
 export class CustomersComponent implements OnInit {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
-  private drawer = inject(DrawerService);
+  private router = inject(Router);
 
   protected tabLabels = VERIFIED_TABS.map((t) => t[0]);
   protected verifiedFilter = signal('');
@@ -111,11 +110,11 @@ export class CustomersComponent implements OnInit {
     }
   }
 
-  protected openDrawer(i: number) {
+  protected openUser(i: number) {
     const raw = (this.items() || [])[i];
     if (!raw) return;
     const m = this.mapped(raw);
-    this.drawer.show(m.name, UserDrawerComponent, { user: m });
+    this.router.navigate(['/customers', m.id]);
   }
 
   protected exportCsv() {

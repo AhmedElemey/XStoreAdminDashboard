@@ -41,7 +41,7 @@
           @let m = mapped(raw);
           <tr>
             <td>
-              <div class="u" style="cursor:pointer" (click)="openDrawer($index)">
+              <div class="u" style="cursor:pointer" (click)="openUser($index)">
                 <app-avatar [name]="m.name" [round]="true" />
                 <div><b>{{ m.name }}</b><small>{{ m.sub }}</small></div>
               </div>
@@ -58,7 +58,7 @@
                 <span class="badge-s" [class]="rv ? 'b-green' : 'b-grey'">{{ rv ? '✓ Verified' : 'Unverified' }}</span>
               }
             </td>
-            <td class="r"><button class="btn btn-g btn-sm" (click)="openDrawer($index)">Profile</button></td>
+            <td class="r"><button class="btn btn-g btn-sm" (click)="openUser($index)">Profile</button></td>
           </tr>
         }
       </tbody>
