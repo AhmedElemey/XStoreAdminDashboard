@@ -10,13 +10,24 @@ import { PagerComponent } from '../../shared/pager.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
+import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { UserDrawerComponent } from './user-drawer.component';
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
+// The `isVerified` list item field the badge reads is never populated by the API today,
+// so every row shows "Unverified" regardless of real status — but the server-side
+// ?isVerified=true|false filter does work correctly (confirmed against live data), so
+// expose it as a filter here even though the per-row badge is a known backend gap.
+const VERIFIED_TABS: [string, string][] = [
+  ['All', ''],
+  ['Verified', 'true'],
+  ['Unverified', 'false'],
+];
+
 @Component({
   selector: 'app-customers',
-  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent, KpiCardComponent],
+  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent, KpiCardComponent, ChipTabsComponent],
   templateUrl: './customers.component.html',
 })
 export class CustomersComponent implements OnInit {
@@ -24,6 +35,8 @@ export class CustomersComponent implements OnInit {
   private toast = inject(ToastService);
   private drawer = inject(DrawerService);
 
+  protected tabLabels = VERIFIED_TABS.map((t) => t[0]);
+  protected verifiedFilter = signal('');
   protected keyword = signal('');
   protected page = signal(1);
   protected pageSize = 20;
@@ -41,6 +54,15 @@ export class CustomersComponent implements OnInit {
     return mapUser(u);
   }
 
+  /** The API never returns isVerified on list items, so m.verified is always null —
+   *  but while a Verified/Unverified filter is active, every row in the result set is
+   *  known to match it (the server-side filter is real), so use that as ground truth. */
+  protected rowVerified(m: MappedUser): boolean | null {
+    if (this.verifiedFilter() === 'true') return true;
+    if (this.verifiedFilter() === 'false') return false;
+    return m.verified;
+  }
+
   protected onSearch(v: string) {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
@@ -56,10 +78,27 @@ export class CustomersComponent implements OnInit {
     this.load();
   }
 
+  protected activeTabLabel() {
+    return VERIFIED_TABS.find((t) => t[1] === this.verifiedFilter())?.[0] ?? 'All';
+  }
+
+  protected selectTab(label: string) {
+    const t = VERIFIED_TABS.find((x) => x[0] === label);
+    this.verifiedFilter.set(t ? t[1] : '');
+    this.page.set(1);
+    this.load();
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.users({ keyword: this.keyword(), role: 'CONSUMER', page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.users({
+        keyword: this.keyword(),
+        role: 'CONSUMER',
+        isVerified: this.verifiedFilter() || undefined,
+        page: this.page(),
+        pageSize: this.pageSize,
+      });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);

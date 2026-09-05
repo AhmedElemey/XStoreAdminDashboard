@@ -54,7 +54,10 @@ export interface MappedUser {
   phone: string;
   email: string;
   role: string;
-  verified: boolean;
+  /** null when the API omits `isVerified` entirely, as it currently always does for
+   *  /api/users — distinct from a real `false` (which the isVerified query filter,
+   *  confirmed working server-side, can still report). */
+  verified: boolean | null;
   orders: number | string;
   spend: string;
   joined: string;
@@ -68,7 +71,8 @@ export interface MappedVendor {
   phone: string;
   email: string;
   category: string;
-  verified: boolean;
+  /** null when the API omits `isVerified` entirely (same gap as MappedUser.verified). */
+  verified: boolean | null;
   products: number | null;
   rating: number | null;
   joined: string;

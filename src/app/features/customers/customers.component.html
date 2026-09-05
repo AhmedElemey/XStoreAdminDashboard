@@ -21,6 +21,7 @@
     <app-icon name="search" />
     <input placeholder="Search customers by name, phone, email…" (input)="onSearch($any($event.target).value)" />
   </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="activeTabLabel()" (select)="selectTab($event)" />
 </div>
 
 <div class="card">
@@ -49,7 +50,14 @@
             <td><span class="badge-s b-blue">👤 Customer</span></td>
             <td>{{ m.orders }}</td>
             <td class="money">{{ m.spend }}</td>
-            <td><span class="badge-s" [class]="m.verified ? 'b-green' : 'b-grey'">{{ m.verified ? '✓ Verified' : 'Unverified' }}</span></td>
+            <td>
+              @let rv = rowVerified(m);
+              @if (rv === null) {
+                <span class="badge-s b-grey" title="Use the Verified/Unverified filter above to check.">—</span>
+              } @else {
+                <span class="badge-s" [class]="rv ? 'b-green' : 'b-grey'">{{ rv ? '✓ Verified' : 'Unverified' }}</span>
+              }
+            </td>
             <td class="r"><button class="btn btn-g btn-sm" (click)="openDrawer($index)">Profile</button></td>
           </tr>
         }

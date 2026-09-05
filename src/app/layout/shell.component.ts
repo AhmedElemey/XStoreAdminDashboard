@@ -47,8 +47,10 @@ export class ShellComponent {
     { initialValue: 'Dashboard' },
   );
 
-  protected couriersCashDue = computed(() => this.demo.couriers().filter((c) => this.demo.cashDue(c)).length || null);
-  protected packagesSubmitted = computed(() => this.demo.packages().filter((p) => p.status === 'submitted').length || null);
+  // Delivery-backend pilot badge counts — unused while the Delivery / Delivery Requests
+  // nav links below are disabled.
+  // protected couriersCashDue = computed(() => this.demo.couriers().filter((c) => this.demo.cashDue(c)).length || null);
+  // protected packagesSubmitted = computed(() => this.demo.packages().filter((p) => p.status === 'submitted').length || null);
 
   protected navGroups: NavGroup[] = [
     {
@@ -62,8 +64,10 @@ export class ShellComponent {
         { view: 'vendors', icon: 'store', label: 'Vendors', badge: () => this.badges.vendorsPending() },
         { view: 'categories', icon: 'tag', label: 'Categories' },
         { view: 'orders', icon: 'box', label: 'Orders' },
-        { view: 'couriers', icon: 'truck', label: 'Delivery', badge: () => this.couriersCashDue() },
-        { view: 'packages', icon: 'send', label: 'Delivery Requests', badge: () => this.packagesSubmitted() },
+        // Delivery-backend pilot — disabled until a real delivery-backend is deployed
+        // (route commented out in app.routes.ts too). See DeliveryApiService.
+        // { view: 'couriers', icon: 'truck', label: 'Delivery', badge: () => this.couriersCashDue() },
+        // { view: 'packages', icon: 'send', label: 'Delivery Requests', badge: () => this.packagesSubmitted() },
       ],
     },
     {

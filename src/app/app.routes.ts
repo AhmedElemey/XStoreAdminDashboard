@@ -39,16 +39,20 @@ export const routes: Routes = [
         data: { title: 'Orders' },
         loadComponent: () => import('./features/orders/orders.component').then((m) => m.OrdersComponent),
       },
-      {
-        path: 'couriers',
-        data: { title: 'Delivery' },
-        loadComponent: () => import('./features/couriers/couriers.component').then((m) => m.CouriersComponent),
-      },
-      {
-        path: 'packages',
-        data: { title: 'Delivery Requests' },
-        loadComponent: () => import('./features/packages/packages.component').then((m) => m.PackagesComponent),
-      },
+      // Delivery-backend pilot (Couriers / Delivery Requests) — no real backend is deployed
+      // yet (DeliveryApiService defaults to unreachable localhost:5080), so these routes are
+      // disabled until a live delivery-backend URL exists. Re-enable alongside the nav links
+      // in shell.component.ts once that's ready.
+      // {
+      //   path: 'couriers',
+      //   data: { title: 'Delivery' },
+      //   loadComponent: () => import('./features/couriers/couriers.component').then((m) => m.CouriersComponent),
+      // },
+      // {
+      //   path: 'packages',
+      //   data: { title: 'Delivery Requests' },
+      //   loadComponent: () => import('./features/packages/packages.component').then((m) => m.PackagesComponent),
+      // },
       {
         path: 'customers',
         data: { title: 'Users' },

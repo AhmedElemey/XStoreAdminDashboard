@@ -5,7 +5,9 @@
 <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap">
   <span class="badge-s b-indigo">🏢 Business</span>
   <span class="badge-s" [class]="vendor().statusClass">{{ vendor().statusLabel }}</span>
-  @if (vendor().verified) {
+  @if (vendor().verified === null) {
+    <span class="badge-s b-grey" title="The API doesn't report per-vendor verification status yet.">verification: unknown</span>
+  } @else if (vendor().verified) {
     <span class="badge-s b-green">✓ verified</span>
   } @else {
     <span class="badge-s b-amber">unverified</span>
