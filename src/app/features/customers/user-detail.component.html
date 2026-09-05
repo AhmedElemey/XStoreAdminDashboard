@@ -1,0 +1,73 @@
+@if (userState() === 'loading') {
+  <app-state-block kind="loading" message="Loading customer…" />
+} @else if (userState() === 'error' || !user()) {
+  <app-state-block kind="error" message="Couldn't load this customer." />
+} @else {
+  @let m = user()!;
+  <div class="page-head">
+    <div style="display:flex;align-items:center;gap:12px">
+      <app-avatar [name]="m.name" [round]="true" />
+      <div>
+        <h2 style="margin:0">{{ m.name }}</h2>
+        <p style="margin:2px 0 0">Customer · role: {{ m.role }}</p>
+      </div>
+    </div>
+    <a class="btn btn-g" routerLink="/customers">← Back to Users</a>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="c-head"><h3>Recent orders</h3></div>
+      <div class="c-body" style="padding-top:4px">
+        @if (ordersState() === 'loading') {
+          <p class="muted" style="font-size:12.5px">Loading…</p>
+        } @else if (ordersState() === 'error') {
+          <p class="muted" style="font-size:12.5px">Couldn't load this customer's orders.</p>
+        } @else if (!orders().length) {
+          <p class="muted" style="font-size:12.5px">No orders yet.</p>
+        } @else {
+          @for (o of orders(); track o.id) {
+            <div class="list-row" style="justify-content:space-between">
+              <div>
+                <b style="font-size:13.5px">{{ o.id }}</b>
+                <div class="muted" style="font-size:12.5px">{{ o.vendor }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="money">{{ o.total == null ? '—' : egp(o.total) }}</span>
+                <span class="badge-s" [class]="o.statusClass">{{ o.statusLabel }}</span>
+                <button class="btn btn-g btn-sm" (click)="openOrder(o)">View</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-head"><h3>Account</h3></div>
+      <div class="c-body" style="padding-top:4px">
+        <div style="margin-bottom:10px">
+          <span class="badge-s b-blue">👤 Customer</span>
+          @if (m.verified === null) {
+            <span class="badge-s b-grey" title="The API doesn't report per-user verification status yet.">Verification: unknown</span>
+          } @else if (m.verified) {
+            <span class="badge-s b-green">✓ Verified</span>
+          } @else {
+            <span class="badge-s b-grey">Unverified</span>
+          }
+        </div>
+        <div class="kv"><span>City</span><b>{{ m.city }}</b></div>
+        <div class="kv"><span>Phone</span><b>{{ m.phone }}</b></div>
+        @if (m.email) {
+          <div class="kv"><span>Email</span><b>{{ m.email }}</b></div>
+        }
+        <div class="kv"><span>Joined</span><b>{{ m.joined }}</b></div>
+        <div class="kv"><span>Total orders</span><b>{{ m.orders }}</b></div>
+        <div class="kv"><span>Lifetime spend</span><b>{{ m.spend }}</b></div>
+        @if (m.id) {
+          <div class="kv"><span>User ID</span><b>{{ m.id }}</b></div>
+        }
+      </div>
+    </div>
+  </div>
+}

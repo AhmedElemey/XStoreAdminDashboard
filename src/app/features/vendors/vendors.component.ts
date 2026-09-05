@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
-import { DrawerService } from '../../core/drawer.service';
 import { readPage, mapVendor } from '../../core/mappers';
 import { Dto, MappedVendor } from '../../core/models';
 import { ApiError } from '../../core/api-error';
@@ -11,7 +11,6 @@ import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
 import { NavBadgesService } from '../../core/nav-badges.service';
-import { VendorDrawerComponent } from './vendor-drawer.component';
 
 /** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected (no Suspended). */
 const STATUS_TABS: [string, string][] = [
@@ -31,7 +30,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
 export class VendorsComponent implements OnInit {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
-  private drawer = inject(DrawerService);
+  private router = inject(Router);
   private badges = inject(NavBadgesService);
 
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
@@ -94,14 +93,11 @@ export class VendorsComponent implements OnInit {
     }
   }
 
-  protected openDrawer(i: number) {
+  protected openVendor(i: number) {
     const raw = (this.items() || [])[i];
     if (!raw) return;
-    this.drawer.show('Vendor — ' + this.mapped(raw).store, VendorDrawerComponent, {
-      vendor: this.mapped(raw),
-      onApprove: () => this.decide(i, 'approve'),
-      onReject: () => this.decide(i, 'reject'),
-    });
+    const m = this.mapped(raw);
+    this.router.navigate(['/vendors', m.id]);
   }
 
   protected async decide(i: number, action: 'approve' | 'reject') {
@@ -117,7 +113,6 @@ export class VendorsComponent implements OnInit {
       if (action === 'approve') await this.api.approveVendor(m.id);
       else await this.api.rejectVendor(m.id);
       this.toast.show(action === 'approve' ? 'Vendor approved — now selling ✓' : 'Vendor rejected — notified');
-      this.drawer.close();
       this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

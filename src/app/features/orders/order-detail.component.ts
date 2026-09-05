@@ -1,44 +1,53 @@
-import { Component, OnInit, inject, input, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
-import { ToastService } from '../../core/toast.service';
-import { DrawerService } from '../../core/drawer.service';
 import { ApiError } from '../../core/api-error';
+import { ToastService } from '../../core/toast.service';
 import { Dto } from '../../core/models';
 import { MappedOrder, ORDER_STATUS, mapOrder } from '../../core/mappers';
 import { egp } from '../../core/format';
+import { StateBlockComponent } from '../../shared/state-block.component';
 
 const STEP_KEYS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
 @Component({
-  selector: 'app-order-drawer',
-  templateUrl: './order-drawer.component.html',
+  selector: 'app-order-detail',
+  imports: [RouterLink, StateBlockComponent],
+  templateUrl: './order-detail.component.html',
 })
-export class OrderDrawerComponent implements OnInit {
-  orderId = input.required<string>();
-  /** row-level summary so the drawer has something to show while the full detail loads */
-  summary = input.required<MappedOrder>();
-  onCancelled = input<() => void>();
-
+export class OrderDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
-  protected drawer = inject(DrawerService);
   protected egp = egp;
   protected steps = STEP_KEYS;
-  protected busy = signal(false);
+
   protected order = signal<MappedOrder | null>(null);
+  protected orderState = signal<'loading' | 'error' | null>('loading');
+  protected busy = signal(false);
+
+  private id = '';
 
   ngOnInit() {
-    this.order.set(this.summary());
-    this.load();
+    this.route.paramMap.subscribe((params) => {
+      this.id = params.get('id') || '';
+      this.load();
+    });
   }
 
   private async load() {
+    if (!this.id) {
+      this.orderState.set('error');
+      return;
+    }
+    this.orderState.set('loading');
     try {
-      const data = await this.api.order(this.orderId());
+      const data = await this.api.order(this.id);
       this.order.set(mapOrder(data as Dto));
+      this.orderState.set(null);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
-      // keep showing the row summary — the detail endpoint may be unavailable
+      this.orderState.set('error');
     }
   }
 
@@ -46,6 +55,7 @@ export class OrderDrawerComponent implements OnInit {
     const o = this.order();
     return o ? STEP_KEYS.indexOf(o.statusKey) : -1;
   }
+
   protected canCancel() {
     const o = this.order();
     return !!o && ['pending', 'confirmed', 'processing'].includes(o.statusKey);
@@ -60,8 +70,7 @@ export class OrderDrawerComponent implements OnInit {
     try {
       await this.api.cancelOrder(o.id, reason);
       this.toast.show('Order cancelled');
-      this.drawer.close();
-      this.onCancelled()?.();
+      await this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.toast.show('Cancel failed: ' + ((e as Error).message || 'error'));

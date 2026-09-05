@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
-import { DrawerService } from '../../core/drawer.service';
 import { readPage, mapOrder, ORDER_STATUS } from '../../core/mappers';
 import { Dto } from '../../core/models';
 import { ApiError } from '../../core/api-error';
@@ -10,7 +10,6 @@ import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
-import { OrderDrawerComponent } from './order-drawer.component';
 
 const STATUS_TABS: [string, string][] = [['All', ''], ...ORDER_STATUS.map((s, i): [string, string] => [s[1], String(i)])];
 
@@ -21,7 +20,7 @@ const STATUS_TABS: [string, string][] = [['All', ''], ...ORDER_STATUS.map((s, i)
 })
 export class OrdersComponent implements OnInit {
   private api = inject(AdminApiService);
-  private drawer = inject(DrawerService);
+  private router = inject(Router);
   protected egp = egp;
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected statusLabel = signal('All');
@@ -76,10 +75,6 @@ export class OrdersComponent implements OnInit {
     const raw = (this.items() || [])[i];
     if (!raw) return;
     const m = this.mapped(raw);
-    this.drawer.show('Order ' + m.id, OrderDrawerComponent, {
-      orderId: m.id,
-      summary: m,
-      onCancelled: () => this.load(),
-    });
+    this.router.navigate(['/orders', m.id]);
   }
 }

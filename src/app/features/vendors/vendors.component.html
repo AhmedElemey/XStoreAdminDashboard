@@ -30,7 +30,7 @@
           @let m = mapped(raw);
           <tr>
             <td>
-              <div class="u" style="cursor:pointer" (click)="openDrawer($index)">
+              <div class="u" style="cursor:pointer" (click)="openVendor($index)">
                 <app-avatar [name]="m.store" />
                 <div><b>{{ m.store }}</b><small>{{ m.owner }} · {{ m.city }}</small></div>
               </div>
@@ -43,7 +43,7 @@
             <td>{{ m.products == null ? '—' : m.products }}</td>
             <td>{{ m.rating == null ? '—' : '⭐ ' + m.rating }}</td>
             <td class="r">
-              <button class="btn btn-g btn-sm" (click)="openDrawer($index)">Details</button>
+              <button class="btn btn-g btn-sm" (click)="openVendor($index)">Details</button>
               @if (m.isPending) {
                 <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">Approve</button>
                 <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">Reject</button>
