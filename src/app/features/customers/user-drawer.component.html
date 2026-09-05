@@ -27,6 +27,29 @@
   <div class="kv"><span>User ID</span><b>{{ user().id }}</b></div>
 }
 
+<h3 class="sec-h">Recent orders</h3>
+@if (ordersState() === 'loading') {
+  <p class="muted" style="font-size:12.5px">Loading…</p>
+} @else if (ordersState() === 'error') {
+  <p class="muted" style="font-size:12.5px">Couldn't load this customer's orders.</p>
+} @else if (!orders().length) {
+  <p class="muted" style="font-size:12.5px">No orders yet.</p>
+} @else {
+  @for (o of orders(); track o.id) {
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+      <div>
+        <b style="font-size:13px">{{ o.id }}</b>
+        <div class="muted" style="font-size:12px">{{ o.vendor }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="money">{{ o.total == null ? '—' : egp(o.total) }}</span>
+        <span class="badge-s" [class]="o.statusClass">{{ o.statusLabel }}</span>
+        <button class="btn btn-g btn-sm" (click)="openOrder(o)">View</button>
+      </div>
+    </div>
+  }
+}
+
 <div class="d-actions">
   <button class="btn btn-g" style="flex:1;justify-content:center" (click)="drawer.close()">Close</button>
 </div>

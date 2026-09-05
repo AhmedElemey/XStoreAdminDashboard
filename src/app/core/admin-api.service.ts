@@ -30,6 +30,10 @@ export interface ListingsQuery {
 
 export interface OrdersQuery {
   status?: string;
+  /** Filter to one buyer's orders. Param name isn't confirmed against the real backend
+   *  (the Postman collection doesn't document a per-user filter on this endpoint) — sent
+   *  optimistically, same as the other unconfirmed-but-plausible params in this file. */
+  userId?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
