@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ApiError } from '../../core/api-error';
 import { Dto, MappedUser } from '../../core/models';
@@ -7,8 +7,6 @@ import { readPage, mapUser, mapOrder, MappedOrder } from '../../core/mappers';
 import { egp } from '../../core/format';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
-import { DrawerService } from '../../core/drawer.service';
-import { OrderDrawerComponent } from '../orders/order-drawer.component';
 
 @Component({
   selector: 'app-user-detail',
@@ -17,8 +15,8 @@ import { OrderDrawerComponent } from '../orders/order-drawer.component';
 })
 export class UserDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private api = inject(AdminApiService);
-  protected drawer = inject(DrawerService);
   protected egp = egp;
 
   protected user = signal<MappedUser | null>(null);
@@ -69,6 +67,6 @@ export class UserDetailComponent implements OnInit {
   }
 
   protected openOrder(o: MappedOrder) {
-    this.drawer.show('Order ' + o.id, OrderDrawerComponent, { orderId: o.id, summary: o });
+    this.router.navigate(['/orders', o.id]);
   }
 }

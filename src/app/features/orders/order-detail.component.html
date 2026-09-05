@@ -1,0 +1,65 @@
+@if (orderState() === 'loading') {
+  <app-state-block kind="loading" message="Loading order…" />
+} @else if (orderState() === 'error' || !order()) {
+  <app-state-block kind="error" message="Couldn't load this order." />
+} @else {
+  @let o = order()!;
+  <div class="page-head">
+    <div>
+      <h2 style="margin:0">Order {{ o.id }}</h2>
+      <p style="margin:2px 0 0">{{ o.vendor }} · payment: Cash on Delivery</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      @if (canCancel()) {
+        <button class="btn btn-no" [disabled]="busy()" (click)="cancel()">Cancel order</button>
+      }
+      <a class="btn btn-g" routerLink="/orders">← Back to Orders</a>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="c-head"><h3>Fulfilment timeline</h3></div>
+      <div class="c-body" style="padding-top:4px">
+        @if (o.statusKey === 'cancelled') {
+          <div class="list-row"><span class="dotb" style="width:11px;height:11px;background:var(--error)"></span><span style="color:var(--error)">Cancelled</span></div>
+        } @else {
+          @for (s of steps; track s; let x = $index) {
+            <div class="list-row">
+              <span class="dotb" style="width:11px;height:11px" [style.background]="x <= currentStep() ? 'var(--success)' : 'var(--line)'"></span>
+              <span [style.color]="x <= currentStep() ? '' : 'var(--text-3)'">{{ label(s) }}</span>
+            </div>
+          }
+        }
+
+        @if (o.items.length) {
+          <h3 class="sec-h">Items</h3>
+          @for (it of o.items; track it.name) {
+            <div class="kv"><span>{{ it.name }} × {{ it.qty }}</span><b>{{ egp(it.qty * it.price) }}</b></div>
+          }
+        }
+        @if (o.total != null) {
+          <div class="kv"><span><b>Total</b></span><b>{{ egp(o.total) }}</b></div>
+        }
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-head"><h3>Order details</h3></div>
+      <div class="c-body" style="padding-top:4px">
+        <div class="kv"><span>Status</span><b>{{ o.statusLabel }}</b></div>
+        <div class="kv"><span>Buyer (customer)</span><b>{{ o.buyer }}</b></div>
+        <div class="kv"><span>Phone</span><b>{{ o.phone }}</b></div>
+        <div class="kv"><span>Vendor (business)</span><b>{{ o.vendor }}</b></div>
+        <div class="kv"><span>Payment</span><b>Cash on Delivery</b></div>
+        @if (o.courier) {
+          <div class="kv"><span>Delivery</span><b>🚚 Delivered by xStore — {{ o.courier }}</b></div>
+        }
+        @if (o.addr) {
+          <h3 class="sec-h">Delivery address</h3>
+          <p class="muted" style="font-size:13px">{{ o.addr }}</p>
+        }
+      </div>
+    </div>
+  </div>
+}
