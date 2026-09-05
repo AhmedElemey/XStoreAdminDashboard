@@ -4,15 +4,18 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ApiError } from '../../core/api-error';
 import { ToastService } from '../../core/toast.service';
-import { Dto, MappedCommission, MappedVendor } from '../../core/models';
-import { mapVendor, mapCommission } from '../../core/mappers';
+import { Dto, MappedCommission, MappedListing, MappedVendor } from '../../core/models';
+import { mapVendor, mapCommission, mapListing, readPage } from '../../core/mappers';
 import { egp } from '../../core/format';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
+import { ChipTabsComponent } from '../../shared/chip-tabs.component';
+
+const TABS = ['Overview', 'Listings'];
 
 @Component({
   selector: 'app-vendor-detail',
-  imports: [RouterLink, FormsModule, AvatarComponent, StateBlockComponent],
+  imports: [RouterLink, FormsModule, AvatarComponent, StateBlockComponent, ChipTabsComponent],
   templateUrl: './vendor-detail.component.html',
 })
 export class VendorDetailComponent implements OnInit {
@@ -21,6 +24,9 @@ export class VendorDetailComponent implements OnInit {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
   protected egp = egp;
+
+  protected tabLabels = TABS;
+  protected activeTab = signal('Overview');
 
   protected vendor = signal<MappedVendor | null>(null);
   protected vendorState = signal<'loading' | 'error' | null>('loading');
@@ -32,14 +38,49 @@ export class VendorDetailComponent implements OnInit {
   protected payAmount = signal(0);
   protected busy = signal(false);
 
+  protected listings = signal<MappedListing[]>([]);
+  protected listingsState = signal<'loading' | 'error' | null>('loading');
+  private listingsLoaded = false;
+
   private id = '';
 
   ngOnInit() {
+    const initialTab = this.route.snapshot.queryParamMap.get('tab');
+    if (initialTab === 'listings') this.activeTab.set('Listings');
+
     this.route.paramMap.subscribe((params) => {
       this.id = params.get('id') || '';
       this.loadVendor();
       this.loadCommission();
+      if (this.activeTab() === 'Listings') this.loadListings();
     });
+  }
+
+  protected selectTab(label: string) {
+    this.activeTab.set(label);
+    if (label === 'Listings' && !this.listingsLoaded) this.loadListings();
+  }
+
+  private async loadListings() {
+    if (!this.id) {
+      this.listingsState.set('error');
+      return;
+    }
+    this.listingsLoaded = true;
+    this.listingsState.set('loading');
+    try {
+      const data = await this.api.listings({ status: '', vendorId: this.id, page: 1, pageSize: 50 });
+      const p = readPage<Dto>(data, 50);
+      this.listings.set(p.items.map((raw) => mapListing(raw, this.api.apiBase)));
+      this.listingsState.set(null);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.listingsState.set('error');
+    }
+  }
+
+  protected openListing(l: MappedListing) {
+    this.router.navigate(['/vendors', this.id, 'listings', l.id]);
   }
 
   protected level(): 'none' | 'warn' | 'paused' {

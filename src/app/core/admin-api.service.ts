@@ -23,6 +23,10 @@ export interface VendorsQuery {
 export interface ListingsQuery {
   status: string;
   name?: string;
+  /** Filter to one vendor's listings. Param name isn't confirmed against the real backend
+   *  (the Postman collection doesn't document a per-vendor filter on this endpoint) — sent
+   *  optimistically, same as the other unconfirmed-but-plausible params in this file. */
+  vendorId?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -34,6 +38,9 @@ export interface OrdersQuery {
    *  (the Postman collection doesn't document a per-user filter on this endpoint) — sent
    *  optimistically, same as the other unconfirmed-but-plausible params in this file. */
   userId?: string;
+  /** Filter to orders containing one listing. Same caveat as userId above — unconfirmed,
+   *  sent optimistically. */
+  listingId?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;

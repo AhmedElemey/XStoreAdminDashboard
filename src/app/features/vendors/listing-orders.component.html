@@ -1,0 +1,36 @@
+<div class="page-head">
+  <div>
+    <h2 style="margin:0">Orders for this listing</h2>
+    <p style="margin:2px 0 0" class="muted">Listing ID: {{ listingId }}</p>
+  </div>
+  <a class="btn btn-g" [routerLink]="['/vendors', vendorId]" [queryParams]="{ tab: 'listings' }">← Back to Listings</a>
+</div>
+
+<div class="card">
+  @if (ordersState() === 'loading') {
+    <app-state-block kind="loading" message="Loading orders…" />
+  } @else if (ordersState() === 'error') {
+    <app-state-block kind="error" message="Couldn't load orders for this listing." />
+  } @else if (!orders().length) {
+    <app-state-block kind="empty" message="No orders for this listing yet." />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Order</th><th>Buyer</th><th>Vendor</th><th>Total</th><th>Status</th><th class="r"></th></tr>
+      </thead>
+      <tbody>
+        @for (o of orders(); track o.id) {
+          <tr>
+            <td><b>{{ o.id }}</b></td>
+            <td>{{ o.buyer }}</td>
+            <td class="muted">{{ o.vendor }}</td>
+            <td class="money">{{ o.total == null ? '—' : egp(o.total) }}</td>
+            <td><span class="badge-s" [class]="o.statusClass">{{ o.statusLabel }}</span></td>
+            <td class="r"><button class="btn btn-g btn-sm" (click)="openOrder(o)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>
