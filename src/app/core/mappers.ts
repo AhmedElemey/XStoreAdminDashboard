@@ -1,5 +1,5 @@
 import { Dto, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, Page } from './models';
-import { egp } from './format';
+import { dateOnly, egp } from './format';
 
 /** first non-empty of a list of candidate values (mirrors legacy _fne). */
 function firstNonEmpty(...vals: unknown[]): string {
@@ -143,17 +143,17 @@ export function mapVendor(v: Dto): MappedVendor {
     st = k.includes('pend') ? VSTATUS[1] : k.includes('approv') || k.includes('active') ? VSTATUS[2] : k.includes('reject') ? VSTATUS[3] : ['b-grey', String(sv)];
   }
   return {
-    id: firstNonEmpty(v['id'], v['userId'], v['_id']),
-    store: firstNonEmpty(v['storeNameEn'], v['storeName'], v['storeNameAr'], v['fullNameEn'], v['fullName'], v['name']) || 'Unnamed store',
-    owner: firstNonEmpty(v['fullNameEn'], v['fullName'], v['ownerName'], v['nameEn']) || '—',
-    city: firstNonEmpty(v['storeCity'], v['city'], v['governorate'], v['town']) || '—',
-    phone: firstNonEmpty(v['phoneNumber'], v['whatsAppNumber'], v['phone']) || '—',
-    email: firstNonEmpty(v['email']),
-    category: firstNonEmpty(v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
-    verified: boolOrUnknown(v['isVerified']),
-    products: numOr(v['productsCount'], v['listingsCount'], v['products']),
-    rating: numOr(v['rating']),
-    joined: firstNonEmpty(v['joinedAt'], v['createdAt']) || '—',
+    id: firstNonEmpty(v['id'], v['Id'], v['userId'], v['_id']),
+    store: firstNonEmpty(v['storeNameEn'], v['storeName'], v['storeNameAr'], v['fullNameEn'], v['fullName'], v['FullName'], v['name']) || 'Unnamed store',
+    owner: firstNonEmpty(v['fullNameEn'], v['fullName'], v['FullName'], v['ownerName'], v['nameEn']) || '—',
+    city: firstNonEmpty(v['location'], v['Location'], v['storeCity'], v['city'], v['governorate'], v['town']) || '—',
+    phone: firstNonEmpty(v['phoneNumber'], v['PhoneNumber'], v['whatsAppNumber'], v['phone']) || '—',
+    email: firstNonEmpty(v['email'], v['Email']),
+    category: firstNonEmpty(v['storeCategoryEn'], v['StoreCategoryEn'], v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
+    verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
+    products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
+    rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
+    joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
     statusClass: st[0],
     statusLabel: st[1],
     isPending: st[1] === 'Pending',
