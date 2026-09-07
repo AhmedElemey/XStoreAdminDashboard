@@ -18,3 +18,23 @@ export function initials(name: string): string {
 export function egp(n: number): string {
   return 'EGP ' + n.toLocaleString('en-US');
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Show only the date of a date/datetime string as `YYYY Mon DD` (e.g. "2026 Sep 01").
+ *  Tolerant to ISO, plain `YYYY-MM-DD`, or `DD/MM/YYYY` shapes; returns '' when nothing parses. */
+export function dateOnly(v: unknown): string {
+  if (v == null) return '';
+  const s = String(v).trim();
+  if (!s) return '';
+  const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    const mo = MONTHS[Number(m[2]) - 1];
+    return mo ? `${m[1]} ${mo} ${String(m[3]).padStart(2, '0')}` : s;
+  }
+  const d = new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return `${d.getFullYear()} ${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`;
+  }
+  return s;
+}
