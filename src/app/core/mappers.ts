@@ -104,10 +104,16 @@ export function mapBanner(b: Dto, apiBase: string): MappedBanner {
   };
 }
 
+/** Order count for a /api/users row — factored out so KPI aggregates (orders-per-customer,
+ *  repeat rate) read the same field aliases as the per-row "Orders" column. */
+export function customerOrdersCount(u: Dto): number | null {
+  return numOr(u['ordersCount'], u['totalOrders'], u['orders']);
+}
+
 export function mapUser(u: Dto): MappedUser {
   const email = firstNonEmpty(u['email']);
   const phone = firstNonEmpty(u['phoneNumber'], u['phone'], u['whatsAppNumber']) || '—';
-  const orders = numOr(u['ordersCount'], u['totalOrders'], u['orders']);
+  const orders = customerOrdersCount(u);
   const spend = numOr(u['totalSpent'], u['lifetimeSpend'], u['totalSpend']);
   return {
     id: firstNonEmpty(u['id'], u['userId'], u['_id'], u['uuid']),
