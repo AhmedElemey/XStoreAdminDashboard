@@ -12,8 +12,8 @@
 
 <div class="grid g-3" style="margin-bottom:18px">
   <app-kpi-card icon="users" [value]="total().toLocaleString('en-US')" label="Total customers" trend="live" dir="up" color="#2E5C6E" />
-  <app-kpi-card icon="chart" value="2.4" label="Orders per customer" trend="+0.2" dir="up" color="#C68A2E" />
-  <app-kpi-card icon="box" value="63%" label="Repeat rate" trend="+4%" dir="up" color="#3F7A5C" />
+  <app-kpi-card icon="chart" [value]="ordersPerCustomerLabel()" label="Orders per customer" trend="live" dir="up" color="#C68A2E" />
+  <app-kpi-card icon="box" [value]="repeatRateLabel()" label="Repeat rate" trend="live" dir="up" color="#3F7A5C" />
 </div>
 
 <div class="toolbar">

@@ -1,9 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminApiService } from '../../core/admin-api.service';
+import { AdminApiService, UsersQuery } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
-import { readPage, mapUser } from '../../core/mappers';
-import { Dto, MappedUser } from '../../core/models';
+import { readPage, mapUser, customerOrdersCount } from '../../core/mappers';
+import { Dto, MappedUser, Page } from '../../core/models';
 import { ApiError } from '../../core/api-error';
 import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -44,9 +44,26 @@ export class CustomersComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  protected ordersPerCustomer = signal<number | null>(null);
+  protected repeatRate = signal<number | null>(null);
+
+  /** No aggregate stats endpoint exists for these KPIs, so they're computed client-side
+   *  from every matching customer's order count — capped so an unfiltered view over a huge
+   *  customer base can't trigger an unbounded request. */
+  private readonly statsFetchCap = 2000;
 
   ngOnInit() {
     this.load();
+  }
+
+  protected ordersPerCustomerLabel() {
+    const v = this.ordersPerCustomer();
+    return v == null ? '—' : v.toFixed(1);
+  }
+
+  protected repeatRateLabel() {
+    const v = this.repeatRate();
+    return v == null ? '—' : Math.round(v) + '%';
   }
 
   protected mapped(u: Dto): MappedUser {
@@ -91,22 +108,50 @@ export class CustomersComponent implements OnInit {
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.users({
+      const query: UsersQuery = {
         keyword: this.keyword(),
         role: 'CONSUMER',
         isVerified: this.verifiedFilter() || undefined,
         page: this.page(),
         pageSize: this.pageSize,
-      });
+      };
+      const data = await this.api.users(query);
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
+      this.loadCustomerStats(query, p);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');
+    }
+  }
+
+  /** Orders-per-customer and repeat-rate reflect the currently filtered set of customers
+   *  (same keyword/verified filters as the table), not just the visible page, so this
+   *  re-fetches the full matching set when it doesn't already fit on one page. Runs after
+   *  the table has rendered and fails silently — a stale/blank KPI isn't worth an error
+   *  state when the table itself loaded fine. */
+  private async loadCustomerStats(query: UsersQuery, page: Page<Dto>) {
+    try {
+      const raws =
+        page.items.length >= page.total
+          ? page.items
+          : readPage<Dto>(await this.api.users({ ...query, page: 1, pageSize: Math.min(page.total, this.statsFetchCap) }), page.total).items;
+      const counts = raws.map(customerOrdersCount).filter((n): n is number => n != null);
+      if (!counts.length) {
+        this.ordersPerCustomer.set(null);
+        this.repeatRate.set(null);
+        return;
+      }
+      const totalOrders = counts.reduce((a, b) => a + b, 0);
+      this.ordersPerCustomer.set(totalOrders / counts.length);
+      this.repeatRate.set((counts.filter((c) => c > 1).length / counts.length) * 100);
+    } catch {
+      this.ordersPerCustomer.set(null);
+      this.repeatRate.set(null);
     }
   }
 
