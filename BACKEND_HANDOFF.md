@@ -13,9 +13,18 @@
 > Dashboard overview, Product Moderation, Vendors (list, approve/reject, and the
 > Commission wallet), Orders (list/detail/cancel), Categories CRUD, Users list, Content &
 > Banners CRUD, and System Settings (commission %, warn/pause thresholds). Still not
-> backed by any real endpoint: Disputes, Coupons, Analytics (all three are also not in the
-> app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
-> and team roster.
+> backed by any confirmed real endpoint: Disputes, Coupons, Analytics (all three are also
+> not in the app's nav anymore), push broadcast, and the Settings page's team roster.
+>
+> The Settings page's 7 marketplace-policy toggles (require product/vendor approval, COD,
+> the courier pilot, online payment, guest browsing, vendor coupons) are now sent as extra
+> boolean fields on the same `GET`/`PUT /api/admin/system-settings` call used for
+> commission — see `mapSystemSettings`/`MarketplacePolicies` in `src/app/core/mappers.ts`.
+> This is **unverified against a real server** (same caveat as Orders/commission/System
+> Settings below): each field falls back to its old hardcoded default when the backend
+> doesn't echo it back, so nothing regresses if the backend ignores the extra keys — but
+> persistence won't actually work until the backend adds matching fields to that DTO. If
+> you confirm the real field names, update the alias lists in `mapSystemSettings`.
 
 Original front-end design prototype (no build step, plain HTML/CSS/JS) description below,
 kept for historical context on what each view was originally trying to model. That prototype
