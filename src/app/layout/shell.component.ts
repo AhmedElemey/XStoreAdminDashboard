@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -82,6 +82,21 @@ export class ShellComponent {
       links: [{ view: 'settings', icon: 'cog', label: 'Settings' }],
     },
   ];
+
+  constructor() {
+    // Every feature's load()/save() catch block special-cases a 401 by bailing out silently
+    // (relying on AuthService.apiFetch having already cleared the token) instead of setting
+    // its own error state — so without this, a session that expires mid-page leaves that
+    // page's spinner or busy state stuck forever with no way back to /login but a manual
+    // refresh. This is the one place all of those pages route through, so it's the one place
+    // that needs to react when the session drops out from under them.
+    effect(() => {
+      if (!this.auth.isLoggedIn()) {
+        this.toast.show('Your session expired — please sign in again.');
+        this.router.navigateByUrl('/login');
+      }
+    });
+  }
 
   protected toggleSidebar() {
     this.sidebarOpen.update((v) => !v);
