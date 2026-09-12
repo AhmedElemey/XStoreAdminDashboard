@@ -7,6 +7,7 @@ import { readPage, mapBanner } from '../../core/mappers';
 import { Dto, MappedBanner } from '../../core/models';
 import { ApiError } from '../../core/api-error';
 import { StateBlockComponent } from '../../shared/state-block.component';
+import { ImageService } from '../../core/image.service';
 import { BannerFormComponent } from './banner-form.component';
 
 @Component({
@@ -18,6 +19,7 @@ export class ContentComponent implements OnInit {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
   private drawer = inject(DrawerService);
+  private images = inject(ImageService);
 
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
@@ -34,6 +36,10 @@ export class ContentComponent implements OnInit {
     return mapBanner(b, this.api.apiBase);
   }
 
+  protected bannerImg(raw: Dto): string | null {
+    return this.images.resolveSync(mapBanner(raw, this.api.apiBase).image);
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
@@ -41,10 +47,23 @@ export class ContentComponent implements OnInit {
       const items = Array.isArray(data) ? (data as Dto[]) : readPage<Dto>(data, 200).items;
       this.items.set(items);
       this.loadState.set(null);
+      this.resolveImages();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');
+    }
+  }
+
+  private async resolveImages() {
+    for (const raw of this.items() || []) {
+      const img = mapBanner(raw, this.api.apiBase).image;
+      if (img) {
+        this.images.resolve(img).then((resolved) => {
+          if (resolved !== img) raw['__img'] = resolved;
+          this.items.update((list) => (list ? [...list] : list));
+        });
+      }
     }
   }
 

@@ -21,7 +21,7 @@
           @let m = mapped(raw);
           <div class="banner">
             @if (m.image) {
-              <img class="bimg" [src]="m.image" alt="" />
+              <img class="bimg" [src]="bannerImg(raw)" alt="" />
             } @else {
               <div class="bimg"></div>
             }

@@ -20,7 +20,7 @@
           @let m = mapped(raw);
           <div class="cat">
             @if (m.image) {
-              <img class="ci-img" [src]="m.image" alt="" />
+              <img class="ci-img" [src]="catImg(raw)" alt="" />
             } @else {
               <div class="ci">{{ (m.nameEn[0] || '📦').toUpperCase() }}</div>
             }
