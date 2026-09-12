@@ -13,23 +13,18 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      @if (v.isPending) {
-        <button class="btn btn-ok" (click)="decide('approve')">Approve vendor</button>
-        <button class="btn btn-no" (click)="decide('reject')">Reject</button>
-      }
       <a class="btn btn-g" routerLink="/vendors">← Back to Vendors</a>
     </div>
   </div>
 
   <div style="margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap">
     <span class="badge-s b-indigo">🏢 Business</span>
-    <span class="badge-s" [class]="v.statusClass">{{ v.statusLabel }}</span>
     @if (v.verified === null) {
-      <span class="badge-s b-grey" title="The API doesn't report per-vendor verification status yet.">verification: unknown</span>
+      <span class="badge-s b-grey">verification: unknown</span>
     } @else if (v.verified) {
-      <span class="badge-s b-green">✓ verified</span>
+      <span class="badge-s b-green">✓ Verified</span>
     } @else {
-      <span class="badge-s b-amber">unverified</span>
+      <span class="badge-s b-amber">Unverified</span>
     }
   </div>
 

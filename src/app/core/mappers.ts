@@ -95,12 +95,16 @@ export function mapListing(p: Dto, apiBase: string): MappedListing {
 
 export function mapBanner(b: Dto, apiBase: string): MappedBanner {
   const img = firstNonEmpty(b['imageUrl'], b['image'], b['imagePath']) || null;
+  const cats = b['categoryIds'] ?? b['categoryId'];
+  const stores = b['storeIds'] ?? b['storeId'];
   return {
     id: firstNonEmpty(b['id'], b['bannerId'], b['_id']),
     nameEn: firstNonEmpty(b['nameEn'], b['name']) || 'Untitled',
     nameAr: firstNonEmpty(b['nameAr']),
     sortOrder: numOr(b['sortOrder']) ?? 0,
     image: absoluteImage(img, apiBase),
+    categoryIds: Array.isArray(cats) ? cats.join(',') : firstNonEmpty(cats),
+    storeIds: Array.isArray(stores) ? stores.join(',') : firstNonEmpty(stores),
   };
 }
 
@@ -124,24 +128,7 @@ export function mapUser(u: Dto): MappedUser {
   };
 }
 
-/** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected. */
-const VSTATUS: Record<number, [string, string]> = {
-  1: ['b-amber', 'Pending'],
-  2: ['b-green', 'Approved'],
-  3: ['b-red', 'Rejected'],
-};
-
 export function mapVendor(v: Dto): MappedVendor {
-  let st: [string, string];
-  const sv = v['vendorStatus'];
-  if (sv == null || sv === '') {
-    st = ['b-grey', '—'];
-  } else if (typeof sv === 'number' || /^\d+$/.test(String(sv))) {
-    st = VSTATUS[Number(sv)] || ['b-grey', 'Status ' + sv];
-  } else {
-    const k = String(sv).toLowerCase();
-    st = k.includes('pend') ? VSTATUS[1] : k.includes('approv') || k.includes('active') ? VSTATUS[2] : k.includes('reject') ? VSTATUS[3] : ['b-grey', String(sv)];
-  }
   return {
     id: firstNonEmpty(v['id'], v['Id'], v['userId'], v['_id']),
     store: firstNonEmpty(v['storeNameEn'], v['storeName'], v['storeNameAr'], v['fullNameEn'], v['fullName'], v['FullName'], v['name']) || 'Unnamed store',
@@ -154,9 +141,6 @@ export function mapVendor(v: Dto): MappedVendor {
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
-    statusClass: st[0],
-    statusLabel: st[1],
-    isPending: st[1] === 'Pending',
   };
 }
 

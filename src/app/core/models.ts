@@ -44,6 +44,9 @@ export interface MappedBanner {
   nameAr: string;
   sortOrder: number;
   image: string | null;
+  /** Comma-separated target ids — pre-fill the category/store autocompletes on edit. */
+  categoryIds: string;
+  storeIds: string;
 }
 
 export interface MappedUser {
@@ -69,14 +72,11 @@ export interface MappedVendor {
   phone: string;
   email: string;
   category: string;
-  /** null when the API omits `isVerified` entirely (same gap as MappedUser.verified). */
+  /** null when the API omits `isVerified` for a row — otherwise the real value. */
   verified: boolean | null;
   products: number | null;
   rating: number | null;
   joined: string;
-  statusClass: string;
-  statusLabel: string;
-  isPending: boolean;
 }
 
 export interface MappedCommission {

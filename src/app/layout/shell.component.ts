@@ -61,7 +61,7 @@ export class ShellComponent {
       group: 'Marketplace',
       links: [
         { view: 'moderation', icon: 'shield', label: 'Product Moderation', badge: () => this.badges.moderationPending() },
-        { view: 'vendors', icon: 'store', label: 'Vendors', badge: () => this.badges.vendorsPending() },
+        { view: 'vendors', icon: 'store', label: 'Vendors' },
         { view: 'categories', icon: 'tag', label: 'Categories' },
         { view: 'orders', icon: 'box', label: 'Orders' },
         // Delivery-backend pilot — disabled until a real delivery-backend is deployed

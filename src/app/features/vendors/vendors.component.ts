@@ -1,41 +1,25 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
-import { ToastService } from '../../core/toast.service';
 import { readPage, mapVendor } from '../../core/mappers';
 import { Dto, MappedVendor } from '../../core/models';
 import { ApiError } from '../../core/api-error';
 import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
-import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
-import { NavBadgesService } from '../../core/nav-badges.service';
-
-/** VendorStatus enum per the real admin API: 1=Pending, 2=Approved, 3=Rejected (no Suspended). */
-const STATUS_TABS: [string, string][] = [
-  ['All', ''],
-  ['Pending', '1'],
-  ['Approved', '2'],
-  ['Rejected', '3'],
-];
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'app-vendors',
-  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, AvatarComponent, IconComponent],
+  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent],
   templateUrl: './vendors.component.html',
 })
 export class VendorsComponent implements OnInit {
   private api = inject(AdminApiService);
-  private toast = inject(ToastService);
   private router = inject(Router);
-  private badges = inject(NavBadgesService);
 
-  protected tabLabels = STATUS_TABS.map((t) => t[0]);
-  protected statusLabel = signal('All');
-  protected vendorStatus = signal('');
   protected keyword = signal('');
   protected page = signal(1);
   protected pageSize = 20;
@@ -51,14 +35,6 @@ export class VendorsComponent implements OnInit {
 
   protected mapped(v: Dto): MappedVendor {
     return mapVendor(v);
-  }
-
-  protected selectTab(label: string) {
-    const t = STATUS_TABS.find((x) => x[0] === label);
-    this.vendorStatus.set(t ? t[1] : '');
-    this.statusLabel.set(label);
-    this.page.set(1);
-    this.load();
   }
 
   protected onSearch(v: string) {
@@ -79,13 +55,12 @@ export class VendorsComponent implements OnInit {
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.vendors({ keyword: this.keyword(), vendorStatus: this.vendorStatus(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.vendors({ keyword: this.keyword(), page: this.page(), pageSize: this.pageSize });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
-      if (this.vendorStatus() === '1') this.badges.vendorsPending.set(p.total > 0 ? p.total : null);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
@@ -98,25 +73,5 @@ export class VendorsComponent implements OnInit {
     if (!raw) return;
     const m = this.mapped(raw);
     this.router.navigate(['/vendors', m.id]);
-  }
-
-  protected async decide(i: number, action: 'approve' | 'reject') {
-    const raw = (this.items() || [])[i];
-    if (!raw) return;
-    const m = this.mapped(raw);
-    if (!m.id) {
-      this.toast.show('Missing vendor id — cannot ' + action);
-      return;
-    }
-    if (action === 'reject' && !confirm(`Reject vendor "${m.store}"? They will be notified.`)) return;
-    try {
-      if (action === 'approve') await this.api.approveVendor(m.id);
-      else await this.api.rejectVendor(m.id);
-      this.toast.show(action === 'approve' ? 'Vendor approved — now selling ✓' : 'Vendor rejected — notified');
-      this.load();
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) return;
-      this.toast.show(`${action === 'approve' ? 'Approve' : 'Reject'} failed: ${(e as Error).message || 'error'}`);
-    }
   }
 }

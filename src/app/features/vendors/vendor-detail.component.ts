@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ApiError } from '../../core/api-error';
 import { ToastService } from '../../core/toast.service';
@@ -17,7 +17,6 @@ import { StateBlockComponent } from '../../shared/state-block.component';
 })
 export class VendorDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
   protected egp = egp;
@@ -121,21 +120,6 @@ export class VendorDetailComponent implements OnInit {
       this.toast.show('Settle failed: ' + ((e as Error).message || 'error'));
     } finally {
       this.busy.set(false);
-    }
-  }
-
-  protected async decide(action: 'approve' | 'reject') {
-    const v = this.vendor();
-    if (!v || !this.id) return;
-    if (action === 'reject' && !confirm(`Reject vendor "${v.store}"? They will be notified.`)) return;
-    try {
-      if (action === 'approve') await this.api.approveVendor(this.id);
-      else await this.api.rejectVendor(this.id);
-      this.toast.show(action === 'approve' ? 'Vendor approved — now selling ✓' : 'Vendor rejected — notified');
-      this.router.navigate(['/vendors']);
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) return;
-      this.toast.show(`${action === 'approve' ? 'Approve' : 'Reject'} failed: ${(e as Error).message || 'error'}`);
     }
   }
 }

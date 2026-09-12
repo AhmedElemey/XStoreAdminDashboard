@@ -3,7 +3,6 @@
     <h2>Vendors</h2>
     <p><b>Business</b> accounts — sellers on the marketplace (role: vendor). Individual buyers are under Users.</p>
   </div>
-  <app-chip-tabs [labels]="tabLabels" [active]="statusLabel()" (select)="selectTab($event)" />
 </div>
 
 <div class="toolbar">
@@ -19,7 +18,7 @@
   } @else if (loadState() === 'error') {
     <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
   } @else if (!items()?.length) {
-    <app-state-block kind="empty" [message]="keyword() ? 'No vendors match “' + keyword() + '”.' : 'No vendors with status “' + statusLabel() + '”.'" />
+    <app-state-block kind="empty" [message]="keyword() ? 'No vendors match “' + keyword() + '”.' : 'No vendor accounts found.'" />
   } @else {
     <table>
       <thead>
@@ -37,17 +36,16 @@
             </td>
             <td><span class="badge-s b-indigo">🏢 Business</span></td>
             <td>
-              <span class="badge-s" [class]="m.statusClass"><span class="dotb" style="background:currentColor"></span>{{ m.statusLabel }}</span>
-              @if (m.verified) { <span class="badge-s b-green">✓</span> }
+              @if (m.verified) {
+                <span class="badge-s b-green">✓ Verified</span>
+              } @else {
+                <span class="badge-s b-grey">Unverified</span>
+              }
             </td>
             <td>{{ m.products == null ? '—' : m.products }}</td>
             <td>{{ m.rating == null ? '—' : '⭐ ' + m.rating }}</td>
             <td class="r">
               <button class="btn btn-g btn-sm" (click)="openVendor($index)">Details</button>
-              @if (m.isPending) {
-                <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">Approve</button>
-                <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">Reject</button>
-              }
             </td>
           </tr>
         }

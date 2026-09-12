@@ -6,7 +6,6 @@ export interface UsersQuery {
   keyword?: string;
   role?: string;
   isVerified?: string;
-  vendorStatus?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -14,7 +13,6 @@ export interface UsersQuery {
 
 export interface VendorsQuery {
   keyword?: string;
-  vendorStatus?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -63,12 +61,6 @@ export class AdminApiService {
   }
   vendor(id: string) {
     return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}`);
-  }
-  approveVendor(id: string) {
-    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/approve`, { method: 'PUT' });
-  }
-  rejectVendor(id: string) {
-    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/reject`, { method: 'PUT' });
   }
   vendorCommission(id: string) {
     return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`);
@@ -153,6 +145,11 @@ export class AdminApiService {
   }
   deleteBanner(id: string) {
     return this.auth.apiFetch(`/api/banners/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
+  /* ---------- Admin stores — GET /api/admin/stores/lookup (autocomplete) ---------- */
+  storeLookup(query: { search?: string; isActive?: string | number | undefined }) {
+    return this.auth.apiFetch<unknown>('/api/admin/stores/lookup', { query });
   }
 }
 export type { Dto };
