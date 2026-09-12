@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { Dto } from './models';
+import { MarketplacePolicies } from './mappers';
 
 export interface UsersQuery {
   keyword?: string;
@@ -98,7 +99,7 @@ export class AdminApiService {
   systemSettings() {
     return this.auth.apiFetch<unknown>('/api/admin/system-settings');
   }
-  updateSystemSettings(body: { commissionValueOnOrder: number; warnThresholdEgp: number; pauseThresholdEgp: number }) {
+  updateSystemSettings(body: { commissionValueOnOrder: number; warnThresholdEgp: number; pauseThresholdEgp: number } & MarketplacePolicies) {
     return this.auth.apiFetch('/api/admin/system-settings', { method: 'PUT', body });
   }
 

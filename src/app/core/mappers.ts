@@ -23,6 +23,14 @@ function num(v: unknown): number | null {
 function boolOrUnknown(v: unknown): boolean | null {
   return v === undefined ? null : !!v;
 }
+/** first defined value of a list of candidates, coerced to boolean — falls back when every
+ *  candidate key is absent from the DTO (e.g. a field the backend doesn't send yet). */
+function boolOr(fallback: boolean, ...vals: unknown[]): boolean {
+  for (const v of vals) {
+    if (v !== undefined && v !== null) return !!v;
+  }
+  return fallback;
+}
 
 function absoluteImage(img: string | null, apiBase: string): string | null {
   if (!img) return null;
@@ -197,19 +205,52 @@ export function mapOrder(o: Dto): MappedOrder {
   };
 }
 
-export interface MappedSystemSettings {
+export interface MarketplacePolicies {
+  requireProductApproval: boolean;
+  requireVendorApproval: boolean;
+  cashOnDeliveryEnabled: boolean;
+  xstoreCourierPilotEnabled: boolean;
+  onlinePaymentEnabled: boolean;
+  guestBrowsingEnabled: boolean;
+  vendorCouponsEnabled: boolean;
+}
+
+/** Values the Settings page showed before these toggles were wired to any endpoint —
+ *  used as the per-field fallback below so behavior is unchanged until the backend
+ *  actually starts returning these keys from GET /api/admin/system-settings. */
+export const DEFAULT_MARKETPLACE_POLICIES: MarketplacePolicies = {
+  requireProductApproval: true,
+  requireVendorApproval: true,
+  cashOnDeliveryEnabled: true,
+  xstoreCourierPilotEnabled: true,
+  onlinePaymentEnabled: false,
+  guestBrowsingEnabled: false,
+  vendorCouponsEnabled: false,
+};
+
+export interface MappedSystemSettings extends MarketplacePolicies {
   commissionValueOnOrder: number;
   warnThresholdEgp: number;
   pauseThresholdEgp: number;
 }
 
 /** GET /api/admin/system-settings response shape isn't documented beyond the PUT body
- *  it accepts — tolerant to aliases like every other mapper here. */
+ *  it accepts — tolerant to aliases like every other mapper here. The marketplace-policy
+ *  fields are sent on the same PUT as extra keys (see AdminApiService.updateSystemSettings)
+ *  but aren't confirmed to be persisted server-side yet, so each falls back to its
+ *  pre-existing hardcoded default when the backend doesn't echo it back. */
 export function mapSystemSettings(s: Dto): MappedSystemSettings {
   return {
     commissionValueOnOrder: numOr(s['commissionValueOnOrder'], s['commissionValue'], s['commissionPercent']) ?? 0,
     warnThresholdEgp: numOr(s['warnThresholdEgp'], s['warnThreshold']) ?? 0,
     pauseThresholdEgp: numOr(s['pauseThresholdEgp'], s['pauseThreshold']) ?? 0,
+    requireProductApproval: boolOr(DEFAULT_MARKETPLACE_POLICIES.requireProductApproval, s['requireProductApproval'], s['productApprovalRequired']),
+    requireVendorApproval: boolOr(DEFAULT_MARKETPLACE_POLICIES.requireVendorApproval, s['requireVendorApproval'], s['vendorApprovalRequired']),
+    cashOnDeliveryEnabled: boolOr(DEFAULT_MARKETPLACE_POLICIES.cashOnDeliveryEnabled, s['cashOnDeliveryEnabled'], s['codEnabled']),
+    xstoreCourierPilotEnabled: boolOr(DEFAULT_MARKETPLACE_POLICIES.xstoreCourierPilotEnabled, s['xstoreCourierPilotEnabled'], s['deliveredByXstoreEnabled']),
+    onlinePaymentEnabled: boolOr(DEFAULT_MARKETPLACE_POLICIES.onlinePaymentEnabled, s['onlinePaymentEnabled'], s['paymentGatewayEnabled']),
+    guestBrowsingEnabled: boolOr(DEFAULT_MARKETPLACE_POLICIES.guestBrowsingEnabled, s['guestBrowsingEnabled'], s['allowGuestBrowsing']),
+    vendorCouponsEnabled: boolOr(DEFAULT_MARKETPLACE_POLICIES.vendorCouponsEnabled, s['vendorCouponsEnabled'], s['allowVendorCoupons']),
   };
 }
 
