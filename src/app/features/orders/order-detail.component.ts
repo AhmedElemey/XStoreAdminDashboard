@@ -25,6 +25,8 @@ export class OrderDetailComponent implements OnInit {
   protected order = signal<MappedOrder | null>(null);
   protected orderState = signal<'loading' | 'error' | null>('loading');
   protected busy = signal(false);
+  protected cancelOpen = signal(false);
+  protected cancelReason = signal('');
 
   private id = '';
 
@@ -61,15 +63,28 @@ export class OrderDetailComponent implements OnInit {
     return !!o && ['pending', 'confirmed', 'processing'].includes(o.statusKey);
   }
 
-  protected async cancel() {
+  protected openCancel() {
+    this.cancelReason.set('');
+    this.cancelOpen.set(true);
+  }
+
+  protected closeCancel() {
+    if (this.busy()) return;
+    this.cancelOpen.set(false);
+  }
+
+  protected async confirmCancel() {
     const o = this.order();
-    if (!o) return;
-    const reason = prompt('Reason for cancelling this order?', 'Cancelled by administrator');
-    if (reason === null) return;
+    const reason = this.cancelReason().trim();
+    if (!o || !reason) {
+      this.toast.show('Please write a cancellation reason');
+      return;
+    }
     this.busy.set(true);
     try {
       await this.api.cancelOrder(o.id, reason);
       this.toast.show('Order cancelled');
+      this.cancelOpen.set(false);
       await this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

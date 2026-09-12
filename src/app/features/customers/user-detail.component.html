@@ -49,7 +49,7 @@
         <div style="margin-bottom:10px">
           <span class="badge-s b-blue">👤 Customer</span>
           @if (m.verified === null) {
-            <span class="badge-s b-grey" title="The API doesn't report per-user verification status yet.">Verification: unknown</span>
+            <span class="badge-s b-grey" title="The API didn't include a verification status.">Verification: unknown</span>
           } @else if (m.verified) {
             <span class="badge-s b-green">✓ Verified</span>
           } @else {

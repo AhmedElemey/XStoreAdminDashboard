@@ -29,6 +29,7 @@ export class VendorDetailComponent implements OnInit {
   protected commissionState = signal<'loading' | 'error' | null>('loading');
   protected warnDraft = signal(0);
   protected pauseDraft = signal(0);
+  protected commissionDraft = signal(0);
   protected payAmount = signal(0);
   protected busy = signal(false);
 
@@ -76,6 +77,7 @@ export class VendorDetailComponent implements OnInit {
       this.commission.set(c);
       this.warnDraft.set(c.warn);
       this.pauseDraft.set(c.pause);
+      this.commissionDraft.set(c.commission);
       this.payAmount.set(c.outstanding);
       this.commissionState.set(null);
     } catch (e) {
@@ -92,8 +94,8 @@ export class VendorDetailComponent implements OnInit {
     }
     this.busy.set(true);
     try {
-      await this.api.updateVendorCommissionThresholds(this.id, this.warnDraft(), this.pauseDraft());
-      this.toast.show('Commission thresholds saved ✓');
+      await this.api.updateVendorCommissionSettings(this.id, this.commissionDraft(), this.warnDraft(), this.pauseDraft());
+      this.toast.show('Commission settings saved ✓');
       await this.loadCommission();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

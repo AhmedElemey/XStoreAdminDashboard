@@ -14,10 +14,9 @@ import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
-// The `isVerified` list item field the badge reads is never populated by the API today,
-// so every row shows "Unverified" regardless of real status — but the server-side
-// ?isVerified=true|false filter does work correctly (confirmed against live data), so
-// expose it as a filter here even though the per-row badge is a known backend gap.
+// The confirmed backend `UserDto` includes `IsVerified`, so m.verified is populated
+// per-row. The server-side ?isVerified=true|false filter is also exposed as a tab;
+// when the field is ever absent, the active filter still serves as ground truth.
 const VERIFIED_TABS: [string, string][] = [
   ['All', ''],
   ['Verified', 'true'],
@@ -53,9 +52,8 @@ export class CustomersComponent implements OnInit {
     return mapUser(u);
   }
 
-  /** The API never returns isVerified on list items, so m.verified is always null —
-   *  but while a Verified/Unverified filter is active, every row in the result set is
-   *  known to match it (the server-side filter is real), so use that as ground truth. */
+  /** Verified status comes from the DTO's `isVerified` field. If the field is ever
+   *  absent from a response, the active Verified/Unverified filter is ground truth. */
   protected rowVerified(m: MappedUser): boolean | null {
     if (this.verifiedFilter() === 'true') return true;
     if (this.verifiedFilter() === 'false') return false;

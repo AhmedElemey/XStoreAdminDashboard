@@ -11,7 +11,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       @if (canCancel()) {
-        <button class="btn btn-no" [disabled]="busy()" (click)="cancel()">Cancel order</button>
+        <button class="btn btn-no" [disabled]="busy()" (click)="openCancel()">Cancel order</button>
       }
       <a class="btn btn-g" routerLink="/orders">← Back to Orders</a>
     </div>
@@ -60,6 +60,19 @@
           <p class="muted" style="font-size:13px">{{ o.addr }}</p>
         }
       </div>
+    </div>
+  </div>
+}
+
+@if (cancelOpen()) {
+  <div class="overlay show" (click)="closeCancel()"></div>
+  <div class="modal-card">
+    <h3 style="font-size:16px;margin-bottom:4px">Cancel order {{ order()?.id }}</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:12px">This reason will be recorded and shown to the customer.</p>
+    <textarea class="modal-ta" rows="4" placeholder="Write cancellation reason…" [value]="cancelReason()" (input)="cancelReason.set($any($event.target).value)"></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="btn btn-g" [disabled]="busy()" (click)="closeCancel()">Keep order</button>
+      <button class="btn btn-no" [disabled]="busy()" (click)="confirmCancel()">Cancel order</button>
     </div>
   </div>
 }

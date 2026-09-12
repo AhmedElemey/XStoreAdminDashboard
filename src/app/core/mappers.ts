@@ -105,22 +105,22 @@ export function mapBanner(b: Dto, apiBase: string): MappedBanner {
 }
 
 export function mapUser(u: Dto): MappedUser {
-  const email = firstNonEmpty(u['email']);
-  const phone = firstNonEmpty(u['phoneNumber'], u['phone'], u['whatsAppNumber']) || '—';
-  const orders = numOr(u['ordersCount'], u['totalOrders'], u['orders']);
-  const spend = numOr(u['totalSpent'], u['lifetimeSpend'], u['totalSpend']);
+  const email = firstNonEmpty(u['email'], u['Email']);
+  const phone = firstNonEmpty(u['phoneNumber'], u['PhoneNumber'], u['phone'], u['whatsAppNumber']) || '—';
+  const orders = numOr(u['numberOfOrders'], u['NumberOfOrders'], u['ordersCount'], u['totalOrders'], u['orders']);
+  const spend = numOr(u['lifeTimeSpend'], u['LifeTimeSpend'], u['totalSpent'], u['lifetimeSpend'], u['totalSpend']);
   return {
-    id: firstNonEmpty(u['id'], u['userId'], u['_id'], u['uuid']),
-    name: firstNonEmpty(u['fullNameEn'], u['fullName'], u['name'], u['nameEn'], u['fullNameAr'], email, u['phoneNumber']) || 'Unknown',
+    id: firstNonEmpty(u['id'], u['Id'], u['userId'], u['_id'], u['uuid']),
+    name: firstNonEmpty(u['fullNameEn'], u['fullName'], u['FullName'], u['name'], u['nameEn'], u['fullNameAr'], email, u['phoneNumber']) || 'Unknown',
     sub: email || phone || 'role: ' + firstNonEmpty(u['role']) || 'consumer',
-    city: firstNonEmpty(u['city'], u['storeCity'], u['governorate'], u['town'], u['location']) || '—',
+    city: firstNonEmpty(u['cityNameEn'], u['CityNameEn'], u['governorateNameEn'], u['GovernorateNameEn'], u['cityNameAr'], u['CityNameAr'], u['city'], u['storeCity'], u['governorate'], u['town'], u['location']) || '—',
     phone,
     email,
-    role: firstNonEmpty(u['role']) || 'consumer',
-    verified: boolOrUnknown(u['isVerified']),
+    role: firstNonEmpty(u['roleName'], u['RoleName'], u['role']) || 'consumer',
+    verified: boolOrUnknown(u['isVerified'] ?? u['IsVerified']),
     orders: orders == null ? '—' : orders,
     spend: spend == null ? '—' : egp(spend),
-    joined: firstNonEmpty(u['joinedAt'], u['createdAt'], u['joinDate']) || '—',
+    joined: dateOnly(firstNonEmpty(u['creationDate'], u['CreationDate'], u['joinedAt'], u['createdAt'], u['joinDate'])) || '—',
   };
 }
 
@@ -259,13 +259,14 @@ export function mapOverview(o: Dto): MappedOverview {
   };
 }
 
-/** Response shape for GET /api/admin/vendors/{id}/commission isn't documented in the
- *  Postman collection (only the PATCH/POST request bodies are) — tolerant to aliases
- *  like every other mapper here. */
+/** Response shape for GET /api/admin/vendors/{id}/commission/settings — maps
+ *  VendorCommissionDto (outstandingEgp, commissionValueOnOrder, warnThresholdEgp,
+ *  pauseThresholdEgp). Tolerant to aliases like every other mapper here. */
 export function mapCommission(c: Dto): MappedCommission {
   return {
     outstanding: numOr(c['outstandingEgp'], c['outstandingBalanceEgp'], c['balanceEgp'], c['outstanding']) ?? 0,
     warn: numOr(c['warnThresholdEgp'], c['warnThreshold'], c['warn']) ?? 0,
     pause: numOr(c['pauseThresholdEgp'], c['pauseThreshold'], c['pause']) ?? 0,
+    commission: numOr(c['commissionValueOnOrder'], c['commissionValue'], c['commissionPercent'], c['commission']) ?? 0,
   };
 }

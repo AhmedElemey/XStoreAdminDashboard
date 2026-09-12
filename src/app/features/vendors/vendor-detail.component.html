@@ -71,6 +71,11 @@
             <label>Pause threshold (EGP)</label>
             <input inputmode="numeric" [ngModel]="pauseDraft()" (ngModelChange)="pauseDraft.set(+$event)" name="pauseDraft" />
           </div>
+          <div class="form-row">
+            <label>Commission on order (EGP)</label>
+            <input inputmode="decimal" [ngModel]="commissionDraft()" (ngModelChange)="commissionDraft.set(+$event)" name="commissionDraft" />
+          </div>
+          <p class="muted" style="font-size:12px;margin:-4px 0 4px">Pause must be ≥ warn.</p>
           <button class="btn btn-g" style="width:100%;justify-content:center" [disabled]="busy()" (click)="saveThresholds()">Save thresholds</button>
         }
       </div>

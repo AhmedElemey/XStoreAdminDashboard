@@ -54,9 +54,7 @@ export interface MappedUser {
   phone: string;
   email: string;
   role: string;
-  /** null when the API omits `isVerified` entirely, as it currently always does for
-   *  /api/users — distinct from a real `false` (which the isVerified query filter,
-   *  confirmed working server-side, can still report). */
+  /** null only when the API omits `isVerified` for a row — otherwise the real value. */
   verified: boolean | null;
   orders: number | string;
   spend: string;
@@ -85,6 +83,8 @@ export interface MappedCommission {
   outstanding: number;
   warn: number;
   pause: number;
+  /** Per-vendor commission on order (%), mirrors system-settings `commissionValueOnOrder`. */
+  commission: number;
 }
 
 /* ---------- demo data models (Couriers / Packages) ---------- */

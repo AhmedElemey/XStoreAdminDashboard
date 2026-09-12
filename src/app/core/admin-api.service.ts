@@ -71,12 +71,12 @@ export class AdminApiService {
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/reject`, { method: 'PUT' });
   }
   vendorCommission(id: string) {
-    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission`);
+    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`);
   }
-  updateVendorCommissionThresholds(id: string, warnThresholdEgp: number, pauseThresholdEgp: number) {
-    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission`, {
-      method: 'PATCH',
-      body: { warnThresholdEgp, pauseThresholdEgp },
+  updateVendorCommissionSettings(id: string, commissionValueOnOrder: number, warnThresholdEgp: number, pauseThresholdEgp: number) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`, {
+      method: 'PUT',
+      body: { commissionValueOnOrder, warnThresholdEgp, pauseThresholdEgp },
     });
   }
   settleVendorCommission(id: string, amountEgp?: number) {
