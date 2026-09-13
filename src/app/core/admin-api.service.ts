@@ -123,6 +123,9 @@ export class AdminApiService {
   listings(q: ListingsQuery) {
     return this.auth.apiFetch<unknown>('/api/admin/listings', { query: q });
   }
+  listing(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/listings/${encodeURIComponent(id)}`);
+  }
   approveListing(id: string) {
     return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/approve`, { method: 'PUT', body: {} });
   }
