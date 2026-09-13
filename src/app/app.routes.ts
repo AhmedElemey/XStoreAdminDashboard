@@ -79,6 +79,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/customers/user-detail.component').then((m) => m.UserDetailComponent),
       },
       {
+        path: 'customers/:id/orders',
+        data: { title: 'Customer Orders' },
+        loadComponent: () => import('./features/customers/customer-orders.component').then((m) => m.CustomerOrdersComponent),
+      },
+      {
         path: 'products/:id',
         data: { title: 'Product' },
         loadComponent: () => import('./features/products/product-detail.component').then((m) => m.ProductDetailComponent),
