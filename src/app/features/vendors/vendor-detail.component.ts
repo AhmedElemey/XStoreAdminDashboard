@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
@@ -32,8 +32,10 @@ export class VendorDetailComponent implements OnInit {
   protected payAmount = signal(0);
   protected busy = signal(false);
 
+  protected readonly productsPreviewLimit = 5;
   protected products = signal<MappedListing[]>([]);
   protected productsState = signal<'loading' | 'error' | null>('loading');
+  protected previewProducts = computed(() => this.products().slice(0, this.productsPreviewLimit));
 
   private id = '';
 

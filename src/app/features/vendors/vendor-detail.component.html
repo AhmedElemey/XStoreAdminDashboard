@@ -98,7 +98,12 @@
   </div>
 
   <div class="card" style="margin-top:16px">
-    <div class="c-head"><h3>Products</h3></div>
+    <div class="c-head">
+      <h3>Products</h3>
+      @if (products().length > productsPreviewLimit) {
+        <a class="muted" style="cursor:pointer;font-size:12.5px" [routerLink]="['/vendors', v.id, 'products']">View all →</a>
+      }
+    </div>
     <div class="c-body" style="padding-top:4px">
       @if (productsState() === 'loading') {
         <p class="muted" style="font-size:12.5px">Loading products…</p>
@@ -107,7 +112,7 @@
       } @else if (!products().length) {
         <p class="muted" style="font-size:12.5px">This vendor has no products listed.</p>
       } @else {
-        @for (p of products(); track p.id) {
+        @for (p of previewProducts(); track p.id) {
           <div class="kv">
             <span>
               @if (p.id) {
