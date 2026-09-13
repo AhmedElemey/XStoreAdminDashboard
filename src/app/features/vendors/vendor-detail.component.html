@@ -96,4 +96,35 @@
       </div>
     </div>
   </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="c-head">
+      <h3>Products</h3>
+      @if (products().length > productsPreviewLimit) {
+        <a class="muted" style="cursor:pointer;font-size:12.5px" [routerLink]="['/vendors', v.id, 'products']">View all →</a>
+      }
+    </div>
+    <div class="c-body" style="padding-top:4px">
+      @if (productsState() === 'loading') {
+        <p class="muted" style="font-size:12.5px">Loading products…</p>
+      } @else if (productsState() === 'error') {
+        <p class="muted" style="font-size:12.5px">Couldn't load this vendor's products.</p>
+      } @else if (!products().length) {
+        <p class="muted" style="font-size:12.5px">This vendor has no products listed.</p>
+      } @else {
+        @for (p of previewProducts(); track p.id) {
+          <div class="kv">
+            <span>
+              @if (p.id) {
+                <a [routerLink]="['/products', p.id]" style="color:var(--primary);cursor:pointer">{{ p.title }}</a>
+              } @else {
+                {{ p.title }}
+              }
+            </span>
+            <b>{{ p.price == null ? '—' : egp(p.price) }}</b>
+          </div>
+        }
+      }
+    </div>
+  </div>
 }

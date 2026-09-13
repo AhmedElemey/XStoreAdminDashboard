@@ -147,16 +147,19 @@ export function mapVendor(v: Dto): MappedVendor {
 export interface MappedOrder {
   id: string;
   buyer: string;
+  buyerId: string | null;
   phone: string;
   addr: string;
   vendor: string;
+  vendorId: string | null;
+  vendorPhone: string;
   statusNum: number;
   statusKey: string;
   statusLabel: string;
   statusClass: string;
   total: number | null;
   courier: string | null;
-  items: { name: string; qty: number; price: number }[];
+  items: { id: string | null; name: string; qty: number; price: number }[];
 }
 
 /** OrderStatus enum per the real admin API: 0=Pending,1=Confirmed,2=Processing,3=Shipped,4=Delivered,5=Cancelled. */
@@ -180,9 +183,12 @@ export function mapOrder(o: Dto): MappedOrder {
   return {
     id: firstNonEmpty(o['id'], o['orderId'], o['_id']),
     buyer: firstNonEmpty(o['buyerName'], o['consumerName'], o['customerName'], o['fullNameEn'], o['fullName']) || '—',
+    buyerId: firstNonEmpty(o['buyerId'], o['consumerId'], o['customerId'], o['userId']) || null,
     phone: firstNonEmpty(o['phoneNumber'], o['buyerPhone'], o['consumerPhone'], o['phone']) || '—',
     addr: firstNonEmpty(o['address'], o['deliveryAddress'], o['shippingAddress'], o['addressLine']),
     vendor: firstNonEmpty(o['vendorName'], o['storeNameEn'], o['storeName']) || '—',
+    vendorId: firstNonEmpty(o['vendorId'], o['storeId']) || null,
+    vendorPhone: firstNonEmpty(o['vendorPhone'], o['vendorPhoneNumber'], o['storePhone'], o['storePhoneNumber']) || '—',
     statusNum,
     statusKey,
     statusLabel,
@@ -190,6 +196,7 @@ export function mapOrder(o: Dto): MappedOrder {
     total: numOr(o['totalAmount'], o['total'], o['amount'], o['grandTotal']),
     courier: firstNonEmpty(o['courierName'], o['courier']) || null,
     items: rawItems.map((it: Dto) => ({
+      id: firstNonEmpty(it['id'], it['productId'], it['listingId'], it['_id']) || null,
       name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName'], it['titleSnapshot']) || 'Item',
       qty: numOr(it['quantity'], it['qty']) ?? 1,
       price: numOr(it['price'], it['unitPrice']) ?? 0,

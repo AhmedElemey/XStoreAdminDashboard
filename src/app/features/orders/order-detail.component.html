@@ -34,8 +34,17 @@
 
         @if (o.items.length) {
           <h3 class="sec-h">Items</h3>
-          @for (it of o.items; track it.name) {
-            <div class="kv"><span>{{ it.name }} × {{ it.qty }}</span><b>{{ egp(it.qty * it.price) }}</b></div>
+          @for (it of o.items; track $index) {
+            <div class="kv">
+              <span>
+                @if (it.id) {
+                  <a [routerLink]="['/products', it.id]" style="color:var(--primary);cursor:pointer">{{ it.name }} × {{ it.qty }}</a>
+                } @else {
+                  {{ it.name }} × {{ it.qty }}
+                }
+              </span>
+              <b>{{ egp(it.qty * it.price) }}</b>
+            </div>
           }
         }
         @if (o.total != null) {
@@ -48,10 +57,28 @@
       <div class="c-head"><h3>Order details</h3></div>
       <div class="c-body" style="padding-top:4px">
         <div class="kv"><span>Status</span><b>{{ o.statusLabel }}</b></div>
-        <div class="kv"><span>Buyer (customer)</span><b>{{ o.buyer }}</b></div>
+        <div class="kv">
+          <span>Customer</span>
+          <b>
+            @if (o.buyerId) {
+              <a [routerLink]="['/customers', o.buyerId]" style="color:var(--primary);cursor:pointer">{{ o.buyer }}</a>
+            } @else {
+              {{ o.buyer }}
+            }
+          </b>
+        </div>
         <div class="kv"><span>Phone</span><b>{{ o.phone }}</b></div>
-        <div class="kv"><span>Vendor (business)</span><b>{{ o.vendor }}</b></div>
-        <div class="kv"><span>Payment</span><b>Cash on Delivery</b></div>
+        <div class="kv">
+          <span>Vendor</span>
+          <b>
+            @if (o.vendorId) {
+              <a [routerLink]="['/vendors', o.vendorId]" style="color:var(--primary);cursor:pointer">{{ o.vendor }}</a>
+            } @else {
+              {{ o.vendor }}
+            }
+          </b>
+        </div>
+        <div class="kv"><span>Phone</span><b>{{ o.vendorPhone }}</b></div>
         @if (o.courier) {
           <div class="kv"><span>Delivery</span><b>🚚 Delivered by xStore — {{ o.courier }}</b></div>
         }

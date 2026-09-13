@@ -35,6 +35,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/vendors/vendor-detail.component').then((m) => m.VendorDetailComponent),
       },
       {
+        path: 'vendors/:id/products',
+        data: { title: 'Vendor Products' },
+        loadComponent: () => import('./features/vendors/vendor-products.component').then((m) => m.VendorProductsComponent),
+      },
+      {
         path: 'categories',
         data: { title: 'Categories' },
         loadComponent: () => import('./features/categories/categories.component').then((m) => m.CategoriesComponent),
@@ -65,13 +70,23 @@ export const routes: Routes = [
       // },
       {
         path: 'customers',
-        data: { title: 'Users' },
+        data: { title: 'Customer' },
         loadComponent: () => import('./features/customers/customers.component').then((m) => m.CustomersComponent),
       },
       {
         path: 'customers/:id',
         data: { title: 'Customer' },
         loadComponent: () => import('./features/customers/user-detail.component').then((m) => m.UserDetailComponent),
+      },
+      {
+        path: 'customers/:id/orders',
+        data: { title: 'Customer Orders' },
+        loadComponent: () => import('./features/customers/customer-orders.component').then((m) => m.CustomerOrdersComponent),
+      },
+      {
+        path: 'products/:id',
+        data: { title: 'Product' },
+        loadComponent: () => import('./features/products/product-detail.component').then((m) => m.ProductDetailComponent),
       },
       {
         path: 'content',

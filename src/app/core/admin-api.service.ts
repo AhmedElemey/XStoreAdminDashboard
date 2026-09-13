@@ -65,6 +65,9 @@ export class AdminApiService {
   vendorCommission(id: string) {
     return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`);
   }
+  vendorProducts(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/products`);
+  }
   updateVendorCommissionSettings(id: string, commissionValueOnOrder: number, warnThresholdEgp: number, pauseThresholdEgp: number) {
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`, {
       method: 'PUT',
@@ -122,6 +125,9 @@ export class AdminApiService {
   /* ---------- Product moderation — GET /api/admin/listings ---------- */
   listings(q: ListingsQuery) {
     return this.auth.apiFetch<unknown>('/api/admin/listings', { query: q });
+  }
+  listing(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/listings/${encodeURIComponent(id)}`);
   }
   approveListing(id: string) {
     return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/approve`, { method: 'PUT', body: {} });
