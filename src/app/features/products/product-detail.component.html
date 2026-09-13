@@ -1,0 +1,52 @@
+@if (listingState() === 'loading') {
+  <app-state-block kind="loading" message="Loading product…" />
+} @else if (listingState() === 'error' || !listing()) {
+  <app-state-block kind="error" message="Couldn't load this product." />
+} @else {
+  @let p = listing()!;
+  <div class="page-head">
+    <div>
+      <h2 style="margin:0">{{ p.title }}</h2>
+      <p style="margin:2px 0 0">{{ p.vendor }} · {{ p.category }}</p>
+    </div>
+    <button class="btn btn-g" (click)="back()">← Back</button>
+  </div>
+
+  <div class="card">
+    <div class="c-head"><h3>Product details</h3></div>
+    <div class="c-body" style="padding-top:4px">
+      @if (p.image) {
+        <div style="width:100%;max-width:320px;height:200px;border-radius:11px;overflow:hidden;margin-bottom:16px">
+          <img [src]="p.image" style="width:100%;height:100%;object-fit:cover" />
+        </div>
+      }
+      <div style="font-size:22px;font-weight:800;color:var(--primary)">
+        {{ p.price == null ? '—' : egp(p.price) }}
+        @if (p.compareAt) {
+          <span style="text-decoration:line-through;color:var(--text-3);font-size:15px;font-weight:500">{{ egp(p.compareAt) }}</span>
+        }
+      </div>
+      <div style="margin:12px 0;display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge-s b-indigo">Stock: {{ p.stock == null ? '—' : p.stock }}</span>
+        <span class="badge-s b-grey">{{ p.condition }}</span>
+        @if (p.isHot) {
+          <span class="badge-s b-red">🔥 Hot deal</span>
+        }
+      </div>
+      @if (p.description) {
+        <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">{{ p.description }}</p>
+      }
+      <div class="kv"><span>Vendor</span><b>{{ p.vendor }}</b></div>
+      <div class="kv"><span>Category</span><b>{{ p.category }}</b></div>
+      <div class="kv"><span>Brand</span><b>{{ p.brand }}</b></div>
+      <div class="kv"><span>Condition</span><b>{{ p.condition }}</b></div>
+      <div class="kv"><span>Location</span><b>{{ p.location }}</b></div>
+      @if (p.submitted) {
+        <div class="kv"><span>Submitted</span><b>{{ formatDate(p.submitted) }}</b></div>
+      }
+      @if (p.id) {
+        <div class="kv"><span>Product ID</span><b>{{ p.id }}</b></div>
+      }
+    </div>
+  </div>
+}

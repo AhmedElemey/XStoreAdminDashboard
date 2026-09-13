@@ -1,0 +1,33 @@
+<div class="page-head">
+  <div>
+    <h2 style="margin:0">{{ user()?.name || 'Customer' }} · Orders</h2>
+    <p style="margin:2px 0 0">All orders placed by this customer</p>
+  </div>
+  <a class="btn btn-g" [routerLink]="['/customers', id]">← Back to customer</a>
+</div>
+
+<div class="card">
+  @if (ordersState() === 'loading') {
+    <app-state-block kind="loading" message="Loading orders…" />
+  } @else if (ordersState() === 'error') {
+    <app-state-block kind="error" message="Couldn't load this customer's orders." />
+  } @else if (!orders().length) {
+    <app-state-block kind="empty" message="This customer has no orders yet." />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Order</th><th>Vendor</th><th>Total</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        @for (o of orders(); track o.id) {
+          <tr>
+            <td><a [routerLink]="['/orders', o.id]" style="color:var(--primary);cursor:pointer;font-weight:700">{{ o.id }}</a></td>
+            <td class="muted">{{ o.vendor }}</td>
+            <td class="money">{{ o.total == null ? '—' : egp(o.total) }}</td>
+            <td><span class="badge-s" [class]="o.statusClass">{{ o.statusLabel }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

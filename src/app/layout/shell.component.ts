@@ -73,7 +73,7 @@ export class ShellComponent {
     {
       group: 'Growth',
       links: [
-        { view: 'customers', icon: 'users', label: 'Users' },
+        { view: 'customers', icon: 'users', label: 'Customer' },
         { view: 'content', icon: 'image', label: 'Content & Banners' },
       ],
     },

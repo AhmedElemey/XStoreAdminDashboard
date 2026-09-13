@@ -1,0 +1,41 @@
+<div class="page-head">
+  <div>
+    <h2 style="margin:0">{{ vendor()?.store || 'Vendor' }} · Products</h2>
+    <p style="margin:2px 0 0">All products listed by this vendor</p>
+  </div>
+  <a class="btn btn-g" [routerLink]="['/vendors', id]">← Back to vendor</a>
+</div>
+
+@if (productsState() === 'loading') {
+  <app-state-block kind="loading" message="Loading products…" />
+} @else if (productsState() === 'error') {
+  <app-state-block kind="error" message="Couldn't load this vendor's products." />
+} @else if (!products().length) {
+  <app-state-block kind="empty" message="This vendor has no products listed." />
+} @else {
+  <div class="grid" style="gap:14px">
+    @for (p of products(); track p.id) {
+      <a [routerLink]="p.id ? ['/products', p.id] : null" class="mod" style="cursor:pointer">
+        <div class="thumb">
+          @if (p.image) {
+            <img [src]="p.image" />
+          } @else {
+            📦
+          }
+        </div>
+        <div class="minfo">
+          <b>{{ p.title }}</b>
+          <p>
+            <span class="money">{{ p.price == null ? '—' : egp(p.price) }}</span>
+            @if (p.compareAt) {
+              <span style="text-decoration:line-through;opacity:0.5;margin-left:4px">{{ egp(p.compareAt) }}</span>
+            }
+             · stock {{ p.stock == null ? '—' : p.stock }}
+            @if (p.isHot) { · <span class="badge-s b-red">🔥 Hot</span> }
+          </p>
+          <p class="muted" style="font-size:12px;margin-top:3px">{{ p.condition }}</p>
+        </div>
+      </a>
+    }
+  </div>
+}

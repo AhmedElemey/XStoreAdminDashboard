@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ApiError } from '../../core/api-error';
 import { ToastService } from '../../core/toast.service';
-import { Dto, MappedCommission, MappedVendor } from '../../core/models';
-import { mapVendor, mapCommission } from '../../core/mappers';
+import { Dto, MappedCommission, MappedListing, MappedVendor } from '../../core/models';
+import { mapVendor, mapCommission, mapListing, readPage } from '../../core/mappers';
 import { egp } from '../../core/format';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
@@ -32,6 +32,11 @@ export class VendorDetailComponent implements OnInit {
   protected payAmount = signal(0);
   protected busy = signal(false);
 
+  protected readonly productsPreviewLimit = 5;
+  protected products = signal<MappedListing[]>([]);
+  protected productsState = signal<'loading' | 'error' | null>('loading');
+  protected previewProducts = computed(() => this.products().slice(0, this.productsPreviewLimit));
+
   private id = '';
 
   ngOnInit() {
@@ -39,7 +44,25 @@ export class VendorDetailComponent implements OnInit {
       this.id = params.get('id') || '';
       this.loadVendor();
       this.loadCommission();
+      this.loadProducts();
     });
+  }
+
+  private async loadProducts() {
+    if (!this.id) {
+      this.productsState.set('error');
+      return;
+    }
+    this.productsState.set('loading');
+    try {
+      const data = await this.api.vendorProducts(this.id);
+      const p = readPage<Dto>(data, 100);
+      this.products.set(p.items.map((raw) => mapListing(raw, this.api.apiBase)));
+      this.productsState.set(null);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.productsState.set('error');
+    }
   }
 
   protected level(): 'none' | 'warn' | 'paused' {
