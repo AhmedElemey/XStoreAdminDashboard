@@ -6,6 +6,10 @@ export interface UsersQuery {
   keyword?: string;
   role?: string;
   isVerified?: string;
+  /** Date-time range filter (matches `overview`'s confirmed `from`/`to`), sent
+   *  optimistically — not confirmed against the real backend for this endpoint. */
+  from?: string;
+  to?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -13,6 +17,8 @@ export interface UsersQuery {
 
 export interface VendorsQuery {
   keyword?: string;
+  from?: string;
+  to?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -21,6 +27,8 @@ export interface VendorsQuery {
 export interface ListingsQuery {
   status: string;
   name?: string;
+  from?: string;
+  to?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;
@@ -32,6 +40,8 @@ export interface OrdersQuery {
    *  (the Postman collection doesn't document a per-user filter on this endpoint) — sent
    *  optimistically, same as the other unconfirmed-but-plausible params in this file. */
   userId?: string;
+  from?: string;
+  to?: string;
   page: number;
   pageSize: number;
   [key: string]: string | number | undefined;

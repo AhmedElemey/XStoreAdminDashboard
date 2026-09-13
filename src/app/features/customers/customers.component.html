@@ -22,6 +22,7 @@
     <input placeholder="Search customers by name, phone, email…" (input)="onSearch($any($event.target).value)" />
   </div>
   <app-chip-tabs [labels]="tabLabels" [active]="activeTabLabel()" (select)="selectTab($event)" />
+  <app-date-range-filter (rangeChange)="onRangeChange($event)" />
 </div>
 
 <div class="card">

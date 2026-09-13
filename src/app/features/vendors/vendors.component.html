@@ -10,6 +10,7 @@
     <app-icon name="search" />
     <input placeholder="Search vendors by store, owner, phone…" (input)="onSearch($any($event.target).value)" />
   </div>
+  <app-date-range-filter (rangeChange)="onRangeChange($event)" />
 </div>
 
 <div class="card">

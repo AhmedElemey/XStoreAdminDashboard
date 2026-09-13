@@ -8,12 +8,13 @@ import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
+import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'app-vendors',
-  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent],
+  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent, DateRangeFilterComponent],
   templateUrl: './vendors.component.html',
 })
 export class VendorsComponent implements OnInit {
@@ -21,6 +22,8 @@ export class VendorsComponent implements OnInit {
   private router = inject(Router);
 
   protected keyword = signal('');
+  protected fromDate = signal('');
+  protected toDate = signal('');
   protected page = signal(1);
   protected pageSize = 20;
   protected total = signal(0);
@@ -52,10 +55,23 @@ export class VendorsComponent implements OnInit {
     this.load();
   }
 
+  protected onRangeChange(r: { from: string; to: string }) {
+    this.fromDate.set(r.from);
+    this.toDate.set(r.to);
+    this.page.set(1);
+    this.load();
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.vendors({ keyword: this.keyword(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.vendors({
+        keyword: this.keyword(),
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
+        page: this.page(),
+        pageSize: this.pageSize,
+      });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);

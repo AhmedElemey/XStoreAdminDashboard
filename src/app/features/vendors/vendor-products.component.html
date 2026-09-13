@@ -13,8 +13,14 @@
 } @else if (!products().length) {
   <app-state-block kind="empty" message="This vendor has no products listed." />
 } @else {
+  <div class="toolbar">
+    <app-date-range-filter (rangeChange)="onRangeChange($event)" />
+  </div>
+  @if (!filteredProducts().length) {
+    <app-state-block kind="empty" message="No products submitted in that range." />
+  }
   <div class="grid" style="gap:14px">
-    @for (p of products(); track p.id) {
+    @for (p of filteredProducts(); track p.id) {
       <a [routerLink]="p.id ? ['/products', p.id] : null" class="mod" style="cursor:pointer">
         <div class="thumb">
           @if (p.image) {
