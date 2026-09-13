@@ -1,7 +1,7 @@
 import { Component, signal, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-/** From/to date-time range picker — matches the legacy .toolbar/.form-row markup.
+/** From/to date-only range picker (native datepicker, no time) — matches the legacy .toolbar/.form-row markup.
  *  Owns its own draft values; only reports out via `rangeChange` when the caller
  *  hits Apply/Clear, so a list screen can debounce/reload exactly like it does
  *  for search and tabs. */
@@ -12,11 +12,11 @@ import { FormsModule } from '@angular/forms';
     <div class="toolbar drf">
       <div class="form-row drf-field">
         <label>From</label>
-        <input type="datetime-local" [ngModel]="from()" (ngModelChange)="from.set($event)" name="drfFrom" />
+        <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" name="drfFrom" />
       </div>
       <div class="form-row drf-field">
         <label>To</label>
-        <input type="datetime-local" [ngModel]="to()" (ngModelChange)="to.set($event)" name="drfTo" />
+        <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" name="drfTo" />
       </div>
       <button class="btn btn-p btn-sm" (click)="apply()">Apply</button>
       @if (from() || to()) {

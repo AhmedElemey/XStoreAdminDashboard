@@ -237,7 +237,7 @@ td.r .btn + .btn { margin-left: 8px; }
 .drf { margin-bottom: 0; }
 .drf-field { flex-direction: row; align-items: center; gap: 6px; margin: 0; }
 .drf-field label { font-size: 12.5px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
-.drf-field input[type="datetime-local"] { padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; font-family: inherit; }
+.drf-field input[type="date"] { padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; font-family: inherit; }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 18px; border-top: 1px solid var(--line-soft); font-size: 12.5px; color: var(--text-2); flex-wrap: wrap; }
 .pager .pg-btns { display: flex; gap: 8px; align-items: center; }
 
