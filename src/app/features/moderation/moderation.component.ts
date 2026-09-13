@@ -13,6 +13,7 @@ import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { IconComponent } from '../../shared/icon.component';
+import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
 import { ProductDrawerComponent } from './product-drawer.component';
 
 const STATUS_TABS: [string, string][] = [
@@ -25,7 +26,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'app-moderation',
-  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent],
+  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
   templateUrl: './moderation.component.html',
 })
 export class ModerationComponent implements OnInit {
@@ -46,6 +47,8 @@ export class ModerationComponent implements OnInit {
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected status = signal('PENDING');
   protected name = signal('');
+  protected fromDate = signal('');
+  protected toDate = signal('');
   protected page = signal(1);
   protected pageSize = 20;
   protected total = signal(0);
@@ -88,6 +91,13 @@ export class ModerationComponent implements OnInit {
     this.load();
   }
 
+  protected onRangeChange(r: { from: string; to: string }) {
+    this.fromDate.set(r.from);
+    this.toDate.set(r.to);
+    this.page.set(1);
+    this.load();
+  }
+
   protected mapped(p: Dto): MappedListing {
     return mapListing(p, this.api.apiBase);
   }
@@ -99,7 +109,14 @@ export class ModerationComponent implements OnInit {
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.listings({ status: this.status(), name: this.name(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.listings({
+        status: this.status(),
+        name: this.name(),
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
+        page: this.page(),
+        pageSize: this.pageSize,
+      });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);

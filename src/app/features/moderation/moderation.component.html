@@ -11,6 +11,7 @@
     <app-icon name="search" />
     <input placeholder="Search listings by name…" (input)="onSearch($any($event.target).value)" />
   </div>
+  <app-date-range-filter (rangeChange)="onRangeChange($event)" />
 </div>
 
 @if (loadState() === 'loading') {

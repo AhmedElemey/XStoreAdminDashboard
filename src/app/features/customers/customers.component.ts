@@ -11,6 +11,7 @@ import { AvatarComponent } from '../../shared/avatar.component';
 import { IconComponent } from '../../shared/icon.component';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
+import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
 
 let searchTimer: ReturnType<typeof setTimeout>;
 
@@ -25,7 +26,7 @@ const VERIFIED_TABS: [string, string][] = [
 
 @Component({
   selector: 'app-customers',
-  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent, KpiCardComponent, ChipTabsComponent],
+  imports: [StateBlockComponent, PagerComponent, AvatarComponent, IconComponent, KpiCardComponent, ChipTabsComponent, DateRangeFilterComponent],
   templateUrl: './customers.component.html',
 })
 export class CustomersComponent implements OnInit {
@@ -36,6 +37,8 @@ export class CustomersComponent implements OnInit {
   protected tabLabels = VERIFIED_TABS.map((t) => t[0]);
   protected verifiedFilter = signal('');
   protected keyword = signal('');
+  protected fromDate = signal('');
+  protected toDate = signal('');
   protected page = signal(1);
   protected pageSize = 20;
   protected total = signal(0);
@@ -86,6 +89,13 @@ export class CustomersComponent implements OnInit {
     this.load();
   }
 
+  protected onRangeChange(r: { from: string; to: string }) {
+    this.fromDate.set(r.from);
+    this.toDate.set(r.to);
+    this.page.set(1);
+    this.load();
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
@@ -93,6 +103,8 @@ export class CustomersComponent implements OnInit {
         keyword: this.keyword(),
         role: 'CONSUMER',
         isVerified: this.verifiedFilter() || undefined,
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
         page: this.page(),
         pageSize: this.pageSize,
       });

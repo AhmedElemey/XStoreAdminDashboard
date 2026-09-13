@@ -10,12 +10,13 @@ import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
 import { PagerComponent } from '../../shared/pager.component';
+import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
 
 const STATUS_TABS: [string, string][] = [['All', ''], ...ORDER_STATUS.map((s, i): [string, string] => [s[1], String(i)])];
 
 @Component({
   selector: 'app-orders',
-  imports: [AvatarComponent, KpiCardComponent, ChipTabsComponent, StateBlockComponent, PagerComponent],
+  imports: [AvatarComponent, KpiCardComponent, ChipTabsComponent, StateBlockComponent, PagerComponent, DateRangeFilterComponent],
   templateUrl: './orders.component.html',
 })
 export class OrdersComponent implements OnInit {
@@ -25,6 +26,8 @@ export class OrdersComponent implements OnInit {
   protected tabLabels = STATUS_TABS.map((t) => t[0]);
   protected statusLabel = signal('All');
   protected status = signal('');
+  protected fromDate = signal('');
+  protected toDate = signal('');
   protected page = signal(1);
   protected pageSize = 20;
   protected total = signal(0);
@@ -55,10 +58,23 @@ export class OrdersComponent implements OnInit {
     this.load();
   }
 
+  protected onRangeChange(r: { from: string; to: string }) {
+    this.fromDate.set(r.from);
+    this.toDate.set(r.to);
+    this.page.set(1);
+    this.load();
+  }
+
   async load() {
     this.loadState.set('loading');
     try {
-      const data = await this.api.orders({ status: this.status(), page: this.page(), pageSize: this.pageSize });
+      const data = await this.api.orders({
+        status: this.status(),
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
+        page: this.page(),
+        pageSize: this.pageSize,
+      });
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
