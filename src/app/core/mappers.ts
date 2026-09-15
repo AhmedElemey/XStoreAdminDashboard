@@ -1,4 +1,4 @@
-import { Dto, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, Page } from './models';
+import { Dto, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
 import { dateOnly, egp } from './format';
 
 /** first non-empty of a list of candidate values (mirrors legacy _fne). */
@@ -122,6 +122,8 @@ export function mapUser(u: Dto): MappedUser {
     email,
     role: firstNonEmpty(u['roleName'], u['RoleName'], u['role']) || 'consumer',
     verified: boolOrUnknown(u['isVerified'] ?? u['IsVerified']),
+    blocked: boolOrUnknown(u['isBlocked'] ?? u['IsBlocked'] ?? u['blocked']),
+    blockedUntil: dateOnly(firstNonEmpty(u['blockedUntil'], u['BlockedUntil'])) || null,
     orders: orders == null ? '—' : orders,
     spend: spend == null ? '—' : egp(spend),
     joined: dateOnly(firstNonEmpty(u['creationDate'], u['CreationDate'], u['joinedAt'], u['createdAt'], u['joinDate'])) || '—',
@@ -138,9 +140,31 @@ export function mapVendor(v: Dto): MappedVendor {
     email: firstNonEmpty(v['email'], v['Email']),
     category: firstNonEmpty(v['storeCategoryEn'], v['StoreCategoryEn'], v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
     verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
+    blocked: boolOrUnknown(v['isBlocked'] ?? v['IsBlocked'] ?? v['blocked']),
+    blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'])) || null,
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
+  };
+}
+
+/** Consumer report against a vendor, filed from a placed order in the mobile app.
+ *  PROPOSED backend shape — see BACKEND_HANDOFF.md "Vendor reports". Nested consumer/vendor
+ *  sub-objects are guessed at (a flat `consumerId`/`vendorId` pair with no name would force
+ *  a second lookup per row just to render a link label) — tolerant to either shape. */
+export function mapVendorReport(r: Dto): MappedVendorReport {
+  const consumer = (r['consumer'] ?? r['Consumer'] ?? r['reporter'] ?? {}) as Dto;
+  const vendor = (r['vendor'] ?? r['Vendor'] ?? {}) as Dto;
+  return {
+    id: firstNonEmpty(r['id'], r['Id'], r['reportId']),
+    orderId: firstNonEmpty(r['orderId'], r['OrderId']),
+    reason: firstNonEmpty(r['reason'], r['Reason']) || '—',
+    comment: firstNonEmpty(r['comment'], r['Comment']),
+    createdAt: dateOnly(firstNonEmpty(r['createdAt'], r['CreatedAt'])) || '—',
+    consumerId: firstNonEmpty(r['consumerId'], r['ConsumerId'], consumer['id'], consumer['Id']),
+    consumerName: firstNonEmpty(consumer['fullNameEn'], consumer['fullName'], consumer['name'], r['consumerName'], r['ConsumerName']) || 'Unknown customer',
+    vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
+    vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['vendorName'], r['VendorName']) || 'Unknown vendor',
   };
 }
 

@@ -12,7 +12,14 @@
         <p style="margin:2px 0 0">Customer · role: {{ m.role }}</p>
       </div>
     </div>
-    <a class="btn btn-g" routerLink="/customers">← Back to Customer</a>
+    <div style="display:flex;align-items:center;gap:8px">
+      @if (m.blocked) {
+        <button class="btn btn-g" [disabled]="blockBusy()" (click)="unblock()">Unblock customer</button>
+      } @else {
+        <button class="btn btn-no" [disabled]="blockBusy()" (click)="openBlock()">Block customer</button>
+      }
+      <a class="btn btn-g" routerLink="/customers">← Back to Customer</a>
+    </div>
   </div>
 
   <div class="split">
@@ -52,6 +59,9 @@
       <div class="c-body" style="padding-top:4px">
         <div style="margin-bottom:10px">
           <span class="badge-s b-blue">👤 Customer</span>
+          @if (m.blocked) {
+            <span class="badge-s b-red">🚫 {{ m.blockedUntil ? 'Blocked until ' + m.blockedUntil : 'Blocked' }}</span>
+          }
           @if (m.verified === null) {
             <span class="badge-s b-grey" title="The API didn't include a verification status.">Verification: unknown</span>
           } @else if (m.verified) {
@@ -72,6 +82,24 @@
           <div class="kv"><span>User ID</span><b>{{ m.id }}</b></div>
         }
       </div>
+    </div>
+  </div>
+}
+
+@if (blockOpen()) {
+  <div class="overlay show" (click)="closeBlock()"></div>
+  <div class="modal-card">
+    <h3 style="font-size:16px;margin-bottom:4px">Block {{ user()?.name }}</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:12px">This reason is recorded for the moderation record. The customer will not be able to use their account while blocked.</p>
+    <textarea class="modal-ta" rows="4" placeholder="Write a reason for blocking this customer…" [value]="blockReason()" (input)="blockReason.set($any($event.target).value)"></textarea>
+    <div class="form-row" style="margin-top:10px">
+      <label>Block until (optional)</label>
+      <input type="date" [value]="blockUntil()" (input)="blockUntil.set($any($event.target).value)" />
+    </div>
+    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the customer stays blocked until you unblock them.</p>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="btn btn-g" [disabled]="blockBusy()" (click)="closeBlock()">Cancel</button>
+      <button class="btn btn-no" [disabled]="blockBusy()" (click)="confirmBlock()">Block customer</button>
     </div>
   </div>
 }
