@@ -8,6 +8,33 @@ function firstNonEmpty(...vals: unknown[]): string {
   }
   return '';
 }
+/** The mobile app's own live-probed parsing (orders_remote_datasource.dart `_addressFromApi`)
+ *  confirmed the backend's order address arrives as a NESTED object (`deliveryAddress` /
+ *  `shippingAddress` / `address`) with its own aliased sub-fields, not the flat string this
+ *  admin console's documented contract (BACKEND_HANDOFF.md) assumed — `firstNonEmpty` alone
+ *  stringifies an object candidate to the literal text "[object Object]" instead of extracting
+ *  anything from it. Accept either shape: a plain string as-is, or assemble one from an
+ *  object's street/city/governorate fields using the same aliases the mobile app already
+ *  confirmed against this backend. */
+function formatAddress(...candidates: unknown[]): string {
+  for (const v of candidates) {
+    if (v === undefined || v === null) continue;
+    if (typeof v === 'string') {
+      const s = v.trim();
+      if (s) return s;
+      continue;
+    }
+    if (typeof v === 'object') {
+      const o = v as Dto;
+      const street = firstNonEmpty(o['street'], o['detailedAddressByGoogleMaps'], o['detailedAddressByUser'], o['detailAddress'], o['addressLine']);
+      const city = firstNonEmpty(o['city'], o['cityByGoogleMaps'], o['town']);
+      const wilaya = firstNonEmpty(o['wilaya'], o['government'], o['governorate'], o['governmentByGoogleMaps']);
+      const line = [street, city, wilaya].filter(Boolean).join(', ');
+      if (line) return line;
+    }
+  }
+  return '';
+}
 function numOr(...vals: unknown[]): number | null {
   for (const v of vals) {
     const n = Number(v);
@@ -185,7 +212,7 @@ export function mapOrder(o: Dto): MappedOrder {
     buyer: firstNonEmpty(o['buyerName'], o['consumerName'], o['customerName'], o['fullNameEn'], o['fullName']) || '—',
     buyerId: firstNonEmpty(o['buyerId'], o['consumerId'], o['customerId'], o['userId']) || null,
     phone: firstNonEmpty(o['phoneNumber'], o['buyerPhone'], o['consumerPhone'], o['phone']) || '—',
-    addr: firstNonEmpty(o['address'], o['deliveryAddress'], o['shippingAddress'], o['addressLine']),
+    addr: formatAddress(o['address'], o['deliveryAddress'], o['shippingAddress'], o['addressLine']),
     vendor: firstNonEmpty(o['vendorName'], o['storeNameEn'], o['storeName']) || '—',
     vendorId: firstNonEmpty(o['vendorId'], o['storeId']) || null,
     vendorPhone: firstNonEmpty(o['vendorPhone'], o['vendorPhoneNumber'], o['storePhone'], o['storePhoneNumber']) || '—',
