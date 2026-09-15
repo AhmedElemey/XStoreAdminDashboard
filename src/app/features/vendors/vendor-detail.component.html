@@ -25,7 +25,7 @@
   <div style="margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap">
     <span class="badge-s b-indigo">🏢 Business</span>
     @if (v.blocked) {
-      <span class="badge-s b-red">🚫 Blocked</span>
+      <span class="badge-s b-red">🚫 {{ v.blockedUntil ? 'Blocked until ' + v.blockedUntil : 'Blocked' }}</span>
     }
     @if (v.verified === null) {
       <span class="badge-s b-grey">verification: unknown</span>
@@ -143,6 +143,11 @@
     <h3 style="font-size:16px;margin-bottom:4px">Block {{ vendor()?.store }}</h3>
     <p class="muted" style="font-size:12.5px;margin-bottom:12px">This reason is recorded for the moderation record. The vendor will not be able to sell on the marketplace while blocked.</p>
     <textarea class="modal-ta" rows="4" placeholder="Write a reason for blocking this vendor…" [value]="blockReason()" (input)="blockReason.set($any($event.target).value)"></textarea>
+    <div class="form-row" style="margin-top:10px">
+      <label>Block until (optional)</label>
+      <input type="date" [value]="blockUntil()" (input)="blockUntil.set($any($event.target).value)" />
+    </div>
+    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the vendor stays blocked until you unblock them.</p>
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-g" [disabled]="blockBusy()" (click)="closeBlock()">Cancel</button>
       <button class="btn btn-no" [disabled]="blockBusy()" (click)="confirmBlock()">Block vendor</button>

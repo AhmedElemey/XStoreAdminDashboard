@@ -47,6 +47,22 @@ export interface OrdersQuery {
   [key: string]: string | number | undefined;
 }
 
+/** PROPOSED — GET /api/admin/reports/vendor doesn't exist on the backend yet. See
+ *  BACKEND_HANDOFF.md "Vendor reports". `keyword` (match against vendor/consumer name) and
+ *  `reason` (exact wire value, e.g. "Fraud") are both sent optimistically — same
+ *  "unconfirmed but plausible" convention as the other params in this file. */
+export interface VendorReportsQuery {
+  vendorId?: string;
+  consumerId?: string;
+  keyword?: string;
+  reason?: string;
+  from?: string;
+  to?: string;
+  page: number;
+  pageSize: number;
+  [key: string]: string | number | undefined;
+}
+
 /** Endpoint wrappers for the marketplace admin API — matches the real
  *  "xStoreEcommerce Admin & Super Admin" Postman collection. */
 @Injectable({ providedIn: 'root' })
@@ -63,6 +79,18 @@ export class AdminApiService {
   }
   user(id: string) {
     return this.auth.apiFetch<unknown>(`/api/users/${encodeURIComponent(id)}`);
+  }
+  /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors" (the same
+   *  block/unblock contract applies to /api/users, not just /api/admin/vendors). */
+  blockUser(id: string, reason: string, blockedUntil?: string) {
+    return this.auth.apiFetch(`/api/users/${encodeURIComponent(id)}/block`, {
+      method: 'POST',
+      body: { reason, blockedUntil: blockedUntil || null },
+    });
+  }
+  /** PROPOSED — not yet built on the backend. */
+  unblockUser(id: string) {
+    return this.auth.apiFetch(`/api/users/${encodeURIComponent(id)}/unblock`, { method: 'POST', body: {} });
   }
 
   /* ---------- Vendors — GET /api/admin/vendors (its own surface, not /api/users) ---------- */
@@ -90,16 +118,28 @@ export class AdminApiService {
       body: amountEgp === undefined ? {} : { amountEgp },
     });
   }
-  /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors". */
-  blockVendor(id: string, reason: string) {
+  /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors".
+   *  `blockedUntil` (date-only, e.g. "2026-10-01") is optional — omit it (or pass undefined)
+   *  for an indefinite block that only a manual unblock lifts. */
+  blockVendor(id: string, reason: string, blockedUntil?: string) {
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/block`, {
       method: 'POST',
-      body: { reason },
+      body: { reason, blockedUntil: blockedUntil || null },
     });
   }
   /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors". */
   unblockVendor(id: string) {
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/unblock`, { method: 'POST', body: {} });
+  }
+
+  /** PROPOSED — GET /api/admin/reports/vendor doesn't exist yet. See BACKEND_HANDOFF.md
+   *  "Vendor reports". Consumer reports filed against a vendor after a placed order
+   *  (xStore mobile app's "Report Vendor" feature). */
+  vendorReports(q: VendorReportsQuery) {
+    return this.auth.apiFetch<unknown>('/api/admin/reports/vendor', { query: q });
+  }
+  vendorReport(id: string) {
+    return this.auth.apiFetch<unknown>(`/api/admin/reports/vendor/${encodeURIComponent(id)}`);
   }
 
   /* ---------- Admin orders (ADMINISTRATOR only) — GET /api/admin/orders ---------- */

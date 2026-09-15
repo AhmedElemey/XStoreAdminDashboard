@@ -34,6 +34,7 @@ export class VendorDetailComponent implements OnInit {
 
   protected blockOpen = signal(false);
   protected blockReason = signal('');
+  protected blockUntil = signal('');
   protected blockBusy = signal(false);
 
   protected readonly productsPreviewLimit = 5;
@@ -152,6 +153,7 @@ export class VendorDetailComponent implements OnInit {
 
   protected openBlock() {
     this.blockReason.set('');
+    this.blockUntil.set('');
     this.blockOpen.set(true);
   }
 
@@ -169,8 +171,8 @@ export class VendorDetailComponent implements OnInit {
     }
     this.blockBusy.set(true);
     try {
-      await this.api.blockVendor(v.id, reason);
-      this.toast.show('Vendor blocked ✓');
+      await this.api.blockVendor(v.id, reason, this.blockUntil() || undefined);
+      this.toast.show(this.blockUntil() ? `Vendor blocked until ${this.blockUntil()} ✓` : 'Vendor blocked indefinitely ✓');
       this.blockOpen.set(false);
       await this.loadVendor();
     } catch (e) {
