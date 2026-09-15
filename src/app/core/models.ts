@@ -74,6 +74,10 @@ export interface MappedVendor {
   category: string;
   /** null when the API omits `isVerified` for a row — otherwise the real value. */
   verified: boolean | null;
+  /** null when the API omits `isBlocked` (true for every vendor until the backend
+   *  ships this field) — the UI treats null the same as `false` (not blocked), no
+   *  separate "unknown" badge like `verified` has. See BACKEND_HANDOFF.md "Vendors". */
+  blocked: boolean | null;
   products: number | null;
   rating: number | null;
   joined: string;

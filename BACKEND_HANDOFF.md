@@ -15,7 +15,59 @@
 > Banners CRUD, and System Settings (commission %, warn/pause thresholds). Still not
 > backed by any real endpoint: Disputes, Coupons, Analytics (all three are also not in the
 > app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
-> and team roster.
+> and team roster, and (new as of 2026-09-15) **vendor blocking** — see below.
+
+## Vendor blocking (PROPOSED, not yet built — 2026-09-15)
+
+The Angular app's Vendor detail page (`vendor-detail.component.ts`/`.html`) now has a
+"Block vendor" / "Unblock vendor" button, a reason-collecting modal (mirrors the existing
+Cancel Order modal), and a "🚫 Blocked" badge on both the vendor list and detail page —
+all wired against `AdminApiService.blockVendor()` / `.unblockVendor()`, which currently
+404 because the backend doesn't have these routes yet.
+
+This is the companion admin-side feature to the xStore mobile app's new "Report Vendor"
+flow (a consumer reports a vendor after a placed order — see the mobile repo's
+`docs_business/backend/07_VENDOR_REPORTS_ENDPOINT_HANDOFF.md` for that contract). The two
+features are independent — an admin can block a vendor for any reason, not only after a
+report — but a "list of reports" view here would be the natural way an admin decides
+*when* to block someone, once that endpoint exists too.
+
+**Proposed endpoints:**
+
+```
+POST /api/admin/vendors/{id}/block
+Body: { "reason": "string" }
+Response: 200/204
+```
+
+```
+POST /api/admin/vendors/{id}/unblock
+Body: {}
+Response: 200/204
+```
+
+**Vendor DTO addition:** add `isBlocked: boolean` to whatever `GET /api/admin/vendors` and
+`GET /api/admin/vendors/{id}` already return, so the list/detail badges reflect real state
+(the Angular app already parses `isBlocked` tolerantly and defaults to "not blocked" if the
+field is absent, so this can ship incrementally).
+
+**Open questions for whoever implements this:**
+
+1. **What does "blocked" actually restrict?** At minimum: prevent the vendor from logging
+   in (or immediately reject their session) and prevent new orders being placed against
+   their listings. Whether existing listings stay visible-but-unorderable vs. are hidden
+   entirely from the storefront is a product decision this doc doesn't make for you — flag
+   it back here once decided.
+2. **Naming collision with the old prototype's `status: active|pending|suspended` field**
+   (see the legacy "Vendor" data shape further down this doc, and the legacy
+   `.../suspend`/`.../reinstate` endpoints) — those were never built either. Don't build
+   both a `status` enum AND a separate `isBlocked` boolean; pick one. This doc recommends
+   `isBlocked` (matches the mobile-facing "block/report" language already shipped), but
+   defer to whichever the backend team already has more momentum on.
+3. Same open questions as the mobile Report Vendor doc apply here too: should blocking (or
+   a report) trigger any internal notification, and is a `GET /api/admin/vendors/{id}/reports`
+   (or similar) wanted once the mobile-side report endpoint exists — that would be the
+   natural next companion feature on this dashboard.
 
 Original front-end design prototype (no build step, plain HTML/CSS/JS) description below,
 kept for historical context on what each view was originally trying to model. That prototype

@@ -90,6 +90,17 @@ export class AdminApiService {
       body: amountEgp === undefined ? {} : { amountEgp },
     });
   }
+  /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors". */
+  blockVendor(id: string, reason: string) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/block`, {
+      method: 'POST',
+      body: { reason },
+    });
+  }
+  /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors". */
+  unblockVendor(id: string) {
+    return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/unblock`, { method: 'POST', body: {} });
+  }
 
   /* ---------- Admin orders (ADMINISTRATOR only) — GET /api/admin/orders ---------- */
   orders(q: OrdersQuery) {

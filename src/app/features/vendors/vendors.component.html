@@ -37,7 +37,9 @@
             </td>
             <td><span class="badge-s b-indigo">🏢 Business</span></td>
             <td>
-              @if (m.verified) {
+              @if (m.blocked) {
+                <span class="badge-s b-red">🚫 Blocked</span>
+              } @else if (m.verified) {
                 <span class="badge-s b-green">✓ Verified</span>
               } @else {
                 <span class="badge-s b-grey">Unverified</span>

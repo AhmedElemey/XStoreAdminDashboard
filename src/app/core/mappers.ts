@@ -138,6 +138,7 @@ export function mapVendor(v: Dto): MappedVendor {
     email: firstNonEmpty(v['email'], v['Email']),
     category: firstNonEmpty(v['storeCategoryEn'], v['StoreCategoryEn'], v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
     verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
+    blocked: boolOrUnknown(v['isBlocked'] ?? v['IsBlocked'] ?? v['blocked']),
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
