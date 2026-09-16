@@ -1,0 +1,47 @@
+@let r = report();
+<div style="margin-bottom:12px">
+  <span class="badge-s b-red">{{ reasonLabel(r.reason) }}</span>
+</div>
+
+@if (r.comment) {
+  <h3 class="sec-h" style="margin-top:0">Details from the customer</h3>
+  <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">{{ r.comment }}</p>
+}
+
+<h3 class="sec-h" style="margin-top:0">Reported vendor</h3>
+<div class="kv">
+  <span>Store</span>
+  @if (r.vendorId) {
+    <a [routerLink]="['/vendors', r.vendorId]" (click)="closeDrawer()" style="color:var(--primary);cursor:pointer;font-weight:700">{{ r.vendorName }} →</a>
+  } @else {
+    <b>{{ r.vendorName }}</b>
+  }
+</div>
+@if (r.vendorId) {
+  <div class="kv"><span>Vendor ID</span><b>{{ r.vendorId }}</b></div>
+}
+
+<h3 class="sec-h">Reported by</h3>
+<div class="kv">
+  <span>Customer</span>
+  @if (r.consumerId) {
+    <a [routerLink]="['/customers', r.consumerId]" (click)="closeDrawer()" style="color:var(--primary);cursor:pointer;font-weight:700">{{ r.consumerName }} →</a>
+  } @else {
+    <b>{{ r.consumerName }}</b>
+  }
+</div>
+@if (r.consumerId) {
+  <div class="kv"><span>Customer ID</span><b>{{ r.consumerId }}</b></div>
+}
+
+<h3 class="sec-h">Report</h3>
+@if (r.orderId) {
+  <div class="kv">
+    <span>Order</span>
+    <a [routerLink]="['/orders', r.orderId]" (click)="closeDrawer()" style="color:var(--primary);cursor:pointer">{{ r.orderId }} →</a>
+  </div>
+}
+<div class="kv"><span>Filed</span><b>{{ r.createdAt }}</b></div>
+@if (r.id) {
+  <div class="kv"><span>Report ID</span><b>{{ r.id }}</b></div>
+}
