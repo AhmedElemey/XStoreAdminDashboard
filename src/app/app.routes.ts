@@ -59,20 +59,20 @@ export const routes: Routes = [
         data: { title: 'Order' },
         loadComponent: () => import('./features/orders/order-detail.component').then((m) => m.OrderDetailComponent),
       },
-      // Delivery-backend pilot (Couriers / Delivery Requests) — no real backend is deployed
-      // yet (DeliveryApiService defaults to unreachable localhost:5080), so these routes are
-      // disabled until a live delivery-backend URL exists. Re-enable alongside the nav links
-      // in shell.component.ts once that's ready.
-      // {
-      //   path: 'couriers',
-      //   data: { title: 'Delivery' },
-      //   loadComponent: () => import('./features/couriers/couriers.component').then((m) => m.CouriersComponent),
-      // },
-      // {
-      //   path: 'packages',
-      //   data: { title: 'Delivery Requests' },
-      //   loadComponent: () => import('./features/packages/packages.component').then((m) => m.PackagesComponent),
-      // },
+      // Delivery-backend pilot (Couriers / Delivery Requests) — internal ops tool, not
+      // marketed (see docs_business/launch_todos/01_scope_launch.md in the xstore repo).
+      // Renders demo data until an admin connects a real delivery-backend URL from the
+      // in-page connect bar (DeliveryApiService); no backend URL needs to be baked in here.
+      {
+        path: 'couriers',
+        data: { title: 'Delivery' },
+        loadComponent: () => import('./features/couriers/couriers.component').then((m) => m.CouriersComponent),
+      },
+      {
+        path: 'packages',
+        data: { title: 'Delivery Requests' },
+        loadComponent: () => import('./features/packages/packages.component').then((m) => m.PackagesComponent),
+      },
       {
         path: 'customers',
         data: { title: 'Customer' },
