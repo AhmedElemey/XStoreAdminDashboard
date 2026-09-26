@@ -103,6 +103,11 @@ export const routes: Routes = [
         data: { title: 'Settings' },
         loadComponent: () => import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
+      {
+        path: 'general-settings',
+        data: { title: 'General Settings' },
+        loadComponent: () => import('./features/general-settings/general-settings.component').then((m) => m.GeneralSettingsComponent),
+      },
       { path: '**', redirectTo: 'overview' },
     ],
   },

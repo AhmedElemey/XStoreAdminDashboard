@@ -219,6 +219,23 @@ td.r .btn + .btn { margin-left: 8px; }
 .modal-ta { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 13.5px; font-family: inherit; resize: vertical; }
 .modal-ta:focus { outline: none; border-color: var(--primary); }
 
+/* ---------- general settings (remote app config) ---------- */
+.mono, .form-row .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.nowrap { white-space: nowrap; }
+.field-err { color: var(--error); font-size: 12px; }
+.table-scroll { overflow-x: auto; }
+.settings-table { min-width: 860px; }
+.settings-table td { font-size: 13px; }
+.settings-table .val-cell { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell-sub { display: block; font-size: 12px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.setting-modal { width: 480px; max-height: 90vh; overflow-y: auto; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal-head h3 { font-size: 17px; }
+.form-row input[disabled], .form-row select[disabled] { background: var(--bg); color: var(--text-2); cursor: not-allowed; }
+.form-row input:focus, .form-row select:focus { outline: none; border-color: var(--primary); }
+.form-row label .fmt-btn { float: right; margin-top: -4px; }
+.bool-field { display: flex; align-items: center; gap: 10px; }
+
 /* ---------- delivery requests (consumer package pilot) ---------- */
 .pkg-in { width: 74px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; font-family: inherit; }
 .hint { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 4px; font-weight: 400; }

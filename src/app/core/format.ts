@@ -38,3 +38,14 @@ export function dateOnly(v: unknown): string {
   }
   return s;
 }
+
+/** Date + time as `DD Mon YYYY h:mm AM` (e.g. "21 Aug 2024 4:50 PM"), local time.
+ *  Returns '' when nothing parses. */
+export function dateTime(v: unknown): string {
+  if (v == null || String(v).trim() === '') return '';
+  const d = new Date(String(v));
+  if (Number.isNaN(d.getTime())) return String(v);
+  const h = d.getHours() % 12 || 12;
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()} ${h}:${mm} ${d.getHours() < 12 ? 'AM' : 'PM'}`;
+}

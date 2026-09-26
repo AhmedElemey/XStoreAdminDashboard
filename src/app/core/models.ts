@@ -1,3 +1,5 @@
+import type { AppSettingType } from './app-settings';
+
 /** Raw DTOs from the admin/delivery APIs are intentionally loose (Record<string, any>) —
  *  the backend's exact field names are unconfirmed for several endpoints, so every mapper
  *  below is tolerant to aliases, exactly like the legacy prototype's mapX() helpers. */
@@ -100,6 +102,19 @@ export interface MappedVendorReport {
   consumerName: string;
   vendorId: string;
   vendorName: string;
+}
+
+export interface MappedAppSetting {
+  id: string;
+  key: string;
+  /** Canonical string form, e.g. "true", "170", "{\"a\":1}" — see core/app-settings.ts. */
+  value: string;
+  dataType: AppSettingType;
+  description: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface MappedCommission {

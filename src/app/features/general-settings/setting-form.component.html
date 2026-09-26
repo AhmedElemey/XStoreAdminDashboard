@@ -1,0 +1,107 @@
+<div class="overlay show" (click)="closed.emit()"></div>
+<div class="modal-card setting-modal" role="dialog" aria-modal="true" aria-labelledby="setting-modal-title">
+  <div class="modal-head">
+    <h3 id="setting-modal-title">{{ editing() ? 'Edit setting' : 'Add setting' }}</h3>
+    <button class="d-close" aria-label="Close" (click)="closed.emit()">✕</button>
+  </div>
+
+  <div class="form-row">
+    <label for="st-type">Data type *</label>
+    <select id="st-type" [value]="dataType()" [disabled]="editing()" (change)="setType($any($event.target).value)" (blur)="touch('dataType')">
+      <option value="" disabled>Select a data type</option>
+      @for (t of types; track t) {
+        <option [value]="t">{{ t === 'Json' ? 'Json / List' : t }}</option>
+      }
+    </select>
+    @if (show('dataType') && typeError()) {
+      <span class="field-err">{{ typeError() }}</span>
+    } @else if (dataType()) {
+      <span class="hint">{{ hint() }}</span>
+    }
+  </div>
+
+  <div class="form-row">
+    <label for="st-key">Key *</label>
+    <input
+      id="st-key"
+      class="mono"
+      placeholder="e.g. force_update_required"
+      autocomplete="off"
+      spellcheck="false"
+      [value]="key()"
+      [disabled]="editing()"
+      (input)="key.set($any($event.target).value)"
+      (blur)="touch('key')"
+    />
+    @if (show('key') && keyError()) {
+      <span class="field-err">{{ keyError() }}</span>
+    } @else if (editing()) {
+      <span class="hint">Key and data type can't change — the mobile app reads this value by key. Delete and re-create it instead.</span>
+    }
+  </div>
+
+  @if (dataType()) {
+    <div class="form-row">
+      @switch (dataType()) {
+        @case ('Boolean') {
+          <label>Value *</label>
+          <div class="bool-field">
+            <span
+              class="switch"
+              role="switch"
+              tabindex="0"
+              [class.off]="value() !== 'true'"
+              [attr.aria-checked]="value() === 'true'"
+              (click)="value.set(value() === 'true' ? 'false' : 'true')"
+              (keydown.space)="$event.preventDefault(); value.set(value() === 'true' ? 'false' : 'true')"
+            ></span>
+            <b>{{ value() === 'true' ? 'true' : 'false' }}</b>
+          </div>
+        }
+        @case ('Json') {
+          <label for="st-value">Value * <button type="button" class="btn btn-g btn-sm fmt-btn" (click)="formatJson()">Format</button></label>
+          <textarea
+            id="st-value"
+            class="modal-ta mono"
+            rows="7"
+            spellcheck="false"
+            placeholder='["item 1", "item 2"]  or  {"enabled": true}'
+            [value]="value()"
+            (input)="value.set($any($event.target).value)"
+            (blur)="touch('value')"
+          ></textarea>
+        }
+        @default {
+          <label for="st-value">Value *</label>
+          <input
+            id="st-value"
+            [attr.inputmode]="dataType() === 'Integer' ? 'numeric' : dataType() === 'Float' ? 'decimal' : null"
+            [placeholder]="dataType() === 'Integer' ? '170' : dataType() === 'Float' ? '0.15' : 'Value'"
+            [value]="value()"
+            (input)="value.set($any($event.target).value)"
+            (blur)="touch('value')"
+          />
+        }
+      }
+      @if (show('value') && valueError()) {
+        <span class="field-err">{{ valueError() }}</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <label for="st-desc">Description <span class="muted" style="font-weight:400">(optional — tell the mobile team what it controls)</span></label>
+      <input id="st-desc" maxlength="500" placeholder="e.g. Blocks the app until users update" [value]="description()" (input)="description.set($any($event.target).value)" />
+    </div>
+  }
+
+  @if (serverError()) {
+    <p class="field-err" style="margin-bottom:10px">{{ serverError() }}</p>
+  }
+
+  <div class="d-actions">
+    <button class="btn btn-g" style="flex:1;justify-content:center" [disabled]="busy()" (click)="closed.emit()">Cancel</button>
+    <button class="btn btn-p" style="flex:1;justify-content:center" [disabled]="busy() || (submitted() && !valid())" (click)="save()">
+      {{ busy() ? 'Saving…' : editing() ? 'Save changes' : 'Add setting' }}
+    </button>
+  </div>
+</div>
