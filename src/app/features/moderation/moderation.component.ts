@@ -58,6 +58,7 @@ export class ModerationComponent implements OnInit {
   protected errorMsg = signal('');
   protected rejectOpen = signal(false);
   protected rejectReason = signal('');
+  protected rejectError = signal('');
   protected rejectIndex = signal(-1);
   protected rejectTitle = signal('');
 
@@ -167,6 +168,7 @@ export class ModerationComponent implements OnInit {
       this.rejectIndex.set(i);
       this.rejectTitle.set(m.title);
       this.rejectReason.set('');
+      this.rejectError.set('');
       this.rejectOpen.set(true);
       return;
     }
@@ -181,14 +183,25 @@ export class ModerationComponent implements OnInit {
     }
   }
 
+  protected onRejectInput(v: string) {
+    this.rejectReason.set(v);
+    if (v.trim()) this.rejectError.set('');
+  }
+
   protected async confirmReject() {
+    const reason = this.rejectReason().trim();
+    if (!reason) {
+      this.rejectError.set('Rejection reason is required.');
+      return;
+    }
     const i = this.rejectIndex();
     const raw = (this.items() || [])[i];
     if (!raw) { this.rejectOpen.set(false); return; }
     const m = this.mapped(raw);
     this.rejectOpen.set(false);
+    this.rejectError.set('');
     try {
-      await this.api.rejectListing(m.id, this.rejectReason());
+      await this.api.rejectListing(m.id, reason);
       this.toast.show('Product rejected — vendor notified');
       this.drawer.close();
       this.load();
@@ -200,6 +213,7 @@ export class ModerationComponent implements OnInit {
 
   protected closeReject() {
     this.rejectOpen.set(false);
+    this.rejectError.set('');
   }
 
   protected async toggleHot(i: number) {

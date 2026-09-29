@@ -34,7 +34,13 @@ export class CategoriesComponent implements OnInit {
   }
 
   protected catImg(raw: Dto): string | null {
+    if (raw['__img']) return raw['__img'];
     return this.images.resolveSync(mapCategory(raw, this.api.apiBase).image);
+  }
+
+  protected onImgError(raw: Dto): void {
+    raw['__imgErr'] = true;
+    this.items.update((list) => (list ? [...list] : list));
   }
 
   async load() {

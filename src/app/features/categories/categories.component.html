@@ -19,8 +19,9 @@
         @for (raw of items(); track $index) {
           @let m = mapped(raw);
           <div class="cat">
-            @if (m.image) {
-              <img class="ci-img" [src]="catImg(raw)" alt="" />
+            @let img = catImg(raw);
+            @if (m.image && img && !raw['__imgErr']) {
+              <img class="ci-img" [src]="img" alt="" (error)="onImgError(raw)" />
             } @else {
               <div class="ci">{{ (m.nameEn[0] || '📦').toUpperCase() }}</div>
             }

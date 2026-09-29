@@ -143,7 +143,8 @@ export class AdminApiService {
     return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/approve`, { method: 'PUT', body: {} });
   }
   rejectListing(id: string, rejectionReason: string) {
-    return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/reject`, { method: 'PUT', body: { rejectionReason } });
+    if (!rejectionReason?.trim()) throw new Error('Rejection reason is required.');
+    return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/reject`, { method: 'PUT', body: { rejectionReason: rejectionReason.trim() } });
   }
   toggleHotDeal(id: string, isHotDeal: boolean) {
     return this.auth.apiFetch(`/api/admin/listings/${encodeURIComponent(id)}/hot-deal`, { method: 'PUT', body: { isHotDeal } });

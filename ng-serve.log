@@ -1,0 +1,190 @@
+
+> xstore-admin@0.0.0 start
+> ng serve
+
+Node.js version v25.9.0 detected.
+Prior to version 27, odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
+❯ Building...
+✔ Building...
+Initial chunk files | Names                     |  Raw size
+main.js             | main                      |  26.72 kB | 
+styles.css          | styles                    |  19.58 kB | 
+chunk-HDDYDELW.js   | -                         |  14.36 kB | 
+chunk-WB5RWBCC.js   | -                         |   6.54 kB | 
+chunk-GO3BGSVS.js   | -                         |   4.20 kB | 
+chunk-YR5EYZ4V.js   | -                         |   1.46 kB | 
+chunk-KHMHZ2JB.js   | -                         |   1.21 kB | 
+chunk-5LM7J6RL.js   | -                         | 943 bytes | 
+
+                    | Initial total             |  75.00 kB
+
+Lazy chunk files    | Names                     |  Raw size
+chunk-DUJGTR5A.js   | content-component         |  49.58 kB | 
+chunk-OKOCSJQH.js   | moderation-component      |  46.62 kB | 
+chunk-DOTALDKX.js   | vendor-detail-component   |  36.77 kB | 
+chunk-NZ3RPY3J.js   | categories-component      |  29.88 kB | 
+chunk-NNZ42E3N.js   | dashboard-component       |  28.29 kB | 
+chunk-5DDMXATF.js   | order-detail-component    |  26.11 kB | 
+chunk-6GLIKEKJ.js   | settings-component        |  25.65 kB | 
+chunk-6COWRCSG.js   | -                         |  23.39 kB | 
+chunk-F3TCGJXX.js   | customers-component       |  21.41 kB | 
+chunk-Y2YQGTXL.js   | user-detail-component     |  18.71 kB | 
+chunk-NMQLK6RH.js   | orders-component          |  17.38 kB | 
+chunk-NV7CJRBW.js   | vendors-component         |  15.85 kB | 
+chunk-DBE7MTZU.js   | product-detail-component  |  15.07 kB | 
+chunk-LWVNPM53.js   | vendor-products-component |  13.85 kB | 
+chunk-AWUO6P23.js   | login-component           |  10.13 kB | 
+...and 7 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [6.141 seconds] - 2026-09-27T19:09:35.248Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                | Raw size
+main.js             | main                 | 26.72 kB | 
+
+Lazy chunk files    | Names                | Raw size
+chunk-GQV6VCD6.js   | moderation-component | 46.76 kB | 
+
+Application bundle generation complete. [1.787 seconds] - 2026-09-27T19:29:57.676Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                | Raw size
+main.js             | main                 | 26.72 kB | 
+
+Lazy chunk files    | Names                | Raw size
+chunk-WAPBJ5EZ.js   | moderation-component | 46.79 kB | 
+
+Application bundle generation complete. [0.236 seconds] - 2026-09-27T19:29:59.533Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                | Raw size
+main.js             | main                 | 26.72 kB | 
+
+Lazy chunk files    | Names                | Raw size
+chunk-NBKECYIS.js   | moderation-component | 47.06 kB | 
+
+Application bundle generation complete. [0.213 seconds] - 2026-09-27T19:30:04.185Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                | Raw size
+main.js             | main                 | 26.72 kB | 
+
+Lazy chunk files    | Names                | Raw size
+chunk-DGQEJ7NY.js   | moderation-component | 47.09 kB | 
+
+Application bundle generation complete. [0.350 seconds] - 2026-09-27T19:30:07.537Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                | Raw size
+main.js             | main                 | 26.72 kB | 
+
+Lazy chunk files    | Names                | Raw size
+chunk-XFCLDXLA.js   | moderation-component | 48.30 kB | 
+
+Application bundle generation complete. [0.242 seconds] - 2026-09-27T19:30:11.727Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 26.72 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-MX5PS7U7.js   | content-component         | 49.58 kB | 
+chunk-4FKZN72M.js   | moderation-component      | 48.30 kB | 
+chunk-HLQLAWDS.js   | vendor-detail-component   | 36.77 kB | 
+chunk-SOMPJFB4.js   | categories-component      | 29.88 kB | 
+chunk-DRUVOTFZ.js   | dashboard-component       | 28.29 kB | 
+chunk-LOROZTWS.js   | order-detail-component    | 26.11 kB | 
+chunk-RISOW3IG.js   | settings-component        | 25.65 kB | 
+chunk-SB3H6MTY.js   | -                         | 23.50 kB | 
+chunk-YJVMFNUC.js   | customers-component       | 21.41 kB | 
+chunk-NYPKB5FA.js   | user-detail-component     | 18.71 kB | 
+chunk-5KJL4PVW.js   | orders-component          | 17.38 kB | 
+chunk-VTIANIOF.js   | vendors-component         | 15.85 kB | 
+chunk-3YMPJZDU.js   | product-detail-component  | 15.07 kB | 
+chunk-KZATZKD6.js   | vendor-products-component | 13.85 kB | 
+chunk-YSAWN7ZE.js   | customer-orders-component |  9.53 kB | 
+...and 1 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [0.211 seconds] - 2026-09-27T19:30:15.255Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 26.72 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-NFTIAQWV.js   | moderation-component      | 48.30 kB | 
+chunk-YEMPCDDF.js   | customers-component       | 21.41 kB | 
+chunk-R3KD2T4R.js   | orders-component          | 17.38 kB | 
+chunk-P7H4Y4ND.js   | vendors-component         | 15.85 kB | 
+chunk-DY77GZQ5.js   | vendor-products-component | 13.85 kB | 
+chunk-ZOSP3QEO.js   | -                         |  6.97 kB | 
+
+Application bundle generation complete. [1.576 seconds] - 2026-09-29T05:21:38.169Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 26.72 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-XZNKIEI7.js   | moderation-component      | 48.30 kB | 
+chunk-FHUBVEVM.js   | customers-component       | 21.41 kB | 
+chunk-5PI52JXO.js   | orders-component          | 17.38 kB | 
+chunk-DD3HODEW.js   | vendors-component         | 15.85 kB | 
+chunk-ZJVVJK5G.js   | vendor-products-component | 13.85 kB | 
+chunk-RXR7MDX6.js   | -                         |  7.97 kB | 
+
+Application bundle generation complete. [0.335 seconds] - 2026-09-29T05:21:41.965Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names               | Raw size
+main.js             | main                | 26.72 kB | 
+
+Lazy chunk files    | Names               | Raw size
+chunk-2BYYZTP3.js   | dashboard-component | 28.42 kB | 
+
+Application bundle generation complete. [0.359 seconds] - 2026-09-29T05:21:45.418Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names               | Raw size
+main.js             | main                | 26.72 kB | 
+
+Lazy chunk files    | Names               | Raw size
+chunk-IZPDAX37.js   | dashboard-component | 28.92 kB | 
+
+Application bundle generation complete. [0.260 seconds] - 2026-09-29T05:21:49.233Z
+
+Page reload sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names               | Raw size
+main.js             | main                | 26.72 kB | 
+
+Lazy chunk files    | Names               | Raw size
+chunk-JQG7ZAHV.js   | dashboard-component | 29.95 kB | 
+
+Application bundle generation complete. [0.210 seconds] - 2026-09-29T05:21:54.370Z
+
+Component update sent to client(s).

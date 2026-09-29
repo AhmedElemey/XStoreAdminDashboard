@@ -6,16 +6,19 @@
   <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
     <div class="form-row" style="margin:0">
       <label>From</label>
-      <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" name="from" />
+      <input type="date" [ngModel]="from()" (ngModelChange)="onFromChange($event)" name="from" [max]="to() || null" />
     </div>
     <div class="form-row" style="margin:0">
       <label>To</label>
-      <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" name="to" />
+      <input type="date" [ngModel]="to()" (ngModelChange)="onToChange($event)" name="to" [min]="from() || null" />
     </div>
     <button class="btn btn-g" (click)="clearRange()">Reset</button>
-    <button class="btn btn-p" (click)="applyRange()">Apply</button>
+    <button class="btn btn-p" (click)="applyRange()" [disabled]="rangeInvalid()">Apply</button>
   </div>
 </div>
+@if (rangeError()) {
+  <p style="font-size:12.5px;color:var(--error);font-weight:600;margin:8px 0 0">{{ rangeError() }}</p>
+}
 
 @if (loadState() === 'loading') {
   <app-state-block kind="loading" message="Loading dashboard…" />

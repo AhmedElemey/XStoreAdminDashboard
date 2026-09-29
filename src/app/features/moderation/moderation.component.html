@@ -65,11 +65,14 @@
   <div class="overlay show" (click)="closeReject()"></div>
   <div class="modal-card">
     <h3 style="font-size:16px;margin-bottom:4px">Reject "{{ rejectTitle() }}"</h3>
-    <p class="muted" style="font-size:12.5px;margin-bottom:12px">This reason will be shown to the vendor.</p>
-    <textarea class="modal-ta" rows="4" placeholder="Enter rejection reason…" [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"></textarea>
+    <p class="muted" style="font-size:12.5px;margin-bottom:12px">A reason is required — it will be shown to the vendor.</p>
+    <textarea class="modal-ta" rows="4" placeholder="Enter rejection reason (required)…" required [value]="rejectReason()" (input)="onRejectInput($any($event.target).value)" [style.border-color]="rejectError() ? 'var(--error)' : ''"></textarea>
+    @if (rejectError()) {
+      <span style="display:block;font-size:12.5px;color:var(--error);margin-top:6px">{{ rejectError() }}</span>
+    }
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-g" (click)="closeReject()">Cancel</button>
-      <button class="btn btn-no" (click)="confirmReject()">Reject</button>
+      <button class="btn btn-no" (click)="confirmReject()" [disabled]="!rejectReason().trim()">Reject</button>
     </div>
   </div>
 }
