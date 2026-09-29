@@ -15,7 +15,110 @@
 > Banners CRUD, and System Settings (commission %, warn/pause thresholds). Still not
 > backed by any real endpoint: Disputes, Coupons, Analytics (all three are also not in the
 > app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
-> and team roster.
+> and team roster, and (new as of 2026-09-15) **vendor blocking** — see below.
+
+## Vendor & customer blocking (PROPOSED, not yet built — 2026-09-15)
+
+The Angular app's Vendor detail page and Customer detail page (`vendor-detail.component.*`,
+`customers/user-detail.component.*`) both now have a "Block" / "Unblock" button, a
+reason-collecting modal with an *optional* expiry date (mirrors the existing Cancel Order
+modal), and a "🚫 Blocked" badge on the list and detail views for each — all wired against
+`AdminApiService.blockVendor()`/`.unblockVendor()` and `.blockUser()`/`.unblockUser()`,
+which currently 404 because the backend doesn't have these routes yet. Both entities share
+the identical contract shape, just under a different base path.
+
+This is the companion admin-side feature to the xStore mobile app's "Report Vendor" flow
+(a consumer reports a vendor after a placed order — see the mobile repo's
+`docs_business/backend/07_VENDOR_REPORTS_ENDPOINT_HANDOFF.md`). Blocking and reporting are
+independent (an admin can block for any reason, not only after a report), but the new
+**Reports tab** below is the admin's actual browse-and-decide surface for this.
+
+**Proposed endpoints (vendor and user variants are identical except the base path):**
+
+```
+POST /api/admin/vendors/{id}/block
+POST /api/users/{id}/block
+Body: { "reason": "string", "blockedUntil": "2026-10-15" | null }
+Response: 200/204
+```
+
+```
+POST /api/admin/vendors/{id}/unblock
+POST /api/users/{id}/unblock
+Body: {}
+Response: 200/204
+```
+
+`blockedUntil` is a date-only string, **optional** — `null` (or the whole key omitted) means
+an **indefinite block that only a manual `.../unblock` call lifts**. When present, the
+backend should auto-expire the block once `now > blockedUntil` — the simplest implementation
+is checking this lazily wherever `isBlocked` currently gates something (login, order
+placement), rather than standing up a scheduled job just for this.
+
+**DTO addition:** add `isBlocked: boolean` and `blockedUntil: string | null` to whatever
+`GET /api/admin/vendors`, `GET /api/admin/vendors/{id}`, `GET /api/users`, and
+`GET /api/users/{id}` already return. The Angular app parses both tolerantly and defaults to
+"not blocked" if absent, so this can ship incrementally (vendors first, users later, or vice
+versa — the two features don't depend on each other going live together).
+
+**Open questions for whoever implements this:**
+
+1. **What does "blocked" actually restrict?** At minimum: prevent the account from logging
+   in (or immediately reject its session) and, for vendors specifically, prevent new orders
+   being placed against their listings. Whether a blocked vendor's existing listings stay
+   visible-but-unorderable vs. are hidden entirely from the storefront is a product decision
+   this doc doesn't make for you — flag it back here once decided.
+2. **Naming collision with the old prototype's `status: active|pending|suspended` field**
+   (see the legacy "Vendor" data shape further down this doc, and the legacy
+   `.../suspend`/`.../reinstate` endpoints) — those were never built either. Don't build
+   both a `status` enum AND a separate `isBlocked` boolean; pick one. This doc recommends
+   `isBlocked` (matches the mobile-facing "block/report" language already shipped), but
+   defer to whichever the backend team already has more momentum on.
+3. Should blocking (or a report) trigger any internal notification (email/Slack to the
+   blocked party or a moderation team)? Not built on the client side either way — flag if
+   wanted.
+
+## Vendor reports (PROPOSED, not yet built — 2026-09-15)
+
+New **Reports** tab (`features/reports/`, nav item under Marketplace) lists consumer
+reports filed against a vendor from the mobile app's "Report Vendor" feature (see the
+mobile repo's `07_VENDOR_REPORTS_ENDPOINT_HANDOFF.md` for the mobile-side POST contract —
+this is the read side an admin uses to review what's been filed). A row's "Details" button
+opens a drawer with the full report — reason, the consumer's free-text comment, the linked
+order, and the reported vendor and reporting consumer, **each a hyperlink into that
+person/store's existing detail page** (`/vendors/{id}`, `/customers/{id}`).
+
+**Proposed endpoint:**
+
+```
+GET /api/admin/reports/vendor?keyword=&reason=&vendorId=&consumerId=&from=&to=&page=&pageSize=
+Response: { items: [ ... ], totalCount: <int> }  (or a bare array — the app's readPage() accepts either)
+```
+
+Each item's proposed shape (nested consumer/vendor sub-objects chosen so the list/drawer can
+render a name without a second lookup per row — see `mapVendorReport` in `core/mappers.ts`
+for the exact tolerant-parsing fallbacks, including a flat `consumerName`/`vendorName` as an
+alternative to nesting):
+
+```json
+{
+  "id": "r_1",
+  "orderId": "order_882",
+  "reason": "Fraud",
+  "comment": "Vendor took payment then never shipped the item.",
+  "createdAt": "2026-09-10T10:00:00Z",
+  "consumer": { "id": "c_1", "fullNameEn": "Nourhan Adel" },
+  "vendor": { "id": "v_1", "storeNameEn": "Cairo Gadgets" }
+}
+```
+
+`reason` is one of the same six frozen wire values as the mobile POST contract: `Fraud`,
+`PoorProductQuality`, `ItemNotAsDescribed`, `NoResponseFromSeller`, `Harassment`, `Other`.
+
+`keyword` and `reason` query params are sent optimistically (not confirmed against a real
+backend, same convention as every other "sent optimistically" param in this file) — `reason`
+should be a straightforward exact-match filter; `keyword` is meant to match against vendor
+store name or consumer name.
 
 Original front-end design prototype (no build step, plain HTML/CSS/JS) description below,
 kept for historical context on what each view was originally trying to model. That prototype

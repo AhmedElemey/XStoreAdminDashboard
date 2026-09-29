@@ -1,0 +1,47 @@
+<div class="page-head">
+  <div>
+    <h2>Reports</h2>
+    <p>Consumer reports filed against a vendor after a placed order (xStore mobile app's Report Vendor feature).</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search reports by vendor or customer…" (input)="onSearch($any($event.target).value)" />
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="activeTabLabel()" (select)="selectTab($event)" />
+  <app-date-range-filter (rangeChange)="onRangeChange($event)" />
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading reports…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items()?.length) {
+    <app-state-block kind="empty" message="No reports found." />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Reported vendor</th><th>Reported by</th><th>Reason</th><th>Order</th><th>Filed</th><th class="r">Action</th></tr>
+      </thead>
+      <tbody>
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <tr>
+            <td><b>{{ m.vendorName }}</b></td>
+            <td>{{ m.consumerName }}</td>
+            <td><span class="badge-s b-red">{{ reasonLabel(m.reason) }}</span></td>
+            <td class="muted">{{ m.orderId || '—' }}</td>
+            <td class="muted">{{ m.createdAt }}</td>
+            <td class="r">
+              <button class="btn btn-g btn-sm" (click)="openReport($index)">Details</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>

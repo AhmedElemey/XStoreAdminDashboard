@@ -59,6 +59,10 @@ export interface MappedUser {
   role: string;
   /** null only when the API omits `isVerified` for a row — otherwise the real value. */
   verified: boolean | null;
+  /** null when the API omits `isBlocked` — see the identical `MappedVendor.blocked` note. */
+  blocked: boolean | null;
+  /** Date-only string, or null for an indefinite block / not blocked. */
+  blockedUntil: string | null;
   orders: number | string;
   spend: string;
   joined: string;
@@ -74,9 +78,28 @@ export interface MappedVendor {
   category: string;
   /** null when the API omits `isVerified` for a row — otherwise the real value. */
   verified: boolean | null;
+  /** null when the API omits `isBlocked` (true for every vendor until the backend
+   *  ships this field) — the UI treats null the same as `false` (not blocked), no
+   *  separate "unknown" badge like `verified` has. See BACKEND_HANDOFF.md "Vendors". */
+  blocked: boolean | null;
+  /** Date-only string the block expires on, or null for an indefinite block (or not
+   *  blocked at all) — the admin left the "block until" field empty. */
+  blockedUntil: string | null;
   products: number | null;
   rating: number | null;
   joined: string;
+}
+
+export interface MappedVendorReport {
+  id: string;
+  orderId: string;
+  reason: string;
+  comment: string;
+  createdAt: string;
+  consumerId: string;
+  consumerName: string;
+  vendorId: string;
+  vendorName: string;
 }
 
 export interface MappedCommission {

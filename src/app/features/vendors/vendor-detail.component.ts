@@ -32,6 +32,11 @@ export class VendorDetailComponent implements OnInit {
   protected payAmount = signal(0);
   protected busy = signal(false);
 
+  protected blockOpen = signal(false);
+  protected blockReason = signal('');
+  protected blockUntil = signal('');
+  protected blockBusy = signal(false);
+
   protected readonly productsPreviewLimit = 5;
   protected products = signal<MappedListing[]>([]);
   protected productsState = signal<'loading' | 'error' | null>('loading');
@@ -143,6 +148,55 @@ export class VendorDetailComponent implements OnInit {
       this.toast.show('Settle failed: ' + ((e as Error).message || 'error'));
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  protected openBlock() {
+    this.blockReason.set('');
+    this.blockUntil.set('');
+    this.blockOpen.set(true);
+  }
+
+  protected closeBlock() {
+    if (this.blockBusy()) return;
+    this.blockOpen.set(false);
+  }
+
+  protected async confirmBlock() {
+    const v = this.vendor();
+    const reason = this.blockReason().trim();
+    if (!v || !reason) {
+      this.toast.show('Please write a reason for blocking this vendor');
+      return;
+    }
+    this.blockBusy.set(true);
+    try {
+      await this.api.blockVendor(v.id, reason, this.blockUntil() || undefined);
+      this.toast.show(this.blockUntil() ? `Vendor blocked until ${this.blockUntil()} ✓` : 'Vendor blocked indefinitely ✓');
+      this.blockOpen.set(false);
+      await this.loadVendor();
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.toast.show('Block failed: ' + ((e as Error).message || 'error'));
+    } finally {
+      this.blockBusy.set(false);
+    }
+  }
+
+  protected async unblock() {
+    const v = this.vendor();
+    if (!v) return;
+    if (!confirm(`Unblock ${v.store}? They will be able to sell on the marketplace again.`)) return;
+    this.blockBusy.set(true);
+    try {
+      await this.api.unblockVendor(v.id);
+      this.toast.show('Vendor unblocked ✓');
+      await this.loadVendor();
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      this.toast.show('Unblock failed: ' + ((e as Error).message || 'error'));
+    } finally {
+      this.blockBusy.set(false);
     }
   }
 }

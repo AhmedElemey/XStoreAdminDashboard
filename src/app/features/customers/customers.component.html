@@ -52,11 +52,15 @@
             <td>{{ m.orders }}</td>
             <td class="money">{{ m.spend }}</td>
             <td>
-              @let rv = rowVerified(m);
-              @if (rv === null) {
-                <span class="badge-s b-grey" title="Use the Verified/Unverified filter above to check.">—</span>
+              @if (m.blocked) {
+                <span class="badge-s b-red" [title]="m.blockedUntil ? 'Blocked until ' + m.blockedUntil : 'Blocked indefinitely'">🚫 Blocked</span>
               } @else {
-                <span class="badge-s" [class]="rv ? 'b-green' : 'b-grey'">{{ rv ? '✓ Verified' : 'Unverified' }}</span>
+                @let rv = rowVerified(m);
+                @if (rv === null) {
+                  <span class="badge-s b-grey" title="Use the Verified/Unverified filter above to check.">—</span>
+                } @else {
+                  <span class="badge-s" [class]="rv ? 'b-green' : 'b-grey'">{{ rv ? '✓ Verified' : 'Unverified' }}</span>
+                }
               }
             </td>
             <td class="r"><button class="btn btn-g btn-sm" (click)="openUser($index)">Profile</button></td>
