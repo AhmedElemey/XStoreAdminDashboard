@@ -188,3 +188,29 @@ chunk-JQG7ZAHV.js   | dashboard-component | 29.95 kB |
 Application bundle generation complete. [0.210 seconds] - 2026-09-29T05:21:54.370Z
 
 Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 26.95 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-UXEPSBO3.js   | content-component         | 49.58 kB | 
+chunk-SEQXUFOB.js   | moderation-component      | 48.30 kB | 
+chunk-GQZEGEFQ.js   | vendor-detail-component   | 47.11 kB | 
+chunk-CYQF4GCK.js   | dashboard-component       | 29.95 kB | 
+chunk-5PEURMVM.js   | categories-component      | 29.88 kB | 
+chunk-CP3OGW2K.js   | user-detail-component     | 29.32 kB | 
+chunk-AWXBACFF.js   | reports-component         | 28.29 kB | 
+chunk-3SOBEVTQ.js   | -                         | 26.54 kB | 
+chunk-PU7E5CCQ.js   | order-detail-component    | 26.11 kB | 
+chunk-AVJKFY6T.js   | settings-component        | 25.65 kB | 
+chunk-4LOMDIGT.js   | customers-component       | 22.74 kB | 
+chunk-QOUJJP7M.js   | orders-component          | 17.38 kB | 
+chunk-HVQ4PYOS.js   | vendors-component         | 16.71 kB | 
+chunk-3PANNAGI.js   | product-detail-component  | 15.07 kB | 
+chunk-CSMKBP2I.js   | vendor-products-component | 13.85 kB | 
+...and 2 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [1.558 seconds] - 2026-09-29T06:12:18.063Z
+
+Page reload sent to client(s).
