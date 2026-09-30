@@ -64,9 +64,9 @@ export interface VendorReportsQuery {
   [key: string]: string | number | undefined;
 }
 
-/** PROPOSED — GET /api/admin/app-settings. See BACKEND_HANDOFF.md "General Settings". */
+/** PROPOSED — GET /api/general-settings. See BACKEND_HANDOFF.md "General Settings". */
 export interface AppSettingsQuery {
-  keyword?: string;
+  search?: string;
   dataType?: string;
   page: number;
   pageSize: number;
@@ -187,17 +187,17 @@ export class AdminApiService {
 
   /* ---------- General Settings (remote app config) — PROPOSED, see BACKEND_HANDOFF.md ---------- */
   appSettings(q: AppSettingsQuery) {
-    return this.auth.apiFetch<unknown>('/api/admin/app-settings', { query: q });
+    return this.auth.apiFetch<unknown>('/api/general-settings', { query: q });
   }
   createAppSetting(body: AppSettingBody) {
-    return this.auth.apiFetch('/api/admin/app-settings', { method: 'POST', body });
+    return this.auth.apiFetch('/api/general-settings', { method: 'POST', body });
   }
   /** `key` is immutable after create (mobile clients read by key) — the backend ignores it here. */
   updateAppSetting(id: string, body: AppSettingBody) {
-    return this.auth.apiFetch(`/api/admin/app-settings/${encodeURIComponent(id)}`, { method: 'PUT', body });
+    return this.auth.apiFetch(`/api/general-settings/${encodeURIComponent(id)}`, { method: 'PUT', body });
   }
   deleteAppSetting(id: string) {
-    return this.auth.apiFetch(`/api/admin/app-settings/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return this.auth.apiFetch(`/api/general-settings/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
   /* ---------- Categories ---------- */

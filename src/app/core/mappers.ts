@@ -198,7 +198,7 @@ export function mapVendorReport(r: Dto): MappedVendorReport {
   };
 }
 
-/** GET /api/admin/app-settings row (PROPOSED — see BACKEND_HANDOFF.md "General Settings").
+/** GET /api/general-settings row (PROPOSED — see BACKEND_HANDOFF.md "General Settings").
  *  `value` may arrive as the stored string or, if the backend ever sends it typed, as a real
  *  JSON bool/number/object — both are normalized back to the canonical string form. */
 export function mapAppSetting(s: Dto): MappedAppSetting {

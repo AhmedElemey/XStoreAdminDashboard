@@ -48,10 +48,10 @@
                 }
               </td>
               <td><span [class]="'badge-s ' + typeBadge(s.dataType)">{{ s.dataType }}</span></td>
-              <td class="nowrap">{{ s.createdAt }}<small class="muted cell-sub">by {{ s.createdBy }}</small></td>
+              <td class="nowrap">{{ s.createdAt }}</td>
               <td class="nowrap">
                 @if (s.updatedAt !== '—') {
-                  {{ s.updatedAt }}<small class="muted cell-sub">by {{ s.updatedBy }}</small>
+                  {{ s.updatedAt }}
                 } @else {
                   <span class="muted">—</span>
                 }

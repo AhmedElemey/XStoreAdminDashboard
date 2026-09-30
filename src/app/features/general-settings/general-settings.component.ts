@@ -74,7 +74,7 @@ export class GeneralSettingsComponent implements OnInit {
     this.loadState.set('loading');
     try {
       const data = await this.api.appSettings({
-        keyword: this.keyword() || undefined,
+        search: this.keyword() || undefined,
         dataType: this.dataType() || undefined,
         page: this.page(),
         pageSize: this.pageSize,
