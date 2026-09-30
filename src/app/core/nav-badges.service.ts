@@ -5,4 +5,5 @@ import { Injectable, signal } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class NavBadgesService {
   readonly moderationPending = signal<number | null>(5);
+  readonly paymentsPending = signal<number | null>(null);
 }

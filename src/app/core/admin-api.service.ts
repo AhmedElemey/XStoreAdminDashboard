@@ -64,6 +64,18 @@ export interface VendorReportsQuery {
   [key: string]: string | number | undefined;
 }
 
+/** PROPOSED — see BACKEND_HANDOFF.md "Commission payment requests". `keyword` matches the
+ *  vendor's store name. */
+export interface CommissionPaymentsQuery {
+  status?: string;
+  keyword?: string;
+  from?: string;
+  to?: string;
+  page: number;
+  pageSize: number;
+  [key: string]: string | number | undefined;
+}
+
 /** PROPOSED — GET /api/general-settings. See BACKEND_HANDOFF.md "General Settings". */
 export interface AppSettingsQuery {
   search?: string;
@@ -159,6 +171,21 @@ export class AdminApiService {
   }
   vendorReport(id: string) {
     return this.auth.apiFetch<unknown>(`/api/admin/reports/vendor/${encodeURIComponent(id)}`);
+  }
+
+  /* ---------- Commission payment requests — PROPOSED, see BACKEND_HANDOFF.md ---------- */
+  commissionPayments(q: CommissionPaymentsQuery) {
+    return this.auth.apiFetch<unknown>('/api/admin/commission-payments', { query: q });
+  }
+  /** Credits `amountEgp` against the vendor's outstanding balance server-side (same effect
+   *  as settle, in one transaction with the status change). */
+  approveCommissionPayment(id: string, amountEgp: number) {
+    if (!(amountEgp > 0)) throw new Error('Approved amount must be greater than 0.');
+    return this.auth.apiFetch(`/api/admin/commission-payments/${encodeURIComponent(id)}/approve`, { method: 'POST', body: { amountEgp } });
+  }
+  rejectCommissionPayment(id: string, reason: string) {
+    if (!reason?.trim()) throw new Error('Rejection reason is required.');
+    return this.auth.apiFetch(`/api/admin/commission-payments/${encodeURIComponent(id)}/reject`, { method: 'POST', body: { reason: reason.trim() } });
   }
 
   /* ---------- Admin orders (ADMINISTRATOR only) — GET /api/admin/orders ---------- */

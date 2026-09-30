@@ -1,4 +1,4 @@
-import { Dto, MappedAppSetting, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
+import { Dto, MappedAppSetting, MappedBanner, MappedCategory, MappedCommission, MappedCommissionPayment, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
 import { dateOnly, dateTime, egp } from './format';
 import { parseSettingType } from './app-settings';
 
@@ -195,6 +195,25 @@ export function mapVendorReport(r: Dto): MappedVendorReport {
     consumerName: firstNonEmpty(consumer['fullNameEn'], consumer['fullName'], consumer['name'], r['consumerName'], r['ConsumerName']) || 'Unknown customer',
     vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
     vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['vendorName'], r['VendorName']) || 'Unknown vendor',
+  };
+}
+
+/** GET /api/admin/commission-payments row (PROPOSED — see BACKEND_HANDOFF.md
+ *  "Commission payment requests"). */
+export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionPayment {
+  const vendor = (r['vendor'] ?? r['Vendor'] ?? {}) as Dto;
+  return {
+    id: firstNonEmpty(r['id'], r['Id']),
+    vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
+    vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['storeName'], r['vendorName']) || 'Unknown vendor',
+    method: firstNonEmpty(r['method'], r['Method']) || '—',
+    amount: numOr(r['amountEgp'], r['AmountEgp'], r['amount']) ?? 0,
+    approvedAmount: numOr(r['approvedAmountEgp'], r['ApprovedAmountEgp']),
+    status: firstNonEmpty(r['status'], r['Status']) || 'Pending',
+    receiptUrl: absoluteImage(firstNonEmpty(r['receiptImageUrl'], r['ReceiptImageUrl'], r['receiptUrl']) || null, apiBase),
+    rejectionReason: firstNonEmpty(r['rejectionReason'], r['RejectionReason']),
+    createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'])) || '—',
+    reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'])),
   };
 }
 

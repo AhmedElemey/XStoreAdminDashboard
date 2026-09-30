@@ -63,6 +63,7 @@ export class ShellComponent {
         { view: 'moderation', icon: 'shield', label: 'Product Moderation', badge: () => this.badges.moderationPending() },
         { view: 'vendors', icon: 'store', label: 'Vendors' },
         { view: 'reports', icon: 'alert', label: 'Reports' },
+        { view: 'payments', icon: 'cash', label: 'Fee Payments', badge: () => this.badges.paymentsPending() },
         { view: 'categories', icon: 'tag', label: 'Categories' },
         { view: 'orders', icon: 'box', label: 'Orders' },
         // Delivery-backend pilot — disabled until a real delivery-backend is deployed
