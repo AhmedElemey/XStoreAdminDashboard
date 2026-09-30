@@ -209,7 +209,7 @@ td.r .btn + .btn { margin-left: 8px; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 430px; max-width: 92vw; background: #fff; box-shadow: -12px 0 44px rgba(17, 24, 39, 0.18); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 50; display: flex; flex-direction: column; }
 .drawer.show { transform: none; }
 .d-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-.d-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); font-size: 15px; }
+.d-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: none; padding: 0; font: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); font-size: 15px; }
 .d-close:hover { background: var(--bg); }
 .d-body { padding: 20px 22px; overflow: auto; flex: 1; }
 .d-actions { display: flex; gap: 8px; margin-top: 20px; }

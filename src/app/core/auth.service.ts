@@ -87,7 +87,7 @@ export class AuthService {
       this.token = '';
       // Every caller swallows a 401 and returns, relying on this redirect — without it the
       // admin stays on a page whose requests all fail, and can keep navigating signed out.
-      this.router.navigateByUrl('/login');
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       throw new ApiError(401, 'Your session expired — please sign in again.');
     }
     if (!res.ok) throw new ApiError(res.status, serverMsg(data) || `Request failed (${res.status}).`);

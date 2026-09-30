@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MappedCategory } from '../../core/models';
 import { DrawerService } from '../../core/drawer.service';
 import { ToastService } from '../../core/toast.service';
+import { imageExtensionError } from '../../core/image-file';
 
 @Component({
   selector: 'app-category-form',
@@ -19,6 +20,7 @@ export class CategoryFormComponent implements OnInit {
   protected drawer = inject(DrawerService);
   private toast = inject(ToastService);
   private fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
+  protected fileError = signal('');
 
   protected nameEn = signal('');
   protected nameAr = signal('');
@@ -48,6 +50,9 @@ export class CategoryFormComponent implements OnInit {
       this.toast.show('Pick a category image');
       return;
     }
+    const extErr = imageExtensionError(file);
+    this.fileError.set(extErr);
+    if (extErr) return;
     this.busy.set(true);
     try {
       await this.onSave()(en, ar, this.active(), this.parentId(), file);

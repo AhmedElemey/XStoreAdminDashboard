@@ -3,18 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { MappedBanner } from '../../core/models';
 import { DrawerService } from '../../core/drawer.service';
 import { ToastService } from '../../core/toast.service';
+import { imageExtensionError } from '../../core/image-file';
 
-/** Banner images must be one of these extensions (matches the file input's `accept`). */
-const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
-
-function imageExtensionError(file: File | null): string {
-  if (!file) return '';
-  const name = file.name || '';
-  const ext = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1).toLowerCase() : '';
-  return ALLOWED_IMAGE_EXTENSIONS.includes(ext)
-    ? ''
-    : `Invalid file extension ".${ext || '?'}" — allowed: ${ALLOWED_IMAGE_EXTENSIONS.map((e) => '.' + e).join(', ')}.`;
-}
 
 @Component({
   selector: 'app-banner-form',
