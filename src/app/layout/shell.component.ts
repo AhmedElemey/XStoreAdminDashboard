@@ -80,7 +80,10 @@ export class ShellComponent {
     },
     {
       group: 'System',
-      links: [{ view: 'settings', icon: 'cog', label: 'Settings' }],
+      links: [
+        { view: 'settings', icon: 'cog', label: 'Settings' },
+        { view: 'general-settings', icon: 'sliders', label: 'General Settings' },
+      ],
     },
   ];
 

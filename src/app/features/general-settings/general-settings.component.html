@@ -1,0 +1,74 @@
+<div class="page-head">
+  <div>
+    <h2>General Settings</h2>
+    <p>Typed key/value config the mobile app reads live from the backend — no app release needed to change them.</p>
+  </div>
+  <button class="btn btn-p" (click)="openAdd()">+ Add setting</button>
+</div>
+
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search by key…" aria-label="Search settings by key" (input)="onSearch($any($event.target).value)" />
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="dataType() || 'All'" (select)="selectTab($event)" />
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading settings…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items().length) {
+    <app-state-block kind="empty" [message]="keyword() || dataType() ? 'No settings match this filter.' : 'No settings yet — add the first key for the mobile app.'" />
+  } @else {
+    <div class="table-scroll">
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Key</th><th>Value</th><th>Data type</th>
+            <th>Created</th><th>Last updated</th><th class="r">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of items(); track s.id) {
+            <tr>
+              <td class="muted">{{ s.id }}</td>
+              <td>
+                <b class="mono">{{ s.key }}</b>
+                @if (s.description) {
+                  <small class="muted cell-sub">{{ s.description }}</small>
+                }
+              </td>
+              <td class="val-cell" [title]="s.value">
+                @if (s.dataType === 'Boolean') {
+                  <span class="badge-s" [class.b-green]="s.value === 'true'" [class.b-grey]="s.value !== 'true'">{{ s.value }}</span>
+                } @else {
+                  <span [class.mono]="s.dataType === 'Json'">{{ s.value || '—' }}</span>
+                }
+              </td>
+              <td><span [class]="'badge-s ' + typeBadge(s.dataType)">{{ s.dataType }}</span></td>
+              <td class="nowrap">{{ s.createdAt }}<small class="muted cell-sub">by {{ s.createdBy }}</small></td>
+              <td class="nowrap">
+                @if (s.updatedAt !== '—') {
+                  {{ s.updatedAt }}<small class="muted cell-sub">by {{ s.updatedBy }}</small>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td class="r nowrap">
+                <button class="btn btn-g btn-sm" (click)="openEdit(s)">Edit</button>
+                <button class="btn btn-no btn-sm" [disabled]="deletingId() === s.id" (click)="remove(s)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>
+
+@if (form(); as f) {
+  <app-setting-form [initial]="f.initial" [existingKeys]="existingKeys()" [onSave]="saveSetting" (closed)="form.set(null)" />
+}

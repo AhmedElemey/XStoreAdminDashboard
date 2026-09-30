@@ -1,5 +1,6 @@
-import { Dto, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
-import { dateOnly, egp } from './format';
+import { Dto, MappedAppSetting, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
+import { dateOnly, dateTime, egp } from './format';
+import { parseSettingType } from './app-settings';
 
 /** first non-empty of a list of candidate values (mirrors legacy _fne). */
 function firstNonEmpty(...vals: unknown[]): string {
@@ -194,6 +195,25 @@ export function mapVendorReport(r: Dto): MappedVendorReport {
     consumerName: firstNonEmpty(consumer['fullNameEn'], consumer['fullName'], consumer['name'], r['consumerName'], r['ConsumerName']) || 'Unknown customer',
     vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
     vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['vendorName'], r['VendorName']) || 'Unknown vendor',
+  };
+}
+
+/** GET /api/admin/app-settings row (PROPOSED — see BACKEND_HANDOFF.md "General Settings").
+ *  `value` may arrive as the stored string or, if the backend ever sends it typed, as a real
+ *  JSON bool/number/object — both are normalized back to the canonical string form. */
+export function mapAppSetting(s: Dto): MappedAppSetting {
+  const rawValue = s['value'] ?? s['Value'];
+  const value = rawValue == null ? '' : typeof rawValue === 'object' ? JSON.stringify(rawValue) : String(rawValue);
+  return {
+    id: firstNonEmpty(s['id'], s['Id']),
+    key: firstNonEmpty(s['key'], s['Key']),
+    value,
+    dataType: parseSettingType(s['dataType'] ?? s['DataType'] ?? s['type']),
+    description: firstNonEmpty(s['description'], s['Description']),
+    createdAt: dateTime(firstNonEmpty(s['createdAt'], s['CreatedAt'], s['createdDate'])) || '—',
+    createdBy: firstNonEmpty(s['createdBy'], s['CreatedBy'], s['createdByName']) || '—',
+    updatedAt: dateTime(firstNonEmpty(s['updatedAt'], s['UpdatedAt'], s['updatedDate'])) || '—',
+    updatedBy: firstNonEmpty(s['updatedBy'], s['UpdatedBy'], s['updatedByName']) || '—',
   };
 }
 

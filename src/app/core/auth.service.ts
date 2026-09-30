@@ -128,6 +128,8 @@ function serverMsg(d: unknown): string {
   if (!d) return '';
   if (typeof d === 'string') return d;
   const o = d as Record<string, unknown>;
+  // The live API's Result envelope: { isSuccess, data, errorEn, errorAr, statusCode }.
+  if (typeof o['errorEn'] === 'string' && o['errorEn']) return o['errorEn'];
   const err = o['error'];
   if (err && typeof err === 'object') return String((err as Record<string, unknown>)['message'] || '');
   if (typeof err === 'string') return err;

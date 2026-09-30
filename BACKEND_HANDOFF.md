@@ -17,6 +17,43 @@
 > app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
 > and team roster, and (new as of 2026-09-15) **vendor blocking** — see below.
 
+## General Settings — remote app config (PROPOSED, not yet built — 2026-09-26)
+
+New **System → General Settings** page (`src/app/features/general-settings/`). The super admin
+manages typed key/value pairs (`String`, `Json` (object or list), `Boolean`, `Integer`, `Float`)
+that the **mobile app reads at startup** from a public endpoint. That way values like
+`force_update_required`, `minimum_app_version`, `listing-title-max-character` or a JSON list of
+home sections can change without an app release. Platform/sub-platform scoping (from the 4swapp
+screen this is modelled on) is intentionally **out of scope for now**.
+
+The full contract, validation rules and a drop-in ASP.NET Core reference implementation live in
+the mobile repo: `docs_business/backend/11_APP_SETTINGS_ENDPOINT_HANDOFF.md` (xstore repo).
+Summary of what this dashboard calls (`AdminApiService.appSettings()` / `createAppSetting()` /
+`updateAppSetting()` / `deleteAppSetting()`):
+
+```
+GET    /api/admin/app-settings?keyword=&dataType=&page=1&pageSize=20
+       → { items: AppSettingDto[], totalCount, totalPages }   (Result envelope `data` is unwrapped)
+POST   /api/admin/app-settings        { key, dataType, value, description? }  → 201 / 409 duplicate key
+PUT    /api/admin/app-settings/{id}   { key, dataType, value, description? }  → 200 (key + dataType immutable)
+DELETE /api/admin/app-settings/{id}                                             → 204
+
+AppSettingDto = { id, key, value: string, dataType: "String"|"Json"|"Boolean"|"Integer"|"Float",
+                  description, createdAt, createdBy, updatedAt, updatedBy }
+```
+
+Mobile read side (not called by this dashboard): `GET /api/app-settings` (anonymous) returns a
+flat `{ key: typedValue }` map, and `GET /api/app-settings/{key}` returns a single value.
+
+- `value` is always sent as a **canonical string**: `"true"`/`"false"`, `"170"`, `"0.15"`,
+  minified JSON. The client validates it per type (`core/app-settings.ts`, same rules the backend
+  must enforce), and `mapAppSetting` also tolerates a typed value coming back.
+- **Key and data type are locked after create** in the UI. Mobile builds already in the field
+  read by key and parse by type, so a rename or type change would silently break them. The
+  backend should reject a changed `dataType` on PUT and ignore `key`.
+- Keys: `^[a-z][a-z0-9_.-]{0,99}$`, unique. The UI pre-checks against the rows on screen; the
+  backend's 409 message is shown in the modal otherwise.
+
 ## Vendor & customer blocking (PROPOSED, not yet built — 2026-09-15)
 
 The Angular app's Vendor detail page and Customer detail page (`vendor-detail.component.*`,

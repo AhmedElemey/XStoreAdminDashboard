@@ -64,6 +64,22 @@ export interface VendorReportsQuery {
   [key: string]: string | number | undefined;
 }
 
+/** PROPOSED — GET /api/admin/app-settings. See BACKEND_HANDOFF.md "General Settings". */
+export interface AppSettingsQuery {
+  keyword?: string;
+  dataType?: string;
+  page: number;
+  pageSize: number;
+  [key: string]: string | number | undefined;
+}
+
+export interface AppSettingBody {
+  key: string;
+  dataType: string;
+  value: string;
+  description?: string;
+}
+
 /** Endpoint wrappers for the marketplace admin API — matches the real
  *  "xStoreEcommerce Admin & Super Admin" Postman collection. */
 @Injectable({ providedIn: 'root' })
@@ -167,6 +183,21 @@ export class AdminApiService {
   }
   updateSystemSettings(body: { commissionValueOnOrder: number; warnThresholdEgp: number; pauseThresholdEgp: number }) {
     return this.auth.apiFetch('/api/admin/system-settings', { method: 'PUT', body });
+  }
+
+  /* ---------- General Settings (remote app config) — PROPOSED, see BACKEND_HANDOFF.md ---------- */
+  appSettings(q: AppSettingsQuery) {
+    return this.auth.apiFetch<unknown>('/api/admin/app-settings', { query: q });
+  }
+  createAppSetting(body: AppSettingBody) {
+    return this.auth.apiFetch('/api/admin/app-settings', { method: 'POST', body });
+  }
+  /** `key` is immutable after create (mobile clients read by key) — the backend ignores it here. */
+  updateAppSetting(id: string, body: AppSettingBody) {
+    return this.auth.apiFetch(`/api/admin/app-settings/${encodeURIComponent(id)}`, { method: 'PUT', body });
+  }
+  deleteAppSetting(id: string) {
+    return this.auth.apiFetch(`/api/admin/app-settings/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
   /* ---------- Categories ---------- */
