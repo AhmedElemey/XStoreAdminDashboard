@@ -65,6 +65,12 @@ export class SettingsComponent implements OnInit {
   }
 
   protected async saveSettings() {
+    // `+$event` turns text into NaN, which no comparison rejects on its own.
+    const values = [this.commissionValue(), this.warnThreshold(), this.pauseThreshold()];
+    if (!values.every((n) => Number.isFinite(n) && n >= 0)) {
+      this.toast.show('Enter numbers of 0 or more');
+      return;
+    }
     if (this.pauseThreshold() < this.warnThreshold()) {
       this.toast.show('Pause threshold must be ≥ warn threshold');
       return;

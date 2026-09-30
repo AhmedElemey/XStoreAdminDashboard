@@ -64,8 +64,8 @@
           }
           @if (c.outstanding > 0) {
             <div class="form-row" style="margin-top:10px">
-              <label>Amount received from vendor (EGP)</label>
-              <input inputmode="numeric" [ngModel]="payAmount()" (ngModelChange)="payAmount.set(+$event)" name="payAmount" />
+              <label for="v-pay">Amount received from vendor (EGP)</label>
+              <input id="v-pay" inputmode="numeric" [ngModel]="payAmount()" (ngModelChange)="payAmount.set(+$event)" name="payAmount" />
             </div>
             <div style="display:flex;gap:8px;margin-bottom:14px">
               <button class="btn btn-ok" style="flex:1;justify-content:center" [disabled]="busy()" (click)="settle(false)">Record payment</button>
@@ -75,16 +75,16 @@
             <div style="padding:10px 12px;background:var(--success-bg);color:#2C6347;border-radius:9px;font-size:12.5px;font-weight:600;margin:8px 0 14px">✓ Wallet settled.</div>
           }
           <div class="form-row">
-            <label>Warn threshold (EGP)</label>
-            <input inputmode="numeric" [ngModel]="warnDraft()" (ngModelChange)="warnDraft.set(+$event)" name="warnDraft" />
+            <label for="v-warn">Warn threshold (EGP)</label>
+            <input id="v-warn" inputmode="numeric" [ngModel]="warnDraft()" (ngModelChange)="warnDraft.set(+$event)" name="warnDraft" />
           </div>
           <div class="form-row">
-            <label>Pause threshold (EGP)</label>
-            <input inputmode="numeric" [ngModel]="pauseDraft()" (ngModelChange)="pauseDraft.set(+$event)" name="pauseDraft" />
+            <label for="v-pause">Pause threshold (EGP)</label>
+            <input id="v-pause" inputmode="numeric" [ngModel]="pauseDraft()" (ngModelChange)="pauseDraft.set(+$event)" name="pauseDraft" />
           </div>
           <div class="form-row">
-            <label>Commission on order (EGP)</label>
-            <input inputmode="decimal" [ngModel]="commissionDraft()" (ngModelChange)="commissionDraft.set(+$event)" name="commissionDraft" />
+            <label for="v-commission">Commission on order (EGP)</label>
+            <input id="v-commission" inputmode="decimal" [ngModel]="commissionDraft()" (ngModelChange)="commissionDraft.set(+$event)" name="commissionDraft" />
           </div>
           <p class="muted" style="font-size:12px;margin:-4px 0 4px">Pause must be ≥ warn.</p>
           <button class="btn btn-g" style="width:100%;justify-content:center" [disabled]="busy()" (click)="saveThresholds()">Save thresholds</button>

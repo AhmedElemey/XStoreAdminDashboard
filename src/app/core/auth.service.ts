@@ -1,4 +1,5 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ApiError } from './api-error';
 import { PLATFORM_ACCESS_KEY, isTrustedPlatformHost } from './platform-key';
 
@@ -14,6 +15,7 @@ for (const stale of ['https://xstoreegy-001-site1.jtempurl.com', 'http://xstoree
  *  legacy prototype's `API` object. Kept separate from the delivery-backend session below. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private router = inject(Router);
   private readonly tokenSig = signal(localStorage.getItem(TOKEN_KEY) || '');
   readonly isLoggedIn = computed(() => !!this.tokenSig());
   readonly adminName = signal('Ahmed (Owner)');
@@ -83,6 +85,9 @@ export class AuthService {
     }
     if (res.status === 401 && !noAuthRedirect) {
       this.token = '';
+      // Every caller swallows a 401 and returns, relying on this redirect — without it the
+      // admin stays on a page whose requests all fail, and can keep navigating signed out.
+      this.router.navigateByUrl('/login');
       throw new ApiError(401, 'Your session expired — please sign in again.');
     }
     if (!res.ok) throw new ApiError(res.status, serverMsg(data) || `Request failed (${res.status}).`);

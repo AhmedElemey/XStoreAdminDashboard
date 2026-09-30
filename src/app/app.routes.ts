@@ -11,6 +11,8 @@ export const routes: Routes = [
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],
+    // Re-checked on every page change, not just when the shell first opens.
+    canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'overview' },
       {

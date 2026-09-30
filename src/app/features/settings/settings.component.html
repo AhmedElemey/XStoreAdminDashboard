@@ -13,7 +13,7 @@
       @for (t of policies; track t.label) {
         <div class="list-row">
           <div style="flex:1"><b>{{ t.label }}</b></div>
-          <div class="switch disabled" [class.off]="!t.on" role="switch" [attr.aria-checked]="t.on" aria-disabled="true"></div>
+          <div class="switch disabled" [class.off]="!t.on" role="switch" [attr.aria-label]="t.label" [attr.aria-checked]="t.on" aria-disabled="true"></div>
         </div>
       }
     </div>
@@ -42,16 +42,16 @@
       <p class="muted" style="font-size:12.5px;margin-bottom:14px">Platform-wide defaults — per-vendor thresholds can still be overridden from that vendor's Commission wallet.</p>
       <div class="grid g-3">
         <div class="form-row">
-          <label>Commission per order (EGP)</label>
-          <input inputmode="numeric" [ngModel]="commissionValue()" (ngModelChange)="commissionValue.set(+$event)" name="commissionValue" />
+          <label for="set-commission">Commission per order (EGP)</label>
+          <input id="set-commission" inputmode="numeric" [ngModel]="commissionValue()" (ngModelChange)="commissionValue.set(+$event)" name="commissionValue" />
         </div>
         <div class="form-row">
-          <label>Warn threshold (EGP)</label>
-          <input inputmode="numeric" [ngModel]="warnThreshold()" (ngModelChange)="warnThreshold.set(+$event)" name="warnThreshold" />
+          <label for="set-warn">Warn threshold (EGP)</label>
+          <input id="set-warn" inputmode="numeric" [ngModel]="warnThreshold()" (ngModelChange)="warnThreshold.set(+$event)" name="warnThreshold" />
         </div>
         <div class="form-row">
-          <label>Pause threshold (EGP)</label>
-          <input inputmode="numeric" [ngModel]="pauseThreshold()" (ngModelChange)="pauseThreshold.set(+$event)" name="pauseThreshold" />
+          <label for="set-pause">Pause threshold (EGP)</label>
+          <input id="set-pause" inputmode="numeric" [ngModel]="pauseThreshold()" (ngModelChange)="pauseThreshold.set(+$event)" name="pauseThreshold" />
         </div>
       </div>
       <button class="btn btn-p" [disabled]="saving()" (click)="saveSettings()">{{ saving() ? 'Saving…' : 'Save settings' }}</button>

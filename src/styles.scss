@@ -22,7 +22,7 @@
   --line-soft: #f1ede3;
   --text: #1a2a24;
   --text-2: #5b655e;
-  --text-3: #8c9189;
+  --text-3: #6b7069; /* ≥4.5:1 on --bg, --surface and table headers (WCAG AA) */
   --sidebar: #15211d;
   --sidebar-2: #213029;
   --sidebar-text: #b4c0b4;
@@ -101,8 +101,8 @@ a { color: inherit; text-decoration: none; }
 .kpi .k-val { font-size: 27px; font-weight: 800; margin-top: 12px; letter-spacing: -0.5px; }
 .kpi .k-label { color: var(--text-2); font-size: 12.5px; margin-top: 2px; }
 .trend { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-.trend.up { color: var(--success); background: var(--success-bg); }
-.trend.down { color: var(--error); background: var(--error-bg); }
+.trend.up { color: #356a4f; background: var(--success-bg); } /* darker than --success for ≥4.5:1 at 12px */
+.trend.down { color: #9a3a24; background: var(--error-bg); }
 
 /* ---------- tables ---------- */
 table { width: 100%; border-collapse: collapse; }

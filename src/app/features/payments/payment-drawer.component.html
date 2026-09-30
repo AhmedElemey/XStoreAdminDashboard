@@ -55,8 +55,8 @@
     <div class="form-row">
       <label for="approveAmount">Amount to deduct (EGP)</label>
       <input id="approveAmount" inputmode="decimal" [value]="approveInput()" (input)="approveInput.set($any($event.target).value)" [disabled]="busy()" />
-      @if (!amountValid()) {
-        <span class="field-err">Amount must be greater than 0.</span>
+      @if (amountError()) {
+        <span class="field-err" role="alert">{{ amountError() }}</span>
       }
     </div>
     @if (balanceAfter() != null) {

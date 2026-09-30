@@ -42,7 +42,13 @@ export class PaymentDrawerComponent {
   protected busy = signal(false);
 
   protected isPending = computed(() => this.payment().status === 'Pending');
-  protected amountValid = computed(() => this.approveAmount() > 0);
+  protected amountError = computed(() => {
+    const n = this.approveAmount();
+    if (!(n > 0)) return 'Amount must be greater than 0.';
+    if (n > this.payment().amount) return `Can't approve more than the vendor claimed (${egp(this.payment().amount)}).`;
+    return '';
+  });
+  protected amountValid = computed(() => !this.amountError());
   protected balanceAfter = computed(() => {
     const o = this.outstanding();
     return o == null ? null : Math.max(0, o - this.approveAmount());
