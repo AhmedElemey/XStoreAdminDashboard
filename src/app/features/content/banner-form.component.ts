@@ -11,6 +11,18 @@ function splitIds(s: string): string[] {
   return s ? s.split(',').map((x) => x.trim()).filter(Boolean) : [];
 }
 
+/** Banner images must be one of these extensions (matches the file input's `accept`). */
+const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+function imageExtensionError(file: File | null): string {
+  if (!file) return '';
+  const name = file.name || '';
+  const ext = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1).toLowerCase() : '';
+  return ALLOWED_IMAGE_EXTENSIONS.includes(ext)
+    ? ''
+    : `Invalid file extension ".${ext || '?'}" — allowed: ${ALLOWED_IMAGE_EXTENSIONS.map((e) => '.' + e).join(', ')}.`;
+}
+
 @Component({
   selector: 'app-banner-form',
   imports: [FormsModule, LookupMultiComponent],
@@ -31,6 +43,7 @@ export class BannerFormComponent implements OnInit {
   protected sortOrder = signal(1);
   protected categorySel = signal<string[]>([]);
   protected storeSel = signal<string[]>([]);
+  protected fileError = signal('');
   protected busy = signal(false);
 
   ngOnInit() {
@@ -61,6 +74,13 @@ export class BannerFormComponent implements OnInit {
     return list.map((s) => ({ id: String(s['id'] ?? s['Id'] ?? ''), name: String(s['name'] ?? s['Name'] ?? 'Untitled') }));
   };
 
+  protected onFileChange() {
+    const file = this.fileInput()?.nativeElement.files?.[0] ?? null;
+    const err = imageExtensionError(file);
+    this.fileError.set(err);
+    if (err) this.fileInput()!.nativeElement.value = '';
+  }
+
   protected async save() {
     const en = this.nameEn().trim();
     const ar = this.nameAr().trim();
@@ -77,6 +97,12 @@ export class BannerFormComponent implements OnInit {
       this.toast.show('Pick a banner image');
       return;
     }
+    const extErr = imageExtensionError(file);
+    if (extErr) {
+      this.fileError.set(extErr);
+      return;
+    }
+    this.fileError.set('');
     this.busy.set(true);
     try {
       const categoryIds = this.categorySel().map((id) => Number(id)).filter((n) => Number.isInteger(n));

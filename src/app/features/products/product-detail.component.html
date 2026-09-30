@@ -33,6 +33,12 @@
           <span class="badge-s b-red">🔥 Hot deal</span>
         }
       </div>
+      @if (p.rejectionReason) {
+        <div style="background:var(--error-bg);border:1px solid var(--error);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Rejection reason</div>
+          <div style="font-size:13px;line-height:1.6">{{ p.rejectionReason }}</div>
+        </div>
+      }
       @if (p.description) {
         <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">{{ p.description }}</p>
       }

@@ -26,9 +26,6 @@
     <div class="card">
       <div class="c-head">
         <h3>Recent orders</h3>
-        @if (orders().length > ordersPreviewLimit) {
-          <a class="muted" style="cursor:pointer;font-size:12.5px" [routerLink]="['/customers', m.id, 'orders']">View all →</a>
-        }
       </div>
       <div class="c-body" style="padding-top:4px">
         @if (ordersState() === 'loading') {
@@ -38,7 +35,7 @@
         } @else if (!orders().length) {
           <p class="muted" style="font-size:12.5px">No orders yet.</p>
         } @else {
-          @for (o of previewOrders(); track o.id) {
+          @for (o of orders(); track o.id) {
             <a [routerLink]="['/orders', o.id]" class="list-row" style="justify-content:space-between;cursor:pointer;color:inherit">
               <div>
                 <b style="font-size:13.5px;color:var(--primary)">{{ o.id }}</b>
@@ -50,6 +47,7 @@
               </div>
             </a>
           }
+          <app-pager [page]="ordersPage()" [totalPages]="ordersTotalPages()" [total]="ordersTotal()" [pageSize]="ordersPageSize" (pageChange)="gotoOrdersPage($event)" />
         }
       </div>
     </div>
@@ -94,12 +92,15 @@
     <textarea class="modal-ta" rows="4" placeholder="Write a reason for blocking this customer…" [value]="blockReason()" (input)="blockReason.set($any($event.target).value)"></textarea>
     <div class="form-row" style="margin-top:10px">
       <label>Block until (optional)</label>
-      <input type="date" [value]="blockUntil()" (input)="blockUntil.set($any($event.target).value)" />
+      <input type="date" [value]="blockUntil()" [min]="minBlockDate()" (input)="onBlockUntilChange($any($event.target).value)" />
+      @if (blockDateError()) {
+        <span style="font-size:12px;color:var(--error);font-weight:600">{{ blockDateError() }}</span>
+      }
     </div>
-    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the customer stays blocked until you unblock them.</p>
+    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the customer stays blocked until you unblock them. A date must be in the future.</p>
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-g" [disabled]="blockBusy()" (click)="closeBlock()">Cancel</button>
-      <button class="btn btn-no" [disabled]="blockBusy()" (click)="confirmBlock()">Block customer</button>
+      <button class="btn btn-no" [disabled]="blockBusy() || blockDateInvalid()" (click)="confirmBlock()">Block customer</button>
     </div>
   </div>
 }

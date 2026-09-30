@@ -115,6 +115,7 @@ export function mapListing(p: Dto, apiBase: string): MappedListing {
     description: firstNonEmpty(p['descriptionEn'], p['description']),
     submitted: firstNonEmpty(p['createdAt'], p['submittedAt']),
     isHot: !!(p['isHotDeal'] || p['hotDeal']),
+    rejectionReason: firstNonEmpty(p['rejectionReason'], p['rejectReason'], p['rejectionNote'], p['rejectNote'], p['rejectedReason'], p['rejectionMessage']),
     image: images.length ? absoluteImage(images[0], apiBase) : null,
     images: images.map((u: string) => absoluteImage(u, apiBase) || u),
   };
@@ -169,6 +170,7 @@ export function mapVendor(v: Dto): MappedVendor {
     verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
     blocked: boolOrUnknown(v['isBlocked'] ?? v['IsBlocked'] ?? v['blocked']),
     blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'])) || null,
+    blockReason: firstNonEmpty(v['blockReason'], v['BlockReason'], v['blockedReason'], v['BlockedReason'], v['blockNote'], v['banReason']),
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
@@ -210,6 +212,8 @@ export interface MappedOrder {
   statusClass: string;
   total: number | null;
   courier: string | null;
+  /** Why the order was cancelled (shown on the detail page when cancelled) — '' when absent. */
+  cancellationReason: string;
   items: { id: string | null; name: string; qty: number; price: number }[];
 }
 
@@ -246,6 +250,7 @@ export function mapOrder(o: Dto): MappedOrder {
     statusClass,
     total: numOr(o['totalAmount'], o['total'], o['amount'], o['grandTotal']),
     courier: firstNonEmpty(o['courierName'], o['courier']) || null,
+    cancellationReason: firstNonEmpty(o['cancellationReason'], o['cancelReason'], o['cancelledReason'], o['cancellationNote'], o['cancelNote']),
     items: rawItems.map((it: Dto) => ({
       id: firstNonEmpty(it['id'], it['productId'], it['listingId'], it['_id']) || null,
       name: firstNonEmpty(it['titleEn'], it['title'], it['name'], it['productName'], it['titleSnapshot']) || 'Item',

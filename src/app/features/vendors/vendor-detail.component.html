@@ -24,9 +24,6 @@
 
   <div style="margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap">
     <span class="badge-s b-indigo">🏢 Business</span>
-    @if (v.blocked) {
-      <span class="badge-s b-red">🚫 {{ v.blockedUntil ? 'Blocked until ' + v.blockedUntil : 'Blocked' }}</span>
-    }
     @if (v.verified === null) {
       <span class="badge-s b-grey">verification: unknown</span>
     } @else if (v.verified) {
@@ -35,6 +32,13 @@
       <span class="badge-s b-amber">Unverified</span>
     }
   </div>
+
+  @if (v.blocked && v.blockReason) {
+    <div style="background:var(--error-bg);border:1px solid var(--error);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Block reason{{ v.blockedUntil ? ' · until ' + v.blockedUntil : '' }}</div>
+      <div style="font-size:13px;line-height:1.6">{{ v.blockReason }}</div>
+    </div>
+  }
 
   <div class="split">
     <div class="card">
@@ -145,12 +149,15 @@
     <textarea class="modal-ta" rows="4" placeholder="Write a reason for blocking this vendor…" [value]="blockReason()" (input)="blockReason.set($any($event.target).value)"></textarea>
     <div class="form-row" style="margin-top:10px">
       <label>Block until (optional)</label>
-      <input type="date" [value]="blockUntil()" (input)="blockUntil.set($any($event.target).value)" />
+      <input type="date" [value]="blockUntil()" [min]="minBlockDate()" (input)="onBlockUntilChange($any($event.target).value)" />
+      @if (blockDateError()) {
+        <span style="font-size:12px;color:var(--error);font-weight:600">{{ blockDateError() }}</span>
+      }
     </div>
-    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the vendor stays blocked until you unblock them.</p>
+    <p class="muted" style="font-size:12px;margin:-4px 0 0">Leave empty to block indefinitely — the vendor stays blocked until you unblock them. A date must be in the future.</p>
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-g" [disabled]="blockBusy()" (click)="closeBlock()">Cancel</button>
-      <button class="btn btn-no" [disabled]="blockBusy()" (click)="confirmBlock()">Block vendor</button>
+      <button class="btn btn-no" [disabled]="blockBusy() || blockDateInvalid()" (click)="confirmBlock()">Block vendor</button>
     </div>
   </div>
 }

@@ -34,6 +34,7 @@ export interface MappedListing {
   description: string;
   submitted: string;
   isHot: boolean;
+  rejectionReason: string;
   image: string | null;
   images: string[];
 }
@@ -85,6 +86,9 @@ export interface MappedVendor {
   /** Date-only string the block expires on, or null for an indefinite block (or not
    *  blocked at all) — the admin left the "block until" field empty. */
   blockedUntil: string | null;
+  /** Why the vendor was blocked (shown on the detail page when blocked) — '' when
+   *  the API omits it. */
+  blockReason: string;
   products: number | null;
   rating: number | null;
   joined: string;

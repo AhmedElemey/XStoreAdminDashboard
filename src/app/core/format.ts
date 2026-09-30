@@ -21,6 +21,13 @@ export function egp(n: number): string {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/** Today's date as local `YYYY-MM-DD` — used as the `min` for future-only date
+ *  inputs (e.g. "block until") and for comparing date-only strings (`until > today`). */
+export function todayDateOnly(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** Show only the date of a date/datetime string as `YYYY Mon DD` (e.g. "2026 Sep 01").
  *  Tolerant to ISO, plain `YYYY-MM-DD`, or `DD/MM/YYYY` shapes; returns '' when nothing parses. */
 export function dateOnly(v: unknown): string {

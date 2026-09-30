@@ -29,5 +29,6 @@
         }
       </tbody>
     </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
   }
 </div>

@@ -6,7 +6,7 @@ import { ApiError } from '../../core/api-error';
 import { ToastService } from '../../core/toast.service';
 import { Dto, MappedCommission, MappedListing, MappedVendor } from '../../core/models';
 import { mapVendor, mapCommission, mapListing, readPage } from '../../core/mappers';
-import { egp } from '../../core/format';
+import { egp, todayDateOnly } from '../../core/format';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
 
@@ -35,6 +35,7 @@ export class VendorDetailComponent implements OnInit {
   protected blockOpen = signal(false);
   protected blockReason = signal('');
   protected blockUntil = signal('');
+  protected blockDateError = signal('');
   protected blockBusy = signal(false);
 
   protected readonly productsPreviewLimit = 5;
@@ -154,6 +155,7 @@ export class VendorDetailComponent implements OnInit {
   protected openBlock() {
     this.blockReason.set('');
     this.blockUntil.set('');
+    this.blockDateError.set('');
     this.blockOpen.set(true);
   }
 
@@ -162,11 +164,29 @@ export class VendorDetailComponent implements OnInit {
     this.blockOpen.set(false);
   }
 
+  protected minBlockDate(): string {
+    return todayDateOnly();
+  }
+
+  protected blockDateInvalid(): boolean {
+    const u = this.blockUntil();
+    return !!u && u <= todayDateOnly();
+  }
+
+  protected onBlockUntilChange(v: string) {
+    this.blockUntil.set(v);
+    if (!v || v > todayDateOnly()) this.blockDateError.set('');
+  }
+
   protected async confirmBlock() {
     const v = this.vendor();
     const reason = this.blockReason().trim();
     if (!v || !reason) {
       this.toast.show('Please write a reason for blocking this vendor');
+      return;
+    }
+    if (this.blockDateInvalid()) {
+      this.blockDateError.set('Block-until date must be in the future.');
       return;
     }
     this.blockBusy.set(true);

@@ -21,12 +21,15 @@
 <div class="form-row">
   <label>Image
     @if (editing()) {
-      <span class="muted" style="font-weight:400">(leave empty to keep current)</span>
+      <span class="muted" style="font-weight:400">(jpg, png, webp — leave empty to keep current)</span>
     } @else {
       <span class="muted" style="font-weight:400">(jpg, png, webp)</span>
     }
   </label>
-  <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" />
+  <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" (change)="onFileChange()" />
+  @if (fileError()) {
+    <span style="font-size:12px;color:var(--error);font-weight:600">{{ fileError() }}</span>
+  }
 </div>
 
 <div class="d-actions">

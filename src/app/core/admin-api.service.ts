@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from './auth.service';
+import { todayDateOnly } from './format';
 import { Dto } from './models';
 
 export interface UsersQuery {
@@ -83,6 +84,7 @@ export class AdminApiService {
   /** PROPOSED — not yet built on the backend. See BACKEND_HANDOFF.md "Vendors" (the same
    *  block/unblock contract applies to /api/users, not just /api/admin/vendors). */
   blockUser(id: string, reason: string, blockedUntil?: string) {
+    if (blockedUntil && blockedUntil <= todayDateOnly()) throw new Error('Block-until date must be in the future.');
     return this.auth.apiFetch(`/api/users/${encodeURIComponent(id)}/block`, {
       method: 'POST',
       body: { reason, blockedUntil: blockedUntil || null },
@@ -103,8 +105,8 @@ export class AdminApiService {
   vendorCommission(id: string) {
     return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`);
   }
-  vendorProducts(id: string) {
-    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/products`);
+  vendorProducts(id: string, page = 1, pageSize = 20) {
+    return this.auth.apiFetch<unknown>(`/api/admin/vendors/${encodeURIComponent(id)}/products`, { query: { page, pageSize } });
   }
   updateVendorCommissionSettings(id: string, commissionValueOnOrder: number, warnThresholdEgp: number, pauseThresholdEgp: number) {
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/commission/settings`, {
@@ -122,6 +124,7 @@ export class AdminApiService {
    *  `blockedUntil` (date-only, e.g. "2026-10-01") is optional — omit it (or pass undefined)
    *  for an indefinite block that only a manual unblock lifts. */
   blockVendor(id: string, reason: string, blockedUntil?: string) {
+    if (blockedUntil && blockedUntil <= todayDateOnly()) throw new Error('Block-until date must be in the future.');
     return this.auth.apiFetch(`/api/admin/vendors/${encodeURIComponent(id)}/block`, {
       method: 'POST',
       body: { reason, blockedUntil: blockedUntil || null },
