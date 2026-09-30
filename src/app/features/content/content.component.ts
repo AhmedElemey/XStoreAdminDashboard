@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
 import { DrawerService } from '../../core/drawer.service';
@@ -12,7 +11,7 @@ import { BannerFormComponent } from './banner-form.component';
 
 @Component({
   selector: 'app-content',
-  imports: [StateBlockComponent, FormsModule],
+  imports: [StateBlockComponent],
   templateUrl: './content.component.html',
 })
 export class ContentComponent implements OnInit {
@@ -24,9 +23,6 @@ export class ContentComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
-
-  protected pbTitle = signal('');
-  protected pbAud = signal('All buyers');
 
   ngOnInit() {
     this.load();
@@ -93,14 +89,12 @@ export class ContentComponent implements OnInit {
     this.drawer.show(editing ? 'Edit banner' : 'New banner', BannerFormComponent, {
       editing,
       initial,
-      onSave: async (en: string, ar: string, sortOrder: number, categoryIds: number[], storeIds: number[], file: File | null) => {
+      onSave: async (en: string, ar: string, sortOrder: number, file: File | null) => {
         const fd = new FormData();
         fd.append('nameEn', en);
         fd.append('nameAr', ar);
         fd.append('sortOrder', String(sortOrder));
         fd.append('isActive', 'true');
-        categoryIds.forEach((id) => fd.append('categoryIds', String(id)));
-        storeIds.forEach((id) => fd.append('storeIds', String(id)));
         if (file) fd.append('image', file);
         if (editing) await this.api.updateBanner(initial!.id, fd);
         else await this.api.createBanner(fd);
@@ -108,13 +102,5 @@ export class ContentComponent implements OnInit {
         this.load();
       },
     });
-  }
-
-  protected sendBroadcast() {
-    if (!this.pbTitle().trim()) {
-      this.toast.show('Enter a title');
-      return;
-    }
-    this.toast.show('Broadcast sent to ' + this.pbAud() + ' ✓');
   }
 }

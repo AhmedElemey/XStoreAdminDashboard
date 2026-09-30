@@ -17,6 +17,25 @@
 > app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
 > and team roster, and (new as of 2026-09-15) **vendor blocking** — see below.
 
+## QA round 2026-09-26 — what the dashboard stopped faking, and what it needs from the backend
+
+The QA pass ("Admin panel issues Evidence") found controls that looked live but did nothing.
+The dashboard now shows those honestly (read-only, "Not live yet" / "Coming soon", or removed)
+instead of pretending. To make them real, the backend needs:
+
+| Dashboard area | What it shows now | Backend ask |
+|---|---|---|
+| Settings → Marketplace policies | Read-only switches, "Not live yet" | Store/read these flags (e.g. as General Settings keys the mobile app also reads) |
+| Settings → Roles & access | Only the signed-in admin | Team members list, invite (email), role assignment endpoints |
+| Content → Push broadcast | "Coming soon" card | `POST /api/admin/notifications/broadcast { title, message, audience }` via FCM |
+| Orders KPIs | Total orders + avg order value (GMV ÷ orders from `/api/admin/overview`) | Aggregates for COD refusal rate and fulfillment rate |
+| Customers KPIs | Total customers only | Aggregates for orders per customer and repeat rate |
+| Vendor detail → Block reason | Reason if returned, else "server didn't return a reason" | Return the block `reason` (and `blockedUntil`) on `GET /api/admin/vendors/{id}` |
+| Product moderation → Reject | Client-side "reason required" message | Keep rejecting empty reasons with 400, with `errorEn` text |
+
+Banner category/store targeting was removed from the banner form: banners are shown to every
+customer on the home feed, so per-category/per-store targeting had no effect.
+
 ## Commission payment requests (PROPOSED, not yet built — 2026-09-30)
 
 New **Marketplace → Fee Payments** page (`src/app/features/payments/`). Vendors pay platform

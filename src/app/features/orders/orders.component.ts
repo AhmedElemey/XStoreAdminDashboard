@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
-import { readPage, mapOrder, ORDER_STATUS } from '../../core/mappers';
+import { readPage, mapOrder, mapOverview, ORDER_STATUS } from '../../core/mappers';
 import { Dto } from '../../core/models';
 import { ApiError } from '../../core/api-error';
 import { egp } from '../../core/format';
@@ -35,9 +35,12 @@ export class OrdersComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** GMV ÷ order count from the overview aggregate — null when either is missing or zero. */
+  protected avgOrderValue = signal<number | null>(null);
 
   ngOnInit() {
     this.load();
+    this.loadAvgOrderValue();
   }
 
   protected mapped(o: Dto) {
@@ -63,6 +66,7 @@ export class OrdersComponent implements OnInit {
     this.toDate.set(r.to);
     this.page.set(1);
     this.load();
+    this.loadAvgOrderValue();
   }
 
   async load() {
@@ -92,5 +96,19 @@ export class OrdersComponent implements OnInit {
     if (!raw) return;
     const m = this.mapped(raw);
     this.router.navigate(['/orders', m.id]);
+  }
+
+  private async loadAvgOrderValue() {
+    const from = this.fromDate();
+    const to = this.toDate();
+    // Only apply the answer for the date range still selected — a slower earlier request
+    // must not overwrite a newer one.
+    const current = () => from === this.fromDate() && to === this.toDate();
+    try {
+      const o = mapOverview((await this.api.overview(from || undefined, to || undefined)) as Dto);
+      if (current()) this.avgOrderValue.set(o.gmv != null && o.orders ? Math.round(o.gmv / o.orders) : null);
+    } catch {
+      if (current()) this.avgOrderValue.set(null);
+    }
   }
 }

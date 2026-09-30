@@ -123,7 +123,10 @@ export class ModerationComponent implements OnInit {
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
-      if (this.status() === 'PENDING') this.badges.moderationPending.set(p.total > 0 ? p.total : null);
+      // Only an unfiltered Pending load is the true count behind the sidebar badge and bell.
+      if (this.status() === 'PENDING' && !this.name() && !this.fromDate() && !this.toDate()) {
+        this.badges.moderationPending.set(p.total > 0 ? p.total : null);
+      }
       this.resolveThumbs();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

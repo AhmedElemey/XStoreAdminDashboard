@@ -7,12 +7,13 @@
 
 <div class="split">
   <div class="card">
-    <div class="c-head"><h3>Marketplace policies</h3></div>
+    <div class="c-head"><h3>Marketplace policies</h3><span class="badge-s b-grey" title="No backend endpoint stores these yet">Not live yet</span></div>
     <div class="c-body" style="padding-top:4px">
-      @for (t of toggles(); track t.label; let i = $index) {
+      <p class="muted" style="font-size:12.5px;margin-bottom:6px">These show how the marketplace currently runs. Changing them needs backend support, so they can't be edited here yet.</p>
+      @for (t of policies; track t.label) {
         <div class="list-row">
           <div style="flex:1"><b>{{ t.label }}</b></div>
-          <div class="switch" [class.off]="!t.on" (click)="toggle(i)"></div>
+          <div class="switch disabled" [class.off]="!t.on" role="switch" [attr.aria-checked]="t.on" aria-disabled="true"></div>
         </div>
       }
     </div>
@@ -20,14 +21,12 @@
   <div class="card">
     <div class="c-head"><h3>Roles &amp; access</h3></div>
     <div class="c-body">
-      @for (t of demo.team(); track t[0]) {
-        <div class="list-row">
-          <app-avatar [name]="t[0]" />
-          <div style="flex:1"><b>{{ t[0] }}</b><small class="muted">{{ t[2] }}</small></div>
-          <span class="badge-s" [class]="roleBadgeClass(t[1])">{{ t[1] }}</span>
-        </div>
-      }
-      <button class="btn btn-g mt" style="width:100%;justify-content:center" (click)="openInvite()">+ Invite team member</button>
+      <div class="list-row">
+        <app-avatar [name]="adminInitialsName()" />
+        <div style="flex:1"><b>{{ auth.adminName() }}</b><small class="muted" style="display:block">Signed in · full access</small></div>
+        <span class="badge-s b-indigo">Super Admin</span>
+      </div>
+      <p class="muted" style="font-size:12.5px;margin-top:12px">Inviting teammates and assigning roles needs backend support — coming soon.</p>
     </div>
   </div>
 </div>
@@ -43,7 +42,7 @@
       <p class="muted" style="font-size:12.5px;margin-bottom:14px">Platform-wide defaults — per-vendor thresholds can still be overridden from that vendor's Commission wallet.</p>
       <div class="grid g-3">
         <div class="form-row">
-          <label>Commission per order (%)</label>
+          <label>Commission per order (EGP)</label>
           <input inputmode="numeric" [ngModel]="commissionValue()" (ngModelChange)="commissionValue.set(+$event)" name="commissionValue" />
         </div>
         <div class="form-row">

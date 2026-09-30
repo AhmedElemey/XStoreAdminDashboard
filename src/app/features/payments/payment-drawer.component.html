@@ -69,10 +69,13 @@
   } @else {
     <h3 class="sec-h">Reject</h3>
     <p class="muted" style="font-size:12.5px;margin-bottom:10px">A reason is required — it will be shown to the vendor.</p>
-    <textarea class="modal-ta" rows="4" placeholder="e.g. Receipt is unreadable / amount not received…" [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)" [disabled]="busy()"></textarea>
+    <textarea class="modal-ta" rows="4" placeholder="e.g. Receipt is unreadable / amount not received…" [value]="rejectReason()" (input)="onRejectInput($any($event.target).value)" [disabled]="busy()" [style.border-color]="rejectError() ? 'var(--error)' : ''"></textarea>
+    @if (rejectError()) {
+      <span class="field-err" style="display:block;margin-top:6px">{{ rejectError() }}</span>
+    }
     <div class="d-actions">
       <button class="btn btn-g" style="flex:1;justify-content:center" [disabled]="busy()" (click)="rejecting.set(false)">Back</button>
-      <button class="btn btn-no" style="flex:1;justify-content:center" [disabled]="busy() || !rejectReason().trim()" (click)="reject()">Reject request</button>
+      <button class="btn btn-no" style="flex:1;justify-content:center" [disabled]="busy()" (click)="reject()">Reject request</button>
     </div>
   }
 }

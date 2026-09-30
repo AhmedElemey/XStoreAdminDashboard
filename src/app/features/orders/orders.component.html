@@ -10,11 +10,11 @@
   <app-date-range-filter (rangeChange)="onRangeChange($event)" />
 </div>
 
-<div class="grid g-4" style="margin-bottom:18px">
+<!-- Only figures the backend actually reports. Refusal and fulfillment rates need a backend
+     aggregate (see BACKEND_HANDOFF.md) — they must not be shown as made-up numbers. -->
+<div class="grid g-2e" style="margin-bottom:18px">
   <app-kpi-card icon="box" [value]="total().toLocaleString('en-US')" label="Total orders" dir="up" color="#2E5C6E" />
-  <app-kpi-card icon="chart" value="EGP 356" label="Avg order value" trend="+3%" dir="up" color="#3F7A5C" />
-  <app-kpi-card icon="alert" value="12%" label="COD refusal rate" trend="watch" dir="down" color="#C68A2E" />
-  <app-kpi-card icon="shield" value="98.1%" label="Fulfillment rate" trend="+1%" dir="up" color="#356F80" />
+  <app-kpi-card icon="chart" [value]="avgOrderValue() == null ? '—' : egp(avgOrderValue()!)" [label]="fromDate() || toDate() ? 'Avg order value · selected dates' : 'Avg order value · last 30 days'" dir="up" color="#3F7A5C" />
 </div>
 
 <div class="card">

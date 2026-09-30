@@ -27,11 +27,13 @@
   <div class="main">
     <div class="topbar">
       <div class="icon-btn menu-btn" (click)="toggleSidebar()"><app-icon name="menu" /></div>
-      <h1>{{ topTitle() }}</h1>
-      <div class="search"><app-icon name="search" /><input placeholder="Search this page…" /></div>
       <div class="top-actions">
-        <div class="icon-btn" (click)="onIconAction('bell')"><app-icon name="bell" /><span class="dot"></span></div>
-        <div class="icon-btn hide-sm" (click)="onIconAction('help')"><app-icon name="help" /></div>
+        <button type="button" class="icon-btn" [title]="badges.anyPending() ? 'Items waiting for your review' : 'No new notifications'" (click)="openNotifications()">
+          <app-icon name="bell" />
+          @if (badges.anyPending()) {
+            <span class="dot"></span>
+          }
+        </button>
         <div class="avatar" style="background:var(--primary)">{{ auth.adminName().trim()[0] || 'A' }}</div>
       </div>
     </div>

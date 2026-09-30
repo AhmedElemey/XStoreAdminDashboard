@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
 import { DrawerService } from '../../core/drawer.service';
@@ -12,7 +13,7 @@ import { CategoryFormComponent } from './category-form.component';
 
 @Component({
   selector: 'app-categories',
-  imports: [StateBlockComponent],
+  imports: [StateBlockComponent, NgTemplateOutlet],
   templateUrl: './categories.component.html',
 })
 export class CategoriesComponent implements OnInit {
@@ -21,7 +22,17 @@ export class CategoriesComponent implements OnInit {
   private drawer = inject(DrawerService);
   private images = inject(ImageService);
 
+  /** Every category, parents and subcategories alike (flattened from the API's nested
+   *  `children`), each subcategory carrying its parent's id in `parentId`. */
   protected items = signal<Dto[] | null>(null);
+  private ids = computed(() => new Set((this.items() || []).map((r) => this.mapped(r).id)));
+  /** Parents, plus any subcategory whose parent isn't in the list, so nothing is hidden. */
+  protected topLevel = computed(() =>
+    (this.items() || []).filter((r) => {
+      const pid = this.mapped(r).parentId;
+      return !pid || !this.ids().has(pid);
+    }),
+  );
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
 
@@ -38,6 +49,16 @@ export class CategoriesComponent implements OnInit {
     return this.images.resolveSync(mapCategory(raw, this.api.apiBase).image);
   }
 
+  protected childrenOf(parent: Dto): Dto[] {
+    const id = this.mapped(parent).id;
+    return (this.items() || []).filter((r) => this.mapped(r).parentId === id);
+  }
+
+  protected subsLabel(parent: Dto): string {
+    const n = this.childrenOf(parent).length || this.mapped(parent).subs || 0;
+    return n ? `${n} subcategor${n === 1 ? 'y' : 'ies'}` : '—';
+  }
+
   protected onImgError(raw: Dto): void {
     raw['__imgErr'] = true;
     this.items.update((list) => (list ? [...list] : list));
@@ -48,7 +69,7 @@ export class CategoriesComponent implements OnInit {
     try {
       const data = await this.api.categories();
       const items = Array.isArray(data) ? (data as Dto[]) : readPage<Dto>(data, 200).items;
-      this.items.set(items);
+      this.items.set(flattenCategories(items));
       this.loadState.set(null);
       this.resolveImages();
     } catch (e) {
@@ -70,9 +91,7 @@ export class CategoriesComponent implements OnInit {
     }
   }
 
-  protected async toggle(i: number) {
-    const raw = (this.items() || [])[i];
-    if (!raw) return;
+  protected async toggle(raw: Dto) {
     const m = this.mapped(raw);
     if (!m.id) {
       this.toast.show('Missing category id');
@@ -90,9 +109,7 @@ export class CategoriesComponent implements OnInit {
     }
   }
 
-  protected async remove(i: number) {
-    const raw = (this.items() || [])[i];
-    if (!raw) return;
+  protected async remove(raw: Dto) {
     const m = this.mapped(raw);
     if (!m.id) {
       this.toast.show('Missing category id');
@@ -109,11 +126,12 @@ export class CategoriesComponent implements OnInit {
     }
   }
 
-  protected openForm(i?: number) {
-    const editing = i !== undefined;
-    const raw = editing ? (this.items() || [])[i!] : null;
+  protected openForm(raw?: Dto) {
+    const editing = raw !== undefined;
     const initial = raw ? this.mapped(raw) : null;
-    const parentOptions = (this.items() || []).map((r) => this.mapped(r)).filter((c) => !initial || c.id !== initial.id);
+    // One level of nesting, matching the mobile app's category picker: only top-level
+    // categories can be parents.
+    const parentOptions = this.topLevel().map((r) => this.mapped(r)).filter((c) => !initial || c.id !== initial.id);
     this.drawer.show(editing ? 'Edit category' : 'Add category', CategoryFormComponent, {
       editing,
       initial,
@@ -136,4 +154,25 @@ export class CategoriesComponent implements OnInit {
       },
     });
   }
+}
+
+/** GET /api/categories nests subcategories under each parent's `children` (confirmed by the
+ *  mobile app's category picker). Flatten them so each row can be edited on its own, and
+ *  stamp `parentId` on children that don't carry it. De-duplicates by id in case the API
+ *  also lists a subcategory at the top level. */
+function flattenCategories(list: Dto[]): Dto[] {
+  const out: Dto[] = [];
+  const byId = new Map<string, Dto>();
+  const add = (c: Dto, parentId: unknown) => {
+    const id = String(c['id'] ?? c['categoryId'] ?? '');
+    const row = (id && byId.get(id)) || c;
+    if (parentId != null && row['parentId'] == null && row['parentCategoryId'] == null) row['parentId'] = parentId;
+    if (row !== c) return;
+    if (id) byId.set(id, c);
+    out.push(c);
+    const kids = c['children'] ?? c['subCategories'] ?? c['subcategories'];
+    if (Array.isArray(kids)) kids.forEach((k: Dto) => add(k, c['id'] ?? c['categoryId']));
+  };
+  list.forEach((c) => add(c, null));
+  return out;
 }

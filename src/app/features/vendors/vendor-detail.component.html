@@ -33,10 +33,14 @@
     }
   </div>
 
-  @if (v.blocked && v.blockReason) {
+  @if (v.blocked) {
     <div style="background:var(--error-bg);border:1px solid var(--error);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Block reason{{ v.blockedUntil ? ' · until ' + v.blockedUntil : '' }}</div>
-      <div style="font-size:13px;line-height:1.6">{{ v.blockReason }}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Block reason{{ v.blockedUntil ? ' · until ' + v.blockedUntil : ' · indefinite' }}</div>
+      @if (v.blockReason) {
+        <div style="font-size:13px;line-height:1.6">{{ v.blockReason }}</div>
+      } @else {
+        <div class="muted" style="font-size:13px;line-height:1.6">The server didn't return a reason for this block.</div>
+      }
     </div>
   }
 

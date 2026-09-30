@@ -47,9 +47,6 @@ export interface MappedBanner {
   nameAr: string;
   sortOrder: number;
   image: string | null;
-  /** Comma-separated target ids — pre-fill the category/store autocompletes on edit. */
-  categoryIds: string;
-  storeIds: string;
 }
 
 export interface MappedUser {

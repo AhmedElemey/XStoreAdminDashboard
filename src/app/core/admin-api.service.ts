@@ -275,10 +275,5 @@ export class AdminApiService {
   deleteBanner(id: string) {
     return this.auth.apiFetch(`/api/banners/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
-
-  /* ---------- Admin stores — GET /api/admin/stores/lookup (autocomplete) ---------- */
-  storeLookup(query: { search?: string; isActive?: string | number | undefined }) {
-    return this.auth.apiFetch<unknown>('/api/admin/stores/lookup', { query });
-  }
 }
 export type { Dto };

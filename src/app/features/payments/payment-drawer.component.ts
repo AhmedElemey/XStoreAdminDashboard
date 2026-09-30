@@ -38,6 +38,7 @@ export class PaymentDrawerComponent {
   });
   protected rejecting = signal(false);
   protected rejectReason = signal('');
+  protected rejectError = signal('');
   protected busy = signal(false);
 
   protected isPending = computed(() => this.payment().status === 'Pending');
@@ -55,6 +56,7 @@ export class PaymentDrawerComponent {
       this.approveInput.set(String(p.amount));
       this.rejecting.set(false);
       this.rejectReason.set('');
+      this.rejectError.set('');
       this.outstanding.set(null);
       this.receipt.set(p.receiptUrl ? this.images.resolveSync(p.receiptUrl) : null);
       if (p.receiptUrl) {
@@ -83,10 +85,19 @@ export class PaymentDrawerComponent {
     this.busy.set(false);
   }
 
+  protected onRejectInput(v: string) {
+    this.rejectReason.set(v);
+    if (v.trim()) this.rejectError.set('');
+  }
+
   protected async reject() {
     const cb = this.onReject();
     const reason = this.rejectReason().trim();
-    if (!cb || !reason || this.busy()) return;
+    if (!reason) {
+      this.rejectError.set('Rejection reason is required.');
+      return;
+    }
+    if (!cb || this.busy()) return;
     this.busy.set(true);
     await cb(reason);
     this.busy.set(false);

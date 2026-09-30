@@ -124,16 +124,12 @@ export function mapListing(p: Dto, apiBase: string): MappedListing {
 
 export function mapBanner(b: Dto, apiBase: string): MappedBanner {
   const img = firstNonEmpty(b['imageUrl'], b['image'], b['imagePath']) || null;
-  const cats = b['categoryIds'] ?? b['categoryId'];
-  const stores = b['storeIds'] ?? b['storeId'];
   return {
     id: firstNonEmpty(b['id'], b['bannerId'], b['_id']),
     nameEn: firstNonEmpty(b['nameEn'], b['name']) || 'Untitled',
     nameAr: firstNonEmpty(b['nameAr']),
     sortOrder: numOr(b['sortOrder']) ?? 0,
     image: absoluteImage(img, apiBase),
-    categoryIds: Array.isArray(cats) ? cats.join(',') : firstNonEmpty(cats),
-    storeIds: Array.isArray(stores) ? stores.join(',') : firstNonEmpty(stores),
   };
 }
 
@@ -160,6 +156,8 @@ export function mapUser(u: Dto): MappedUser {
 }
 
 export function mapVendor(v: Dto): MappedVendor {
+  // Block details may come back flat or nested; the block request itself sends `reason`.
+  const block = (v['block'] ?? v['Block'] ?? v['blockInfo'] ?? v['activeBlock'] ?? {}) as Dto;
   return {
     id: firstNonEmpty(v['id'], v['Id'], v['userId'], v['_id']),
     store: firstNonEmpty(v['storeNameEn'], v['storeName'], v['storeNameAr'], v['fullNameEn'], v['fullName'], v['FullName'], v['name']) || 'Unnamed store',
@@ -170,8 +168,8 @@ export function mapVendor(v: Dto): MappedVendor {
     category: firstNonEmpty(v['storeCategoryEn'], v['StoreCategoryEn'], v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
     verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
     blocked: boolOrUnknown(v['isBlocked'] ?? v['IsBlocked'] ?? v['blocked']),
-    blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'])) || null,
-    blockReason: firstNonEmpty(v['blockReason'], v['BlockReason'], v['blockedReason'], v['BlockedReason'], v['blockNote'], v['banReason']),
+    blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'], block['blockedUntil'], block['until'])) || null,
+    blockReason: firstNonEmpty(v['blockReason'], v['BlockReason'], v['blockedReason'], v['BlockedReason'], v['blockingReason'], v['blockNote'], v['banReason'], block['reason'], block['Reason'], v['reason']),
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
