@@ -45,6 +45,8 @@ export class PaymentDrawerComponent {
   protected amountError = computed(() => {
     const n = this.approveAmount();
     if (!(n > 0)) return 'Amount must be greater than 0.';
+    // Money has piastres at most: refuse 0.001 or 1e3 rather than send an amount nobody meant.
+    if (!/^\d+(\.\d{1,2})?$/.test(this.approveInput().replace(/,/g, '').trim())) return 'Enter the amount in EGP, e.g. 350 or 350.50.';
     if (n > this.payment().amount) return `Can't approve more than the vendor claimed (${egp(this.payment().amount)}).`;
     return '';
   });

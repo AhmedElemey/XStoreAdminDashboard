@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MappedBanner } from '../../core/models';
 import { DrawerService } from '../../core/drawer.service';
 import { ToastService } from '../../core/toast.service';
-import { imageExtensionError } from '../../core/image-file';
+import { imageFileError } from '../../core/image-file';
 
 
 @Component({
@@ -37,7 +37,7 @@ export class BannerFormComponent implements OnInit {
 
   protected onFileChange() {
     const file = this.fileInput()?.nativeElement.files?.[0] ?? null;
-    const err = imageExtensionError(file);
+    const err = imageFileError(file);
     this.fileError.set(err);
     if (err) this.fileInput()!.nativeElement.value = '';
   }
@@ -58,9 +58,9 @@ export class BannerFormComponent implements OnInit {
       this.toast.show('Pick a banner image');
       return;
     }
-    const extErr = imageExtensionError(file);
-    if (extErr) {
-      this.fileError.set(extErr);
+    const fileErr = imageFileError(file);
+    if (fileErr) {
+      this.fileError.set(fileErr);
       return;
     }
     this.fileError.set('');

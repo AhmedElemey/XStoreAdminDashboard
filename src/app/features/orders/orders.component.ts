@@ -35,6 +35,8 @@ export class OrdersComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Bumped on every load(); an answer for an older load is dropped, so a slow reply can't overwrite newer filters. */
+  private loadSeq = 0;
   /** GMV ÷ order count from the overview aggregate — null when either is missing or zero. */
   protected avgOrderValue = signal<number | null>(null);
 
@@ -70,6 +72,7 @@ export class OrdersComponent implements OnInit {
   }
 
   async load() {
+    const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
       const data = await this.api.orders({
@@ -79,12 +82,14 @@ export class OrdersComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize,
       });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
     } catch (e) {
+      if (seq !== this.loadSeq) return;
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');

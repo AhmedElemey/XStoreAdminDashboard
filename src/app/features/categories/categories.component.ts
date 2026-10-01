@@ -68,7 +68,7 @@ export class CategoriesComponent implements OnInit {
     this.loadState.set('loading');
     try {
       const data = await this.api.categories();
-      const items = Array.isArray(data) ? (data as Dto[]) : readPage<Dto>(data, 200).items;
+      const items = readPage<Dto>(data, 200).items;
       this.items.set(flattenCategories(items));
       this.loadState.set(null);
       this.resolveImages();
@@ -171,7 +171,7 @@ function flattenCategories(list: Dto[]): Dto[] {
     if (id) byId.set(id, c);
     out.push(c);
     const kids = c['children'] ?? c['subCategories'] ?? c['subcategories'];
-    if (Array.isArray(kids)) kids.forEach((k: Dto) => add(k, c['id'] ?? c['categoryId']));
+    if (Array.isArray(kids)) kids.forEach((k: Dto | null) => k && typeof k === 'object' && add(k, c['id'] ?? c['categoryId']));
   };
   list.forEach((c) => add(c, null));
   return out;

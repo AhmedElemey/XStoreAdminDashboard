@@ -70,8 +70,14 @@ export class AuthService {
     }
     let res: Response;
     try {
-      res = await fetch(url.toString(), { method, headers, body: payload });
-    } catch {
+      // Without a limit a hung server leaves the page spinning forever. Uploads get longer
+      // because a receipt or banner image on a slow mobile connection can legitimately take a while.
+      const timeoutMs = payload instanceof FormData ? 120_000 : 30_000;
+      res = await fetch(url.toString(), { method, headers, body: payload, signal: AbortSignal.timeout(timeoutMs) });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'TimeoutError') {
+        throw new ApiError(0, 'The server took too long to answer. Try again.');
+      }
       throw new ApiError(0, 'Network error — is the API reachable at ' + this.base + '? (CORS or server down)');
     }
     const text = await res.text();

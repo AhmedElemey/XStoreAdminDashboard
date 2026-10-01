@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AdminApiService } from '../../core/admin-api.service';
 import { DrawerService } from '../../core/drawer.service';
 import { NavBadgesService } from '../../core/nav-badges.service';
@@ -45,7 +45,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
   imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
   templateUrl: './payments.component.html',
 })
-export class PaymentsComponent implements OnInit {
+export class PaymentsComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private drawer = inject(DrawerService);
   private badges = inject(NavBadgesService);
@@ -66,6 +66,12 @@ export class PaymentsComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Bumped on every load(); an answer for an older load is dropped, so a slow reply can't overwrite newer filters. */
+  private loadSeq = 0;
+
+  ngOnDestroy() {
+    clearTimeout(searchTimer);
+  }
 
   ngOnInit() {
     this.load();
@@ -109,6 +115,7 @@ export class PaymentsComponent implements OnInit {
   }
 
   async load() {
+    const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
       const data = await this.api.commissionPayments({
@@ -119,6 +126,7 @@ export class PaymentsComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize,
       });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
@@ -128,6 +136,7 @@ export class PaymentsComponent implements OnInit {
         this.badges.paymentsPending.set(p.total > 0 ? p.total : null);
       }
     } catch (e) {
+      if (seq !== this.loadSeq) return;
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : "Payment requests aren't available yet.");
@@ -156,6 +165,11 @@ export class PaymentsComponent implements OnInit {
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return false;
       this.toast.show(`Approve failed: ${(e as Error).message || 'error'}`);
+      if (e instanceof ApiError && e.status === 409) {
+        // Someone else already reviewed it: show the real status instead of a stale Pending row.
+        this.drawer.close();
+        this.load();
+      }
       return false;
     }
   }
@@ -170,6 +184,11 @@ export class PaymentsComponent implements OnInit {
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return false;
       this.toast.show(`Reject failed: ${(e as Error).message || 'error'}`);
+      if (e instanceof ApiError && e.status === 409) {
+        // Someone else already reviewed it: show the real status instead of a stale Pending row.
+        this.drawer.close();
+        this.load();
+      }
       return false;
     }
   }

@@ -40,7 +40,7 @@ export class ContentComponent implements OnInit {
     this.loadState.set('loading');
     try {
       const data = await this.api.banners();
-      const items = Array.isArray(data) ? (data as Dto[]) : readPage<Dto>(data, 200).items;
+      const items = readPage<Dto>(data, 200).items;
       this.items.set(items);
       this.loadState.set(null);
       this.resolveImages();

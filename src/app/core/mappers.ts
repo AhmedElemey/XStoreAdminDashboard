@@ -72,6 +72,8 @@ export function readPage<T = Dto>(data: unknown, pageSize: number): Page<T> {
     total = num(d['totalCount']) ?? num(d['total']) ?? items.length;
     totalPages = num(d['totalPages']) ?? Math.max(1, Math.ceil(total / (pageSize || 20)));
   }
+  // Every mapper reads fields off a row, so a null or non-object row would crash the whole page.
+  items = items.filter((x) => x !== null && typeof x === 'object');
   return { items, total, totalPages };
 }
 

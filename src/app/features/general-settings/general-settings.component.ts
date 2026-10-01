@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
 import { readPage, mapAppSetting } from '../../core/mappers';
@@ -26,7 +26,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
   ],
   templateUrl: './general-settings.component.html',
 })
-export class GeneralSettingsComponent implements OnInit {
+export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
 
@@ -40,10 +40,16 @@ export class GeneralSettingsComponent implements OnInit {
   protected items = signal<MappedAppSetting[]>([]);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Bumped on every load(); an answer for an older load is dropped, so a slow reply can't overwrite newer filters. */
+  private loadSeq = 0;
 
   /** null = closed; `{ initial: null }` = add; `{ initial: row }` = edit. */
   protected form = signal<{ initial: MappedAppSetting | null } | null>(null);
   protected deletingId = signal('');
+
+  ngOnDestroy() {
+    clearTimeout(searchTimer);
+  }
 
   ngOnInit() {
     this.load();
@@ -71,6 +77,7 @@ export class GeneralSettingsComponent implements OnInit {
   }
 
   async load() {
+    const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
       const data = await this.api.appSettings({
@@ -79,6 +86,7 @@ export class GeneralSettingsComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize,
       });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
       // Tolerate the Result envelope `{ isSuccess, data: { items, totalCount } }` too.
       const inner =
         data &&
@@ -94,6 +102,7 @@ export class GeneralSettingsComponent implements OnInit {
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
     } catch (e) {
+      if (seq !== this.loadSeq) return;
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : "General settings aren't available yet.");
