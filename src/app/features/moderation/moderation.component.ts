@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
 import { DrawerService } from '../../core/drawer.service';
@@ -29,7 +29,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
   imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
   templateUrl: './moderation.component.html',
 })
-export class ModerationComponent implements OnInit {
+export class ModerationComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
   private drawer = inject(DrawerService);
@@ -56,11 +56,18 @@ export class ModerationComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Bumped on every load(); an answer for an older load is dropped, so a slow reply can't overwrite newer filters. */
+  private loadSeq = 0;
+  protected approving = signal(false);
   protected rejectOpen = signal(false);
   protected rejectReason = signal('');
   protected rejectError = signal('');
   protected rejectIndex = signal(-1);
   protected rejectTitle = signal('');
+
+  ngOnDestroy() {
+    clearTimeout(searchTimer);
+  }
 
   ngOnInit() {
     this.load();
@@ -108,6 +115,7 @@ export class ModerationComponent implements OnInit {
   }
 
   async load() {
+    const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
       const data = await this.api.listings({
@@ -118,14 +126,19 @@ export class ModerationComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize,
       });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
-      if (this.status() === 'PENDING') this.badges.moderationPending.set(p.total > 0 ? p.total : null);
+      // Only an unfiltered Pending load is the true count behind the sidebar badge and bell.
+      if (this.status() === 'PENDING' && !this.name() && !this.fromDate() && !this.toDate()) {
+        this.badges.moderationPending.set(p.total > 0 ? p.total : null);
+      }
       this.resolveThumbs();
     } catch (e) {
+      if (seq !== this.loadSeq) return;
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : 'Something went wrong.');
@@ -172,14 +185,18 @@ export class ModerationComponent implements OnInit {
       this.rejectOpen.set(true);
       return;
     }
+    if (this.approving()) return; // a double click must not approve twice
+    this.approving.set(true);
     try {
       await this.api.approveListing(m.id);
       this.toast.show('Product approved — now live ✓');
       this.drawer.close();
-      this.load();
+      await this.load(); // keep Approve disabled until the approved row has left the list
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.toast.show(`Approve failed: ${(e as Error).message || 'error'}`);
+    } finally {
+      this.approving.set(false);
     }
   }
 

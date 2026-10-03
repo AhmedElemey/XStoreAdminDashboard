@@ -1,0 +1,49 @@
+<div class="page-head">
+  <div>
+    <h2>Fee Payments</h2>
+    <p>Vendors pay platform fees by InstaPay or mobile wallet and upload the receipt. Approving a request deducts the amount from the vendor's balance.</p>
+  </div>
+  <app-chip-tabs [labels]="tabLabels" [active]="activeTabLabel()" (select)="selectTab($event)" />
+</div>
+
+<div class="toolbar">
+  <div class="search search-mini">
+    <app-icon name="search" />
+    <input placeholder="Search by store name…" (input)="onSearch($any($event.target).value)" />
+  </div>
+  <app-date-range-filter (rangeChange)="onRangeChange($event)" />
+</div>
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading payment requests…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!items()?.length) {
+    <app-state-block kind="empty" [message]="status() ? 'No ' + status().toLowerCase() + ' payment requests.' : 'No payment requests found.'" />
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Vendor</th><th>Method</th><th class="r">Amount</th><th>Submitted</th><th>Status</th><th class="r">Action</th></tr>
+      </thead>
+      <tbody>
+        @for (raw of items(); track $index) {
+          @let m = mapped(raw);
+          <tr>
+            <td><b>{{ m.vendorName }}</b></td>
+            <td><span class="badge-s b-indigo">{{ methodLabel(m.method) }}</span></td>
+            <td class="r"><span class="money">{{ egp(m.amount) }}</span></td>
+            <td class="muted">{{ m.createdAt }}</td>
+            <td><span [class]="'badge-s ' + statusBadgeClass(m.status)">{{ m.status }}</span></td>
+            <td class="r">
+              <button class="btn btn-sm" [class.btn-ok]="m.status === 'Pending'" [class.btn-g]="m.status !== 'Pending'" (click)="openPayment($index)">
+                {{ m.status === 'Pending' ? 'Review' : 'Details' }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+  }
+</div>

@@ -1,5 +1,6 @@
 /** Formatting + avatar-color helpers ported from the legacy prototype. */
-const AVATAR_COLORS = ['#2E5C6E', '#C68A2E', '#3F7A5C', '#356F80', '#EC4899', '#14B8A6', '#8B5CF6', '#C68A2E'];
+// Each keeps white initials at ≥4.5:1 contrast (WCAG AA).
+const AVATAR_COLORS = ['#2E5C6E', '#946620', '#3F7A5C', '#356F80', '#BE185D', '#0F766E', '#6D28D9', '#946620'];
 
 export function avatarColor(name: string): string {
   const sum = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);

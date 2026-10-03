@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { DrawerService } from '../core/drawer.service';
 
@@ -9,11 +9,11 @@ import { DrawerService } from '../core/drawer.service';
   imports: [NgComponentOutlet],
   template: `
     <div class="overlay" [class.show]="drawer.open()" (click)="drawer.close()"></div>
-    <aside class="drawer" [class.show]="drawer.open()">
+    <aside class="drawer" [class.show]="drawer.open()" [attr.role]="drawer.open() ? 'dialog' : null" [attr.aria-modal]="drawer.open() ? 'true' : null" [attr.aria-label]="drawer.open() ? drawer.state().title : null">
       @if (drawer.open()) {
         <div class="d-head">
           <b style="font-size:16px">{{ drawer.state().title }}</b>
-          <div class="d-close" (click)="drawer.close()">✕</div>
+          <button type="button" class="d-close" aria-label="Close" (click)="drawer.close()">✕</button>
         </div>
         <div class="d-body">
           @if (drawer.state().component) {
@@ -26,4 +26,10 @@ import { DrawerService } from '../core/drawer.service';
 })
 export class DrawerHostComponent {
   protected drawer = inject(DrawerService);
+
+  /** Keyboard users need a way out of the drawer (WCAG 2.1.2). */
+  @HostListener('document:keydown.escape')
+  protected onEscape() {
+    if (this.drawer.open()) this.drawer.close();
+  }
 }

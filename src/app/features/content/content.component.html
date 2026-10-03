@@ -40,25 +40,9 @@
   </div>
 
   <div class="card">
-    <div class="c-head"><h3>Push broadcast</h3><span class="badge-s b-grey" title="No backend endpoint exists yet">Not wired</span></div>
+    <div class="c-head"><h3>Push broadcast</h3><span class="badge-s b-grey">Coming soon</span></div>
     <div class="c-body">
-      <div class="form-row">
-        <label>Title</label>
-        <input [ngModel]="pbTitle()" (ngModelChange)="pbTitle.set($event)" name="pbTitle" placeholder="Flash sale ends tonight!" />
-      </div>
-      <div class="form-row">
-        <label>Audience</label>
-        <select [ngModel]="pbAud()" (ngModelChange)="pbAud.set($event)" name="pbAud">
-          <option>All buyers</option>
-          <option>Cairo / Giza</option>
-          <option>Lapsed buyers</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>Message</label>
-        <input placeholder="Up to 40% off electronics…" />
-      </div>
-      <button class="btn btn-p" style="width:100%;justify-content:center" (click)="sendBroadcast()">Send push</button>
+      <p class="muted" style="font-size:13px;line-height:1.6">Sending push notifications to buyers needs a backend endpoint that doesn't exist yet. Until it's built, broadcasts can't be sent from here.</p>
     </div>
   </div>
 </div>

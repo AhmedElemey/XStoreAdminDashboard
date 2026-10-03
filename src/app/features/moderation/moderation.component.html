@@ -51,7 +51,7 @@
             <button class="btn btn-sm" [class.btn-no]="m.isHot" [class.btn-g]="!m.isHot" (click)="toggleHot($index)">{{ m.isHot ? '🔥 Remove' : '🔥 Hot' }}</button>
           }
           @if (status() === 'PENDING') {
-            <button class="btn btn-ok btn-sm" (click)="decide($index, 'approve')">✓ Approve</button>
+            <button class="btn btn-ok btn-sm" [disabled]="approving()" (click)="decide($index, 'approve')">✓ Approve</button>
             <button class="btn btn-no btn-sm" (click)="decide($index, 'reject')">✕ Reject</button>
           }
         </div>
@@ -72,7 +72,7 @@
     }
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-g" (click)="closeReject()">Cancel</button>
-      <button class="btn btn-no" (click)="confirmReject()" [disabled]="!rejectReason().trim()">Reject</button>
+      <button class="btn btn-no" (click)="confirmReject()">Reject</button>
     </div>
   </div>
 }

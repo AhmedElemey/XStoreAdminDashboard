@@ -30,7 +30,6 @@ export class DashboardComponent implements OnInit {
   /** yyyy-mm-dd, blank = let the backend default to its trailing 30-day window */
   protected from = signal('');
   protected to = signal('');
-  protected rangeError = signal('');
 
   ngOnInit() {
     this.load();
@@ -89,28 +88,13 @@ export class DashboardComponent implements OnInit {
     return !!f && !!t && f > t;
   }
 
-  protected onFromChange(v: string) {
-    this.from.set(v);
-    if (!this.rangeInvalid()) this.rangeError.set('');
-  }
-
-  protected onToChange(v: string) {
-    this.to.set(v);
-    if (!this.rangeInvalid()) this.rangeError.set('');
-  }
-
   protected applyRange() {
-    if (this.rangeInvalid()) {
-      this.rangeError.set('From date must be earlier than To date.');
-      return;
-    }
-    this.rangeError.set('');
+    if (this.rangeInvalid()) return;
     this.load();
   }
   protected clearRange() {
     this.from.set('');
     this.to.set('');
-    this.rangeError.set('');
     this.load();
   }
 

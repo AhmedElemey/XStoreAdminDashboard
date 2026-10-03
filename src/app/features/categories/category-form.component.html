@@ -23,7 +23,10 @@
       <span class="muted" style="font-weight:400">(jpg, png, webp)</span>
     }
   </label>
-  <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" />
+  <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" (change)="fileError.set('')" />
+  @if (fileError()) {
+    <span class="field-err" role="alert">{{ fileError() }}</span>
+  }
 </div>
 <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-top:4px">
   <input type="checkbox" [ngModel]="active()" (ngModelChange)="active.set($event)" name="active" /> Active (visible to shoppers)

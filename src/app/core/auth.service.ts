@@ -1,4 +1,5 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ApiError } from './api-error';
 import { PLATFORM_ACCESS_KEY, isTrustedPlatformHost } from './platform-key';
 
@@ -14,6 +15,7 @@ for (const stale of ['https://xstoreegy-001-site1.jtempurl.com', 'http://xstoree
  *  legacy prototype's `API` object. Kept separate from the delivery-backend session below. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private router = inject(Router);
   private readonly tokenSig = signal(localStorage.getItem(TOKEN_KEY) || '');
   readonly isLoggedIn = computed(() => !!this.tokenSig());
   readonly adminName = signal('Ahmed (Owner)');
@@ -68,8 +70,14 @@ export class AuthService {
     }
     let res: Response;
     try {
-      res = await fetch(url.toString(), { method, headers, body: payload });
-    } catch {
+      // Without a limit a hung server leaves the page spinning forever. Uploads get longer
+      // because a receipt or banner image on a slow mobile connection can legitimately take a while.
+      const timeoutMs = payload instanceof FormData ? 120_000 : 30_000;
+      res = await fetch(url.toString(), { method, headers, body: payload, signal: AbortSignal.timeout(timeoutMs) });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'TimeoutError') {
+        throw new ApiError(0, 'The server took too long to answer. Try again.');
+      }
       throw new ApiError(0, 'Network error — is the API reachable at ' + this.base + '? (CORS or server down)');
     }
     const text = await res.text();
@@ -83,6 +91,9 @@ export class AuthService {
     }
     if (res.status === 401 && !noAuthRedirect) {
       this.token = '';
+      // Every caller swallows a 401 and returns, relying on this redirect — without it the
+      // admin stays on a page whose requests all fail, and can keep navigating signed out.
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       throw new ApiError(401, 'Your session expired — please sign in again.');
     }
     if (!res.ok) throw new ApiError(res.status, serverMsg(data) || `Request failed (${res.status}).`);
