@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://xstoreegy002-001-site1.etempurl.com/api/:path*"
+      "destination": "https://xstoreegy002001-001-site1.etempurl.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://xstoreegy002-001-site1.etempurl.com/uploads/:path*"
+      "destination": "https://xstoreegy002001-001-site1.etempurl.com/uploads/:path*"
     }
   ]
 }
