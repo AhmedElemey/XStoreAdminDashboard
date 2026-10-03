@@ -1,11 +1,11 @@
 {
   "/api": {
-    "target": "https://xstoreegy002-001-site1.etempurl.com",
+    "target": "https://xstoreegy002001-001-site1.etempurl.com",
     "secure": false,
     "changeOrigin": true
   },
   "/uploads": {
-    "target": "https://xstoreegy002-001-site1.etempurl.com",
+    "target": "https://xstoreegy002001-001-site1.etempurl.com",
     "secure": false,
     "changeOrigin": true,
     "headers": {
