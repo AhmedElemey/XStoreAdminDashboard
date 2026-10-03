@@ -116,6 +116,12 @@ export class VendorDetailComponent implements OnInit {
 
   protected async saveThresholds() {
     if (!this.id) return;
+    // `+$event` turns text into NaN, which no comparison rejects on its own.
+    const values = [this.commissionDraft(), this.warnDraft(), this.pauseDraft()];
+    if (!values.every((n) => Number.isFinite(n) && n >= 0)) {
+      this.toast.show('Enter numbers of 0 or more');
+      return;
+    }
     if (this.pauseDraft() < this.warnDraft()) {
       this.toast.show('Pause threshold must be ≥ warn threshold');
       return;
@@ -135,7 +141,7 @@ export class VendorDetailComponent implements OnInit {
 
   protected async settle(full: boolean) {
     if (!this.id) return;
-    if (!full && (!this.payAmount() || this.payAmount() <= 0)) {
+    if (!full && !(Number.isFinite(this.payAmount()) && this.payAmount() > 0)) {
       this.toast.show('Enter a valid amount');
       return;
     }

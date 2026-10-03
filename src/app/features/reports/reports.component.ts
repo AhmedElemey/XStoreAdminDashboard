@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AdminApiService } from '../../core/admin-api.service';
 import { DrawerService } from '../../core/drawer.service';
 import { readPage, mapVendorReport } from '../../core/mappers';
@@ -34,7 +34,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
   imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
   templateUrl: './reports.component.html',
 })
-export class ReportsComponent implements OnInit {
+export class ReportsComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private drawer = inject(DrawerService);
 
@@ -51,6 +51,12 @@ export class ReportsComponent implements OnInit {
   protected items = signal<Dto[] | null>(null);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Bumped on every load(); an answer for an older load is dropped, so a slow reply can't overwrite newer filters. */
+  private loadSeq = 0;
+
+  ngOnDestroy() {
+    clearTimeout(searchTimer);
+  }
 
   ngOnInit() {
     this.load();
@@ -94,6 +100,7 @@ export class ReportsComponent implements OnInit {
   }
 
   async load() {
+    const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
       const data = await this.api.vendorReports({
@@ -104,12 +111,14 @@ export class ReportsComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize,
       });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
       const p = readPage<Dto>(data, this.pageSize);
       this.items.set(p.items);
       this.total.set(p.total);
       this.totalPages.set(p.totalPages);
       this.loadState.set(null);
     } catch (e) {
+      if (seq !== this.loadSeq) return;
       if (e instanceof ApiError && e.status === 401) return;
       this.loadState.set('error');
       this.errorMsg.set(e instanceof Error ? e.message : "Reports aren't available yet.");

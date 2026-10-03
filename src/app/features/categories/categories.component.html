@@ -6,6 +6,34 @@
   <button class="btn btn-p" (click)="openForm()">+ Add category</button>
 </div>
 
+<ng-template #tile let-raw let-sub="sub">
+  @let m = mapped(raw);
+  <div class="cat" [class.cat-sub]="sub">
+    @let img = catImg(raw);
+    @if (m.image && img && !raw['__imgErr']) {
+      <img class="ci-img" [src]="img" alt="" (error)="onImgError(raw)" />
+    } @else {
+      <div class="ci">{{ (m.nameEn[0] || '📦').toUpperCase() }}</div>
+    }
+    <div class="cmeta">
+      <b>{{ m.nameEn }}</b>
+      <small>
+        @if (m.nameAr) { <bdi>{{ m.nameAr }}</bdi> · }
+        @if (sub) {
+          {{ m.products != null ? m.products + ' products' : 'Subcategory' }}
+        } @else {
+          {{ (m.products != null ? m.products + ' products' : null) || subsLabel(raw) }}
+        }
+      </small>
+    </div>
+    <div class="cat-actions">
+      <div class="switch" [class.off]="!m.active" title="Show / hide" (click)="toggle(raw)"></div>
+      <button class="btn btn-g btn-sm" (click)="openForm(raw)">Edit</button>
+      <button class="btn btn-no btn-sm" (click)="remove(raw)">Delete</button>
+    </div>
+  </div>
+</ng-template>
+
 @if (loadState() === 'loading') {
   <app-state-block kind="loading" message="Loading categories…" />
 } @else if (loadState() === 'error') {
@@ -16,27 +44,12 @@
   <div class="card">
     <div class="c-body">
       <div class="cat-grid">
-        @for (raw of items(); track $index) {
-          @let m = mapped(raw);
-          <div class="cat">
-            @let img = catImg(raw);
-            @if (m.image && img && !raw['__imgErr']) {
-              <img class="ci-img" [src]="img" alt="" (error)="onImgError(raw)" />
-            } @else {
-              <div class="ci">{{ (m.nameEn[0] || '📦').toUpperCase() }}</div>
+        @for (raw of topLevel(); track raw) {
+          <div class="cat-group">
+            <ng-container *ngTemplateOutlet="tile; context: { $implicit: raw, sub: false }" />
+            @for (child of childrenOf(raw); track child) {
+              <ng-container *ngTemplateOutlet="tile; context: { $implicit: child, sub: true }" />
             }
-            <div class="cmeta">
-              <b>{{ m.nameEn }}</b>
-              <small>
-                @if (m.nameAr) { <bdi>{{ m.nameAr }}</bdi> · }
-                {{ (m.products != null ? m.products + ' products' : null) || (m.subs != null ? m.subs + ' subcategories' : null) || '—' }}
-              </small>
-            </div>
-            <div class="cat-actions">
-              <div class="switch" [class.off]="!m.active" title="Show / hide" (click)="toggle($index)"></div>
-              <button class="btn btn-g btn-sm" (click)="openForm($index)">Edit</button>
-              <button class="btn btn-no btn-sm" (click)="remove($index)">Delete</button>
-            </div>
           </div>
         }
       </div>

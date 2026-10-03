@@ -1,7 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map, startWith } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IconComponent } from '../shared/icon.component';
 import { ToastComponent } from '../shared/toast.component';
 import { DrawerHostComponent } from '../shared/drawer-host.component';
@@ -34,23 +32,14 @@ export class ShellComponent {
   private router = inject(Router);
 
   protected sidebarOpen = signal(false);
-  protected topTitle = toSignal(
-    this.router.events.pipe(
-      filter((e) => e instanceof NavigationEnd),
-      startWith(null),
-      map(() => {
-        let r = this.router.routerState.snapshot.root;
-        while (r.firstChild) r = r.firstChild;
-        return r.data['title'] ?? 'Dashboard';
-      }),
-    ),
-    { initialValue: 'Dashboard' },
-  );
-
   // Delivery-backend pilot badge counts — unused while the Delivery / Delivery Requests
   // nav links below are disabled.
   // protected couriersCashDue = computed(() => this.demo.couriers().filter((c) => this.demo.cashDue(c)).length || null);
   // protected packagesSubmitted = computed(() => this.demo.packages().filter((p) => p.status === 'submitted').length || null);
+
+  constructor() {
+    this.badges.refresh();
+  }
 
   protected navGroups: NavGroup[] = [
     {
@@ -63,6 +52,7 @@ export class ShellComponent {
         { view: 'moderation', icon: 'shield', label: 'Product Moderation', badge: () => this.badges.moderationPending() },
         { view: 'vendors', icon: 'store', label: 'Vendors' },
         { view: 'reports', icon: 'alert', label: 'Reports' },
+        { view: 'payments', icon: 'cash', label: 'Fee Payments', badge: () => this.badges.paymentsPending() },
         { view: 'categories', icon: 'tag', label: 'Categories' },
         { view: 'orders', icon: 'box', label: 'Orders' },
         // Delivery-backend pilot — disabled until a real delivery-backend is deployed
@@ -100,7 +90,11 @@ export class ShellComponent {
     this.router.navigateByUrl('/login');
   }
 
-  protected onIconAction(kind: 'bell' | 'help') {
-    this.toast.show(kind === 'bell' ? 'No new notifications' : 'Help & documentation');
+  /** The bell reflects real pending work: it jumps to the first queue that needs the admin,
+   *  and only says "nothing new" when there really is nothing pending. */
+  protected openNotifications() {
+    if (this.badges.moderationPending()) this.router.navigateByUrl('/moderation');
+    else if (this.badges.paymentsPending()) this.router.navigateByUrl('/payments');
+    else this.toast.show('No new notifications');
   }
 }

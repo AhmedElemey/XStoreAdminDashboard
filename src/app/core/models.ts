@@ -47,9 +47,6 @@ export interface MappedBanner {
   nameAr: string;
   sortOrder: number;
   image: string | null;
-  /** Comma-separated target ids — pre-fill the category/store autocompletes on edit. */
-  categoryIds: string;
-  storeIds: string;
 }
 
 export interface MappedUser {
@@ -106,6 +103,25 @@ export interface MappedVendorReport {
   consumerName: string;
   vendorId: string;
   vendorName: string;
+}
+
+/** Vendor platform-fee payment request (PROPOSED — see BACKEND_HANDOFF.md
+ *  "Commission payment requests"). Filed from the mobile app with a transfer receipt. */
+export interface MappedCommissionPayment {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  /** Wire value: InstaPay | VodafoneCash | OrangeCash | EtisalatCash. */
+  method: string;
+  amount: number;
+  /** What the admin actually credited — may differ from `amount` if the receipt showed less. */
+  approvedAmount: number | null;
+  /** Wire value: Pending | Approved | Rejected. */
+  status: string;
+  receiptUrl: string | null;
+  rejectionReason: string;
+  createdAt: string;
+  reviewedAt: string;
 }
 
 export interface MappedAppSetting {

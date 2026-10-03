@@ -18,21 +18,12 @@ const SEED_PKGS: DemoPackage[] = [
   { id: 'pkg_006', customer: 'Mona Adel', phone: '+20 103 444 5566', pickup: { street: '14 Sidi Gaber', city: 'Alexandria' }, drop: { name: 'Rana Fathy', phone: '+20 111 222 0055', street: '30 El Geish Rd', city: 'Alexandria' }, note: 'Documents folder', submitted: 'Yesterday', status: 'cancelled', price: 60, courier: null },
 ];
 
-const SEED_TEAM: [string, string, string][] = [
-  ['Ahmed', 'Super Admin', 'Owner · full access'],
-  ['Ops Team', 'Moderator', 'Orders + disputes'],
-  ['Finance', 'Viewer', 'Read-only reports'],
-];
-
-/** Demo / seed-data store for Settings' team roster (no backend endpoint for it) plus the
- *  shared mutable state for the delivery pilot (Couriers / Delivery Requests), which
- *  swaps between this seed data and the live delivery-backend API — mirrors the legacy
- *  prototype's module-level `let COURIERS`, `let PKGS`, `TEAM`, etc. */
+/** Demo / seed-data store: the shared mutable state for the delivery pilot (Couriers /
+ *  Delivery Requests), which swaps between this seed data and the live delivery-backend
+ *  API — mirrors the legacy prototype's module-level `let COURIERS`, `let PKGS`, etc. */
 @Injectable({ providedIn: 'root' })
 export class DemoDataService {
   private deliveryApi = inject(DeliveryApiService);
-
-  readonly team = signal<[string, string, string][]>(SEED_TEAM);
 
   readonly couriers = signal<DemoCourier[]>(SEED_COURIERS);
   readonly packages = signal<DemoPackage[]>(SEED_PKGS);

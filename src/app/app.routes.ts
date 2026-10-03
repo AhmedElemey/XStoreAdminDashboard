@@ -11,6 +11,8 @@ export const routes: Routes = [
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],
+    // Re-checked on every page change, not just when the shell first opens.
+    canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'overview' },
       {
@@ -43,6 +45,11 @@ export const routes: Routes = [
         path: 'reports',
         data: { title: 'Reports' },
         loadComponent: () => import('./features/reports/reports.component').then((m) => m.ReportsComponent),
+      },
+      {
+        path: 'payments',
+        data: { title: 'Fee Payments' },
+        loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent),
       },
       {
         path: 'categories',

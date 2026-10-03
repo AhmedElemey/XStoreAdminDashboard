@@ -1,4 +1,4 @@
-import { Dto, MappedAppSetting, MappedBanner, MappedCategory, MappedCommission, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
+import { Dto, MappedAppSetting, MappedBanner, MappedCategory, MappedCommission, MappedCommissionPayment, MappedListing, MappedUser, MappedVendor, MappedVendorReport, Page } from './models';
 import { dateOnly, dateTime, egp } from './format';
 import { parseSettingType } from './app-settings';
 
@@ -72,6 +72,8 @@ export function readPage<T = Dto>(data: unknown, pageSize: number): Page<T> {
     total = num(d['totalCount']) ?? num(d['total']) ?? items.length;
     totalPages = num(d['totalPages']) ?? Math.max(1, Math.ceil(total / (pageSize || 20)));
   }
+  // Every mapper reads fields off a row, so a null or non-object row would crash the whole page.
+  items = items.filter((x) => x !== null && typeof x === 'object');
   return { items, total, totalPages };
 }
 
@@ -124,16 +126,12 @@ export function mapListing(p: Dto, apiBase: string): MappedListing {
 
 export function mapBanner(b: Dto, apiBase: string): MappedBanner {
   const img = firstNonEmpty(b['imageUrl'], b['image'], b['imagePath']) || null;
-  const cats = b['categoryIds'] ?? b['categoryId'];
-  const stores = b['storeIds'] ?? b['storeId'];
   return {
     id: firstNonEmpty(b['id'], b['bannerId'], b['_id']),
     nameEn: firstNonEmpty(b['nameEn'], b['name']) || 'Untitled',
     nameAr: firstNonEmpty(b['nameAr']),
     sortOrder: numOr(b['sortOrder']) ?? 0,
     image: absoluteImage(img, apiBase),
-    categoryIds: Array.isArray(cats) ? cats.join(',') : firstNonEmpty(cats),
-    storeIds: Array.isArray(stores) ? stores.join(',') : firstNonEmpty(stores),
   };
 }
 
@@ -160,6 +158,8 @@ export function mapUser(u: Dto): MappedUser {
 }
 
 export function mapVendor(v: Dto): MappedVendor {
+  // Block details may come back flat or nested; the block request itself sends `reason`.
+  const block = (v['block'] ?? v['Block'] ?? v['blockInfo'] ?? v['activeBlock'] ?? {}) as Dto;
   return {
     id: firstNonEmpty(v['id'], v['Id'], v['userId'], v['_id']),
     store: firstNonEmpty(v['storeNameEn'], v['storeName'], v['storeNameAr'], v['fullNameEn'], v['fullName'], v['FullName'], v['name']) || 'Unnamed store',
@@ -170,8 +170,8 @@ export function mapVendor(v: Dto): MappedVendor {
     category: firstNonEmpty(v['storeCategoryEn'], v['StoreCategoryEn'], v['storeCategory'], v['storeCategoryName'], v['category']) || '—',
     verified: boolOrUnknown(v['isVerified'] ?? v['IsVerified']),
     blocked: boolOrUnknown(v['isBlocked'] ?? v['IsBlocked'] ?? v['blocked']),
-    blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'])) || null,
-    blockReason: firstNonEmpty(v['blockReason'], v['BlockReason'], v['blockedReason'], v['BlockedReason'], v['blockNote'], v['banReason']),
+    blockedUntil: dateOnly(firstNonEmpty(v['blockedUntil'], v['BlockedUntil'], block['blockedUntil'], block['until'])) || null,
+    blockReason: firstNonEmpty(v['blockReason'], v['BlockReason'], v['blockedReason'], v['BlockedReason'], v['blockingReason'], v['blockNote'], v['banReason'], block['reason'], block['Reason'], v['reason']),
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
@@ -195,6 +195,25 @@ export function mapVendorReport(r: Dto): MappedVendorReport {
     consumerName: firstNonEmpty(consumer['fullNameEn'], consumer['fullName'], consumer['name'], r['consumerName'], r['ConsumerName']) || 'Unknown customer',
     vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
     vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['vendorName'], r['VendorName']) || 'Unknown vendor',
+  };
+}
+
+/** GET /api/admin/commission-payments row (PROPOSED — see BACKEND_HANDOFF.md
+ *  "Commission payment requests"). */
+export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionPayment {
+  const vendor = (r['vendor'] ?? r['Vendor'] ?? {}) as Dto;
+  return {
+    id: firstNonEmpty(r['id'], r['Id']),
+    vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
+    vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['storeName'], r['vendorName']) || 'Unknown vendor',
+    method: firstNonEmpty(r['method'], r['Method']) || '—',
+    amount: numOr(r['amountEgp'], r['AmountEgp'], r['amount']) ?? 0,
+    approvedAmount: numOr(r['approvedAmountEgp'], r['ApprovedAmountEgp']),
+    status: firstNonEmpty(r['status'], r['Status']) || 'Pending',
+    receiptUrl: absoluteImage(firstNonEmpty(r['receiptImageUrl'], r['ReceiptImageUrl'], r['receiptUrl']) || null, apiBase),
+    rejectionReason: firstNonEmpty(r['rejectionReason'], r['RejectionReason']),
+    createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'])) || '—',
+    reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'])),
   };
 }
 

@@ -1,0 +1,81 @@
+@let p = payment();
+@if (receipt()) {
+  <a [href]="receipt()" target="_blank" rel="noopener" title="Open full-size receipt">
+    <div style="width:100%;height:260px;border-radius:11px;overflow:hidden;margin-bottom:16px;background:var(--bg)">
+      <img [src]="receipt()" alt="Transfer receipt" style="width:100%;height:100%;object-fit:contain" />
+    </div>
+  </a>
+} @else {
+  <div class="muted" style="padding:14px;border:1px dashed var(--line);border-radius:11px;margin-bottom:16px;font-size:13px">No receipt image attached.</div>
+}
+
+<div style="font-size:22px;font-weight:800;color:var(--primary)">{{ egp(p.amount) }}</div>
+<div style="margin:10px 0 16px;display:flex;gap:6px;flex-wrap:wrap">
+  <span [class]="'badge-s ' + statusBadgeClass(p.status)">{{ p.status }}</span>
+  <span class="badge-s b-indigo">{{ methodLabel(p.method) }}</span>
+</div>
+
+@if (p.rejectionReason) {
+  <div style="background:var(--error-bg);border:1px solid var(--error);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Rejection reason</div>
+    <div style="font-size:13px;line-height:1.6">{{ p.rejectionReason }}</div>
+  </div>
+}
+
+<h3 class="sec-h" style="margin-top:0">Vendor</h3>
+<div class="kv">
+  <span>Store</span>
+  @if (p.vendorId) {
+    <a [routerLink]="['/vendors', p.vendorId]" (click)="closeDrawer()" style="color:var(--primary);cursor:pointer;font-weight:700">{{ p.vendorName }} →</a>
+  } @else {
+    <b>{{ p.vendorName }}</b>
+  }
+</div>
+@if (isPending()) {
+  <div class="kv"><span>Current balance owed</span><b>{{ outstanding() == null ? '—' : egp(outstanding()!) }}</b></div>
+}
+
+<h3 class="sec-h">Request</h3>
+<div class="kv"><span>Amount claimed</span><b>{{ egp(p.amount) }}</b></div>
+@if (p.approvedAmount != null) {
+  <div class="kv"><span>Amount approved</span><b>{{ egp(p.approvedAmount) }}</b></div>
+}
+<div class="kv"><span>Submitted</span><b>{{ p.createdAt }}</b></div>
+@if (p.reviewedAt) {
+  <div class="kv"><span>Reviewed</span><b>{{ p.reviewedAt }}</b></div>
+}
+@if (p.id) {
+  <div class="kv"><span>Request ID</span><b>{{ p.id }}</b></div>
+}
+
+@if (isPending()) {
+  @if (!rejecting()) {
+    <h3 class="sec-h">Approve</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:10px">Check the receipt matches before approving. Lower the amount if the transfer shows less than claimed.</p>
+    <div class="form-row">
+      <label for="approveAmount">Amount to deduct (EGP)</label>
+      <input id="approveAmount" inputmode="decimal" [value]="approveInput()" (input)="approveInput.set($any($event.target).value)" [disabled]="busy()" />
+      @if (amountError()) {
+        <span class="field-err" role="alert">{{ amountError() }}</span>
+      }
+    </div>
+    @if (balanceAfter() != null) {
+      <div class="kv"><span>Balance after approval</span><b>{{ egp(balanceAfter()!) }}</b></div>
+    }
+    <div class="d-actions">
+      <button class="btn btn-ok" style="flex:1;justify-content:center" [disabled]="busy() || !amountValid()" (click)="approve()">✓ Approve {{ amountValid() ? egp(approveAmount()) : '' }}</button>
+      <button class="btn btn-no" style="flex:1;justify-content:center" [disabled]="busy()" (click)="rejecting.set(true)">✕ Reject</button>
+    </div>
+  } @else {
+    <h3 class="sec-h">Reject</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:10px">A reason is required — it will be shown to the vendor.</p>
+    <textarea class="modal-ta" rows="4" placeholder="e.g. Receipt is unreadable / amount not received…" [value]="rejectReason()" (input)="onRejectInput($any($event.target).value)" [disabled]="busy()" [style.border-color]="rejectError() ? 'var(--error)' : ''"></textarea>
+    @if (rejectError()) {
+      <span class="field-err" style="display:block;margin-top:6px">{{ rejectError() }}</span>
+    }
+    <div class="d-actions">
+      <button class="btn btn-g" style="flex:1;justify-content:center" [disabled]="busy()" (click)="rejecting.set(false)">Back</button>
+      <button class="btn btn-no" style="flex:1;justify-content:center" [disabled]="busy()" (click)="reject()">Reject request</button>
+    </div>
+  }
+}

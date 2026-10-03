@@ -17,6 +17,61 @@
 > app's nav anymore), push broadcast, and the Settings page's marketplace-policy toggles
 > and team roster, and (new as of 2026-09-15) **vendor blocking** — see below.
 
+## QA round 2026-09-26 — what the dashboard stopped faking, and what it needs from the backend
+
+The QA pass ("Admin panel issues Evidence") found controls that looked live but did nothing.
+The dashboard now shows those honestly (read-only, "Not live yet" / "Coming soon", or removed)
+instead of pretending. To make them real, the backend needs:
+
+| Dashboard area | What it shows now | Backend ask |
+|---|---|---|
+| Settings → Marketplace policies | Read-only switches, "Not live yet" | Store/read these flags (e.g. as General Settings keys the mobile app also reads) |
+| Settings → Roles & access | Only the signed-in admin | Team members list, invite (email), role assignment endpoints |
+| Content → Push broadcast | "Coming soon" card | `POST /api/admin/notifications/broadcast { title, message, audience }` via FCM |
+| Orders KPIs | Total orders + avg order value (GMV ÷ orders from `/api/admin/overview`) | Aggregates for COD refusal rate and fulfillment rate |
+| Customers KPIs | Total customers only | Aggregates for orders per customer and repeat rate |
+| Vendor detail → Block reason | Reason if returned, else "server didn't return a reason" | Return the block `reason` (and `blockedUntil`) on `GET /api/admin/vendors/{id}` |
+| Product moderation → Reject | Client-side "reason required" message | Keep rejecting empty reasons with 400, with `errorEn` text |
+
+Banner category/store targeting was removed from the banner form: banners are shown to every
+customer on the home feed, so per-category/per-store targeting had no effect.
+
+## Commission payment requests (PROPOSED, not yet built — 2026-09-30)
+
+New **Marketplace → Fee Payments** page (`src/app/features/payments/`). Vendors pay platform
+fees off-app (InstaPay, Vodafone Cash, Orange Cash, Etisalat Cash) and upload the transfer
+receipt from the xStore mobile app. The admin reviews each request here: the drawer shows the
+receipt (click to open full size), the vendor's current balance owed (from the existing
+`GET /api/admin/vendors/{id}/commission/settings`) and the balance after approval.
+
+- **Approve** takes an editable amount (defaults to what the vendor claimed; lower it if the
+  receipt shows less). The backend deducts it from the vendor's outstanding balance in the same
+  transaction as the status change — the dashboard does NOT call `/commission/settle` itself.
+- **Reject** requires a reason, shown to the vendor.
+
+What this dashboard calls (`AdminApiService.commissionPayments()` /
+`approveCommissionPayment()` / `rejectCommissionPayment()`):
+
+```
+GET  /api/admin/commission-payments?status=Pending|Approved|Rejected&keyword=&from=&to=&page=1&pageSize=20
+     → { items: CommissionPaymentDto[], totalCount, totalPages }
+POST /api/admin/commission-payments/{id}/approve   { amountEgp }   → 200/204, 409 if not Pending
+POST /api/admin/commission-payments/{id}/reject    { reason }      → 200/204, 409 if not Pending
+
+CommissionPaymentDto = { id, vendorId, vendor: { id, storeName }, method, amountEgp,
+                         approvedAmountEgp, status, receiptImageUrl, rejectionReason,
+                         createdAt, reviewedAt, reviewedBy }
+```
+
+The full contract (including the vendor-side `POST /api/vendor/commission-payments` and the
+transaction rules) lives in the mobile repo:
+`docs_business/backend/11_COMMISSION_PAYMENT_REQUESTS_HANDOFF.md` (xstore repo).
+
+**Pay-to accounts** (where vendors send the money) are a General Setting the admin creates on
+the General Settings page: key `commission_payment_accounts`, type `Json`, value
+`{"InstaPay": "…", "VodafoneCash": "01…", "OrangeCash": "01…", "EtisalatCash": "01…"}`.
+The app reads it from `GET /api/app-settings/commission_payment_accounts`.
+
 ## General Settings — remote app config (PROPOSED, not yet built — 2026-09-26)
 
 New **System → General Settings** page (`src/app/features/general-settings/`). The super admin
