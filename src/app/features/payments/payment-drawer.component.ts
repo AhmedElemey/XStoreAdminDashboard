@@ -9,7 +9,7 @@ import { egp } from '../../core/format';
 import { methodLabel, statusBadgeClass } from './payments.component';
 
 /** Review drawer for one payment request: receipt, the vendor's current balance, and the
- *  approve (with an adjustable amount) / reject (with a reason) decision. */
+ *  approve (one-click, deducts the claimed amount) / reject (with a reason) decision. */
 @Component({
   selector: 'app-payment-drawer',
   imports: [RouterLink],
@@ -21,7 +21,7 @@ export class PaymentDrawerComponent {
   private drawer = inject(DrawerService);
 
   payment = input.required<MappedCommissionPayment>();
-  onApprove = input<(amount: number) => Promise<boolean>>();
+  onApprove = input<() => Promise<boolean>>();
   onReject = input<(reason: string) => Promise<boolean>>();
 
   protected egp = egp;
@@ -30,30 +30,15 @@ export class PaymentDrawerComponent {
   protected receipt = signal<string | null>(null);
   /** null while loading or when the balance endpoint fails. */
   protected outstanding = signal<number | null>(null);
-  /** Raw text of the amount field — the number is derived, so typing "1." isn't rewritten. */
-  protected approveInput = signal('');
-  protected approveAmount = computed(() => {
-    const n = Number(this.approveInput().replace(/,/g, '').trim());
-    return Number.isFinite(n) ? n : 0;
-  });
   protected rejecting = signal(false);
   protected rejectReason = signal('');
   protected rejectError = signal('');
   protected busy = signal(false);
 
   protected isPending = computed(() => this.payment().status === 'Pending');
-  protected amountError = computed(() => {
-    const n = this.approveAmount();
-    if (!(n > 0)) return 'Amount must be greater than 0.';
-    // Money has piastres at most: refuse 0.001 or 1e3 rather than send an amount nobody meant.
-    if (!/^\d+(\.\d{1,2})?$/.test(this.approveInput().replace(/,/g, '').trim())) return 'Enter the amount in EGP, e.g. 350 or 350.50.';
-    if (n > this.payment().amount) return `Can't approve more than the vendor claimed (${egp(this.payment().amount)}).`;
-    return '';
-  });
-  protected amountValid = computed(() => !this.amountError());
   protected balanceAfter = computed(() => {
     const o = this.outstanding();
-    return o == null ? null : Math.max(0, o - this.approveAmount());
+    return o == null ? null : Math.max(0, o - this.payment().amount);
   });
 
   constructor() {
@@ -61,7 +46,6 @@ export class PaymentDrawerComponent {
     // opened while the drawer is still open, and only swaps the `payment` input.
     effect(() => {
       const p = this.payment();
-      this.approveInput.set(String(p.amount));
       this.rejecting.set(false);
       this.rejectReason.set('');
       this.rejectError.set('');
@@ -87,9 +71,9 @@ export class PaymentDrawerComponent {
 
   protected async approve() {
     const cb = this.onApprove();
-    if (!cb || !this.amountValid() || this.busy()) return;
+    if (!cb || this.busy()) return;
     this.busy.set(true);
-    await cb(this.approveAmount());
+    await cb();
     this.busy.set(false);
   }
 

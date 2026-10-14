@@ -207,13 +207,13 @@ export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionP
     vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
     vendorName: firstNonEmpty(vendor['storeNameEn'], vendor['storeName'], vendor['name'], r['storeName'], r['vendorName']) || 'Unknown vendor',
     method: firstNonEmpty(r['method'], r['Method']) || '—',
-    amount: numOr(r['amountEgp'], r['AmountEgp'], r['amount']) ?? 0,
-    approvedAmount: numOr(r['approvedAmountEgp'], r['ApprovedAmountEgp']),
+    amount: numOr(r['claimedAmountEgp'], r['ClaimedAmountEgp'], r['claimedAmount'], r['amountEgp'], r['AmountEgp'], r['amount']) ?? 0,
+    approvedAmount: numOr(r['approvedAmountEgp'], r['ApprovedAmountEgp'], r['approvedAmount'], r['claimedAmountEgp'], r['ClaimedAmountEgp']),
     status: firstNonEmpty(r['status'], r['Status']) || 'Pending',
     receiptUrl: absoluteImage(firstNonEmpty(r['receiptImageUrl'], r['ReceiptImageUrl'], r['receiptUrl']) || null, apiBase),
     rejectionReason: firstNonEmpty(r['rejectionReason'], r['RejectionReason']),
-    createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'])) || '—',
-    reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'])),
+    createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'], r['submittedAt'], r['SubmittedAt'])) || '—',
+    reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'], r['reviewedDate'], r['ReviewedDate'])),
   };
 }
 

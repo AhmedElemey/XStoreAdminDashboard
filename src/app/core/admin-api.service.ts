@@ -177,11 +177,18 @@ export class AdminApiService {
   commissionPayments(q: CommissionPaymentsQuery) {
     return this.auth.apiFetch<unknown>('/api/admin/commission-payments', { query: q });
   }
-  /** Credits `amountEgp` against the vendor's outstanding balance server-side (same effect
-   *  as settle, in one transaction with the status change). */
-  approveCommissionPayment(id: string, amountEgp: number) {
-    if (!(amountEgp > 0)) throw new Error('Approved amount must be greater than 0.');
-    return this.auth.apiFetch(`/api/admin/commission-payments/${encodeURIComponent(id)}/approve`, { method: 'POST', body: { amountEgp } });
+  /** Credits the claimed amount against the vendor's outstanding balance server-side (same effect
+   *  as settle, in one transaction with the status change). No amount entry needed — the
+   *  backend uses the request's `claimedAmountEgp`. `amountEgp` is still sent when known
+   *  for backends that expect it (both `amountEgp` + `claimedAmountEgp` aliases). */
+  approveCommissionPayment(id: string, amountEgp?: number) {
+    const body: Record<string, number> = {};
+    if (amountEgp !== undefined) {
+      if (!(amountEgp > 0)) throw new Error('Approved amount must be greater than 0.');
+      body['amountEgp'] = amountEgp;
+      body['claimedAmountEgp'] = amountEgp;
+    }
+    return this.auth.apiFetch(`/api/admin/commission-payments/${encodeURIComponent(id)}/approve`, { method: 'POST', body });
   }
   rejectCommissionPayment(id: string, reason: string) {
     if (!reason?.trim()) throw new Error('Rejection reason is required.');

@@ -41,9 +41,7 @@
   <div class="kv"><span>Amount approved</span><b>{{ egp(p.approvedAmount) }}</b></div>
 }
 <div class="kv"><span>Submitted</span><b>{{ p.createdAt }}</b></div>
-@if (p.reviewedAt) {
-  <div class="kv"><span>Reviewed</span><b>{{ p.reviewedAt }}</b></div>
-}
+<div class="kv"><span>Reviewed</span><b>{{ p.reviewedAt || '—' }}</b></div>
 @if (p.id) {
   <div class="kv"><span>Request ID</span><b>{{ p.id }}</b></div>
 }
@@ -51,19 +49,12 @@
 @if (isPending()) {
   @if (!rejecting()) {
     <h3 class="sec-h">Approve</h3>
-    <p class="muted" style="font-size:12.5px;margin-bottom:10px">Check the receipt matches before approving. Lower the amount if the transfer shows less than claimed.</p>
-    <div class="form-row">
-      <label for="approveAmount">Amount to deduct (EGP)</label>
-      <input id="approveAmount" inputmode="decimal" [value]="approveInput()" (input)="approveInput.set($any($event.target).value)" [disabled]="busy()" />
-      @if (amountError()) {
-        <span class="field-err" role="alert">{{ amountError() }}</span>
-      }
-    </div>
+    <p class="muted" style="font-size:12.5px;margin-bottom:10px">Check the receipt matches before approving. Approving deducts {{ egp(p.amount) }} from the vendor's balance.</p>
     @if (balanceAfter() != null) {
       <div class="kv"><span>Balance after approval</span><b>{{ egp(balanceAfter()!) }}</b></div>
     }
     <div class="d-actions">
-      <button class="btn btn-ok" style="flex:1;justify-content:center" [disabled]="busy() || !amountValid()" (click)="approve()">✓ Approve {{ amountValid() ? egp(approveAmount()) : '' }}</button>
+      <button class="btn btn-ok" style="flex:1;justify-content:center" [disabled]="busy()" (click)="approve()">✓ Approve {{ egp(p.amount) }}</button>
       <button class="btn btn-no" style="flex:1;justify-content:center" [disabled]="busy()" (click)="rejecting.set(true)">✕ Reject</button>
     </div>
   } @else {

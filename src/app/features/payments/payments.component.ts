@@ -149,16 +149,16 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     const payment = this.mapped(raw);
     this.drawer.show('Review payment', PaymentDrawerComponent, {
       payment,
-      onApprove: (amount: number) => this.approve(payment, amount),
+      onApprove: () => this.approve(payment),
       onReject: (reason: string) => this.reject(payment, reason),
     });
   }
 
   /** Returns true on success so the drawer knows whether to keep its form state. */
-  private async approve(p: MappedCommissionPayment, amount: number): Promise<boolean> {
+  private async approve(p: MappedCommissionPayment): Promise<boolean> {
     try {
-      await this.api.approveCommissionPayment(p.id, amount);
-      this.toast.show(`Approved — ${egp(amount)} deducted from ${p.vendorName}'s balance ✓`);
+      await this.api.approveCommissionPayment(p.id, p.amount > 0 ? p.amount : undefined);
+      this.toast.show(`Approved — ${egp(p.amount)} deducted from ${p.vendorName}'s balance ✓`);
       this.drawer.close();
       this.load();
       return true;

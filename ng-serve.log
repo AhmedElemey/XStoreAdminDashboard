@@ -2,74 +2,40 @@
 > xstore-admin@0.0.0 start
 > ng serve
 
-Node.js version v25.9.0 detected.
-Prior to version 27, odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
 ❯ Building...
 ✔ Building...
 Initial chunk files | Names                      |  Raw size
-main.js             | main                       |  27.25 kB | 
-styles.css          | styles                     |  20.78 kB | 
-chunk-AAQENHQ7.js   | -                          |  14.36 kB | 
-chunk-OH662OFR.js   | -                          |   6.62 kB | 
-chunk-NWI4DWDG.js   | -                          |   4.28 kB | 
-chunk-JEGRY364.js   | -                          |   1.46 kB | 
+main.js             | main                       |  42.18 kB | 
+chunk-R275WHBZ.js   | -                          |  32.59 kB | 
+styles.css          | styles                     |  21.05 kB | 
+chunk-SGPRZMHW.js   | -                          |   7.05 kB | 
+chunk-6AW6JU35.js   | -                          |   1.90 kB | 
+chunk-YQ34IJ7E.js   | -                          |   1.46 kB | 
 chunk-KHMHZ2JB.js   | -                          |   1.21 kB | 
-chunk-5LM7J6RL.js   | -                          | 943 bytes | 
 
-                    | Initial total              |  76.89 kB
+                    | Initial total              | 107.44 kB
 
 Lazy chunk files    | Names                      |  Raw size
-chunk-EYZ6BQ6I.js   | content-component          |  51.55 kB | 
-chunk-O2M4HUX6.js   | moderation-component       |  49.72 kB | 
-chunk-NBKS37YM.js   | vendor-detail-component    |  49.51 kB | 
-chunk-GWYJ5R7K.js   | general-settings-component |  48.82 kB | 
-chunk-UYHKAA73.js   | -                          |  31.94 kB | 
-chunk-HDZQCSAW.js   | user-detail-component      |  31.43 kB | 
-chunk-OOEGD5PV.js   | dashboard-component        |  29.95 kB | 
-chunk-PWARDHIN.js   | categories-component       |  29.88 kB | 
-chunk-H7MLWKGJ.js   | reports-component          |  28.29 kB | 
-chunk-3F4I5IZL.js   | order-detail-component     |  27.72 kB | 
-chunk-3UUHGQOE.js   | settings-component         |  25.65 kB | 
-chunk-3T7E2T5G.js   | customers-component        |  22.74 kB | 
-chunk-BYXM7QBB.js   | orders-component           |  17.38 kB | 
-chunk-2KXLMX47.js   | vendors-component          |  16.71 kB | 
-chunk-USTXM7GU.js   | product-detail-component   |  16.52 kB | 
-...and 9 more lazy chunks files. Use "--verbose" to show all the files.
+chunk-T3AYVFYF.js   | vendor-detail-component    |  51.12 kB | 
+chunk-W52HV35O.js   | moderation-component       |  50.38 kB | 
+chunk-QGMPKVQL.js   | general-settings-component |  49.13 kB | 
+chunk-3OK4KPSC.js   | payments-component         |  44.11 kB | 
+chunk-NW6DSXBA.js   | categories-component       |  35.95 kB | 
+chunk-BODL25CE.js   | user-detail-component      |  31.44 kB | 
+chunk-65B53UH6.js   | dashboard-component        |  29.50 kB | 
+chunk-DAFCCY56.js   | reports-component          |  28.60 kB | 
+chunk-ONTIGFDF.js   | order-detail-component     |  27.72 kB | 
+chunk-OW42VA3L.js   | content-component          |  26.55 kB | 
+chunk-3YXIT2DY.js   | customers-component        |  22.74 kB | 
+chunk-E4BVPK2D.js   | orders-component           |  18.47 kB | 
+chunk-M7KAX4Y5.js   | settings-component         |  17.96 kB | 
+chunk-R23MVOW2.js   | vendors-component          |  17.03 kB | 
+chunk-UXCHBXIW.js   | product-detail-component   |  16.53 kB | 
+...and 11 more lazy chunks files. Use "--verbose" to show all the files.
 
-Application bundle generation complete. [26.693 seconds] - 2026-10-03T14:47:34.614Z
+Application bundle generation complete. [8.964 seconds] - 2026-10-14T10:12:25.658Z
 
 Watch mode enabled. Watching for file changes...
 NOTE: Raw file sizes do not reflect development server per-request transformations.
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
 [2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
-❯ Changes detected. Rebuilding...
-✔ Changes detected. Rebuilding...
-Initial chunk files | Names                      | Raw size
-main.js             | main                       | 42.18 kB | 
-chunk-6I2XYJF6.js   | -                          | 32.12 kB | 
-styles.css          | styles                     | 21.05 kB | 
-chunk-SGPRZMHW.js   | -                          |  7.05 kB | 
-chunk-4ILX2BBE.js   | -                          |  1.90 kB | 
-chunk-YQ34IJ7E.js   | -                          |  1.46 kB | 
-
-Lazy chunk files    | Names                      | Raw size
-chunk-CE5MDSWF.js   | vendor-detail-component    | 51.12 kB | 
-chunk-BBRV3YZG.js   | moderation-component       | 50.38 kB | 
-chunk-ITKLOCIC.js   | general-settings-component | 49.13 kB | 
-chunk-UW7KQLDF.js   | payments-component         | 47.25 kB | 
-chunk-AT7OXZN5.js   | categories-component       | 35.95 kB | 
-chunk-CGMSQKEM.js   | user-detail-component      | 31.44 kB | 
-chunk-2NEGRN3J.js   | dashboard-component        | 29.50 kB | 
-chunk-NIYPQPE2.js   | reports-component          | 28.60 kB | 
-chunk-UZ7VCF2S.js   | order-detail-component     | 27.72 kB | 
-chunk-UBCG4OQR.js   | content-component          | 26.55 kB | 
-chunk-RUTT7TQC.js   | customers-component        | 22.74 kB | 
-chunk-XAXHLQSX.js   | orders-component           | 18.47 kB | 
-chunk-B3SGELVS.js   | settings-component         | 17.96 kB | 
-chunk-IXJRRPMP.js   | vendors-component          | 17.03 kB | 
-chunk-GZJSGGA4.js   | product-detail-component   | 16.53 kB | 
-...and 8 more lazy chunks files. Use "--verbose" to show all the files.
-
-Application bundle generation complete. [12.549 seconds] - 2026-10-03T14:49:38.393Z
-
-Page reload sent to client(s).

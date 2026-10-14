@@ -24,7 +24,7 @@
   } @else {
     <table>
       <thead>
-        <tr><th>Vendor</th><th>Method</th><th class="r">Amount</th><th>Submitted</th><th>Status</th><th class="r">Action</th></tr>
+        <tr><th>Vendor</th><th>Method</th><th class="r">Amount</th><th>Submitted</th><th>Reviewed</th><th>Status</th><th class="r">Action</th></tr>
       </thead>
       <tbody>
         @for (raw of items(); track $index) {
@@ -34,6 +34,7 @@
             <td><span class="badge-s b-indigo">{{ methodLabel(m.method) }}</span></td>
             <td class="r"><span class="money">{{ egp(m.amount) }}</span></td>
             <td class="muted">{{ m.createdAt }}</td>
+            <td class="muted">{{ m.reviewedAt || '—' }}</td>
             <td><span [class]="'badge-s ' + statusBadgeClass(m.status)">{{ m.status }}</span></td>
             <td class="r">
               <button class="btn btn-sm" [class.btn-ok]="m.status === 'Pending'" [class.btn-g]="m.status !== 'Pending'" (click)="openPayment($index)">
