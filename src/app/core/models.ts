@@ -122,6 +122,7 @@ export interface MappedCommissionPayment {
   rejectionReason: string;
   createdAt: string;
   reviewedAt: string;
+  reviewedBy: string;
 }
 
 export interface MappedAppSetting {

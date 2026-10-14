@@ -42,6 +42,7 @@
 }
 <div class="kv"><span>Submitted</span><b>{{ p.createdAt }}</b></div>
 <div class="kv"><span>Reviewed</span><b>{{ p.reviewedAt || '—' }}</b></div>
+<div class="kv"><span>Reviewed by</span><b>{{ p.reviewedBy || '—' }}</b></div>
 @if (p.id) {
   <div class="kv"><span>Request ID</span><b>{{ p.id }}</b></div>
 }

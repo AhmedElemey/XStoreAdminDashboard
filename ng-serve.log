@@ -39,3 +39,64 @@ Watch mode enabled. Watching for file changes...
 NOTE: Raw file sizes do not reflect development server per-request transformations.
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
 [2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names              | Raw size
+main.js             | main               | 42.18 kB | 
+
+Lazy chunk files    | Names              | Raw size
+chunk-IHSJXBN4.js   | payments-component | 44.25 kB | 
+
+Application bundle generation complete. [1.000 seconds] - 2026-10-14T10:16:37.800Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names              | Raw size
+main.js             | main               | 42.18 kB | 
+
+Lazy chunk files    | Names              | Raw size
+chunk-RP7A7AXQ.js   | payments-component | 44.53 kB | 
+
+Application bundle generation complete. [1.188 seconds] - 2026-10-14T10:16:40.762Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names              | Raw size
+main.js             | main               | 42.18 kB | 
+
+Lazy chunk files    | Names              | Raw size
+chunk-PXQYDDHB.js   | payments-component | 44.15 kB | 
+
+Application bundle generation complete. [0.153 seconds] - 2026-10-14T10:16:47.886Z
+
+Component update sent to client(s).
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                      | Raw size
+main.js             | main                       | 42.18 kB | 
+chunk-KK7IHCCM.js   | -                          | 32.67 kB | 
+chunk-WDQHKWOY.js   | -                          |  1.90 kB | 
+
+Lazy chunk files    | Names                      | Raw size
+chunk-XHGF6D7G.js   | vendor-detail-component    | 51.12 kB | 
+chunk-ESVFMWTN.js   | moderation-component       | 50.38 kB | 
+chunk-WMUKGR44.js   | general-settings-component | 49.13 kB | 
+chunk-SZKT7B65.js   | payments-component         | 44.15 kB | 
+chunk-OE6OKNPJ.js   | categories-component       | 35.95 kB | 
+chunk-C7DQEG25.js   | user-detail-component      | 31.44 kB | 
+chunk-U6IEWVRZ.js   | dashboard-component        | 29.50 kB | 
+chunk-T42XJVXR.js   | reports-component          | 28.60 kB | 
+chunk-DE7NJ6G2.js   | order-detail-component     | 27.72 kB | 
+chunk-YLEGCMAW.js   | content-component          | 26.55 kB | 
+chunk-V3PXNTYE.js   | customers-component        | 22.74 kB | 
+chunk-DLGRE7P2.js   | orders-component           | 18.47 kB | 
+chunk-AJ2AF7LK.js   | settings-component         | 17.96 kB | 
+chunk-DVDWQFN5.js   | vendors-component          | 17.03 kB | 
+chunk-26E2ZOOZ.js   | product-detail-component   | 16.53 kB | 
+...and 5 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [1.458 seconds] - 2026-10-14T10:16:53.009Z
+
+Page reload sent to client(s).

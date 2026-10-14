@@ -202,6 +202,7 @@ export function mapVendorReport(r: Dto): MappedVendorReport {
  *  "Commission payment requests"). */
 export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionPayment {
   const vendor = (r['vendor'] ?? r['Vendor'] ?? {}) as Dto;
+  const reviewer = (r['reviewer'] ?? r['Reviewer'] ?? r['reviewedByAdmin'] ?? r['ReviewedByAdmin'] ?? {}) as Dto;
   return {
     id: firstNonEmpty(r['id'], r['Id']),
     vendorId: firstNonEmpty(r['vendorId'], r['VendorId'], vendor['id'], vendor['Id']),
@@ -214,6 +215,7 @@ export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionP
     rejectionReason: firstNonEmpty(r['rejectionReason'], r['RejectionReason']),
     createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'], r['submittedAt'], r['SubmittedAt'])) || '—',
     reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'], r['reviewedDate'], r['ReviewedDate'])),
+    reviewedBy: firstNonEmpty(r['reviewedByAdminName'], r['ReviewedByAdminName'], r['reviewedBy'], r['ReviewedBy'], r['reviewedByName'], r['ReviewedByName'], r['reviewerName'], r['ReviewerName'], reviewer['name'], reviewer['fullName'], reviewer['userName'], reviewer['email']),
   };
 }
 
