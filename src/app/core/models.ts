@@ -121,6 +121,8 @@ export interface MappedCommissionPayment {
   receiptUrl: string | null;
   rejectionReason: string;
   createdAt: string;
+  /** Raw submitted timestamp as sent by the API (createdAt is pre-formatted for display) — for date filtering/sorting. */
+  createdAtIso: string;
   reviewedAt: string;
   reviewedBy: string;
 }

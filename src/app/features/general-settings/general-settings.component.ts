@@ -1,12 +1,11 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
-import { readPage, mapAppSetting } from '../../core/mappers';
+import { readAllPages, mapAppSetting } from '../../core/mappers';
 import { Dto, MappedAppSetting } from '../../core/models';
 import { APP_SETTING_TYPES } from '../../core/app-settings';
 import { ApiError } from '../../core/api-error';
 import { StateBlockComponent } from '../../shared/state-block.component';
-import { PagerComponent } from '../../shared/pager.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { IconComponent } from '../../shared/icon.component';
 import { SettingFormComponent, SettingFormValue } from './setting-form.component';
@@ -19,7 +18,6 @@ let searchTimer: ReturnType<typeof setTimeout>;
   selector: 'app-general-settings',
   imports: [
     StateBlockComponent,
-    PagerComponent,
     ChipTabsComponent,
     IconComponent,
     SettingFormComponent,
@@ -33,10 +31,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   protected tabLabels = ['All', ...APP_SETTING_TYPES];
   protected dataType = signal('');
   protected keyword = signal('');
-  protected page = signal(1);
-  protected pageSize = 20;
   protected total = signal(0);
-  protected totalPages = signal(1);
+  /** More settings exist than one load fetches (readAllPages cap). */
+  protected truncated = signal(false);
   protected items = signal<MappedAppSetting[]>([]);
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
@@ -57,7 +54,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   protected selectTab(label: string) {
     this.dataType.set(label === 'All' ? '' : label);
-    this.page.set(1);
     this.load();
   }
 
@@ -65,41 +61,35 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       this.keyword.set(v.trim());
-      this.page.set(1);
       this.load();
     }, 350);
-  }
-
-  protected gotoPage(p: number) {
-    if (p < 1 || p > this.totalPages() || p === this.page()) return;
-    this.page.set(p);
-    this.load();
   }
 
   async load() {
     const seq = ++this.loadSeq;
     this.loadState.set('loading');
     try {
-      const data = await this.api.appSettings({
-        search: this.keyword() || undefined,
-        dataType: this.dataType() || undefined,
-        page: this.page(),
-        pageSize: this.pageSize,
-      });
-      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
-      // Tolerate the Result envelope `{ isSuccess, data: { items, totalCount } }` too.
-      const inner =
-        data &&
-        typeof data === 'object' &&
-        !Array.isArray(data) &&
-        (data as Dto)['data'] &&
-        !Array.isArray((data as Dto)['data'])
+      // No pagination on this page: fetch every setting so the whole list shows at once.
+      const all = await readAllPages<Dto>(async (page, pageSize) => {
+        const data = await this.api.appSettings({
+          search: this.keyword() || undefined,
+          dataType: this.dataType() || undefined,
+          page,
+          pageSize,
+        });
+        // Tolerate the Result envelope `{ isSuccess, data: { items, totalCount } }` too.
+        return data &&
+          typeof data === 'object' &&
+          !Array.isArray(data) &&
+          (data as Dto)['data'] &&
+          !Array.isArray((data as Dto)['data'])
           ? (data as Dto)['data']
           : data;
-      const p = readPage<Dto>(inner, this.pageSize);
-      this.items.set(p.items.map(mapAppSetting));
-      this.total.set(p.total);
-      this.totalPages.set(p.totalPages);
+      });
+      if (seq !== this.loadSeq) return; // a newer load() has started; drop this stale answer
+      this.items.set(all.items.map(mapAppSetting));
+      this.total.set(all.total);
+      this.truncated.set(all.truncated);
       this.loadState.set(null);
     } catch (e) {
       if (seq !== this.loadSeq) return;
@@ -151,7 +141,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     try {
       await this.api.deleteAppSetting(s.id);
       this.toast.show(`"${s.key}" deleted`);
-      if (this.items().length === 1 && this.page() > 1) this.page.update((p) => p - 1);
       this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

@@ -65,7 +65,12 @@
         </tbody>
       </table>
     </div>
-    <app-pager [page]="page()" [totalPages]="totalPages()" [total]="total()" [pageSize]="pageSize" (pageChange)="gotoPage($event)" />
+    <p class="muted" style="font-size:12.5px;padding:12px 16px 4px">
+      {{ items().length }} setting{{ items().length === 1 ? '' : 's' }}
+      @if (truncated()) {
+        · showing the first {{ items().length }} of {{ total() }} — narrow the list with search or a type filter
+      }
+    </p>
   }
 </div>
 

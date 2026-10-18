@@ -77,6 +77,24 @@ export function readPage<T = Dto>(data: unknown, pageSize: number): Page<T> {
   return { items, total, totalPages };
 }
 
+/** Loads every page of a paged list endpoint, for screens that show the whole list at once.
+ *  Stops at the reported last page, at a short page, or after `maxPages` (then `truncated`). */
+export async function readAllPages<T = Dto>(
+  fetchPage: (page: number, pageSize: number) => Promise<unknown>,
+  pageSize = 100,
+  maxPages = 20,
+): Promise<{ items: T[]; total: number; truncated: boolean }> {
+  const items: T[] = [];
+  let total = 0;
+  for (let page = 1; page <= maxPages; page++) {
+    const p = readPage<T>(await fetchPage(page, pageSize), pageSize);
+    items.push(...p.items);
+    total = Math.max(total, p.total);
+    if (page >= p.totalPages || p.items.length < pageSize) return { items, total: Math.max(total, items.length), truncated: false };
+  }
+  return { items, total: Math.max(total, items.length), truncated: true };
+}
+
 export function mapCategory(c: Dto, apiBase: string): MappedCategory {
   const img = firstNonEmpty(c['imageUrl'], c['image'], c['imagePath'], c['iconUrl']) || null;
   return {
@@ -214,6 +232,7 @@ export function mapCommissionPayment(r: Dto, apiBase: string): MappedCommissionP
     receiptUrl: absoluteImage(firstNonEmpty(r['receiptImageUrl'], r['ReceiptImageUrl'], r['receiptUrl']) || null, apiBase),
     rejectionReason: firstNonEmpty(r['rejectionReason'], r['RejectionReason']),
     createdAt: dateTime(firstNonEmpty(r['createdAt'], r['CreatedAt'], r['submittedAt'], r['SubmittedAt'])) || '—',
+    createdAtIso: firstNonEmpty(r['createdAt'], r['CreatedAt'], r['submittedAt'], r['SubmittedAt']),
     reviewedAt: dateTime(firstNonEmpty(r['reviewedAt'], r['ReviewedAt'], r['reviewedDate'], r['ReviewedDate'])),
     reviewedBy: firstNonEmpty(r['reviewedByAdminName'], r['ReviewedByAdminName'], r['reviewedBy'], r['ReviewedBy'], r['reviewedByName'], r['ReviewedByName'], r['reviewerName'], r['ReviewerName'], reviewer['name'], reviewer['fullName'], reviewer['userName'], reviewer['email']),
   };

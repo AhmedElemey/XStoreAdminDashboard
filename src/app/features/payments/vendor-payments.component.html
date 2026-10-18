@@ -1,0 +1,138 @@
+<div class="page-head">
+  <div>
+    <h2>{{ vendorName() }} — payment history</h2>
+    <p>All fee payment requests this vendor has submitted.</p>
+  </div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+    <a class="btn btn-g" routerLink="/payments">← All fee payments</a>
+    @if (vendorId) {
+      <a class="btn btn-g" [routerLink]="['/vendors', vendorId]">Vendor profile</a>
+    }
+  </div>
+</div>
+
+@if (loadState() === null) {
+  <div class="grid g-4" style="margin-bottom: 18px">
+    <app-kpi-card
+      icon="cash"
+      [value]="egp(summary().totalPaid)"
+      label="Total paid (approved)"
+      color="#3F7A5C"
+    />
+    <app-kpi-card
+      icon="shield"
+      [value]="summary().pendingCount + ' · ' + egp(summary().pendingAmount)"
+      label="Pending"
+      color="#C68A2E"
+    />
+    <app-kpi-card
+      icon="box"
+      [value]="summary().rejectedCount.toLocaleString('en-US')"
+      label="Rejected"
+      color="#B4472E"
+    />
+    <app-kpi-card
+      icon="chart"
+      [value]="outstanding() == null ? '—' : egp(outstanding()!)"
+      label="Current balance owed"
+      color="#2E5C6E"
+    />
+  </div>
+
+  @if (droppedRows() > 0 || truncated()) {
+    <p class="muted" style="font-size: 12.5px; margin-bottom: 12px">
+      @if (droppedRows() > 0) {
+        {{ droppedRows() }} request(s) from other vendors were ignored — the history may be
+        incomplete until the backend supports filtering by vendorId.
+      }
+      @if (truncated()) {
+        Only the first {{ loadedCount() }} requests were loaded, so older payments may be missing.
+      }
+    </p>
+  }
+
+  <div class="toolbar">
+    <app-chip-tabs [labels]="tabLabels" [active]="status()" (select)="selectTab($event)" />
+    <app-date-range-filter (rangeChange)="onRangeChange($event)" />
+  </div>
+}
+
+<div class="card">
+  @if (loadState() === 'loading') {
+    <app-state-block kind="loading" message="Loading payment history…" />
+  } @else if (loadState() === 'error') {
+    <app-state-block kind="error" [message]="errorMsg()" (retry)="load()" />
+  } @else if (!visible().length) {
+    <app-state-block
+      kind="empty"
+      [message]="
+        !rows().length
+          ? 'This vendor hasn\'t submitted any fee payments yet.'
+          : status() !== 'All'
+            ? 'No ' + status().toLowerCase() + ' payments.'
+            : 'No payments in this date range.'
+      "
+    />
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Submitted</th>
+          <th>Method</th>
+          <th class="r">Amount claimed</th>
+          <th class="r">Amount approved</th>
+          <th>Status</th>
+          <th>Reviewed</th>
+          <th>Reviewed by</th>
+          <th>Rejection reason</th>
+          <th class="r">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of visible(); track m.id || $index) {
+          <tr>
+            <td class="muted">{{ m.createdAt }}</td>
+            <td>
+              <span class="badge-s b-indigo">{{ methodLabel(m.method) }}</span>
+            </td>
+            <td class="r">
+              <span class="money">{{ egp(m.amount) }}</span>
+            </td>
+            <td class="r">
+              @if (m.status === 'Approved' && m.approvedAmount != null) {
+                <span class="money">{{ egp(m.approvedAmount) }}</span>
+              } @else {
+                <span class="muted">—</span>
+              }
+            </td>
+            <td>
+              <span [class]="'badge-s ' + statusBadgeClass(m.status)">{{ m.status }}</span>
+            </td>
+            <td class="muted">{{ m.reviewedAt || '—' }}</td>
+            <td class="muted">{{ m.reviewedBy || '—' }}</td>
+            <td
+              class="muted"
+              [title]="m.rejectionReason"
+              style="max-width: 220px; overflow: hidden; text-overflow: ellipsis"
+            >
+              {{ m.rejectionReason || '—' }}
+            </td>
+            <td class="r">
+              <button
+                class="btn btn-sm"
+                [class.btn-ok]="m.status === 'Pending'"
+                [class.btn-g]="m.status !== 'Pending'"
+                (click)="openPayment(m)"
+              >
+                {{ m.status === 'Pending' ? 'Review' : 'Details' }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="muted" style="padding: 12px 16px; font-size: 12.5px">
+      {{ visible().length }} {{ visible().length === 1 ? 'payment' : 'payments' }}
+    </div>
+  }
+</div>

@@ -68,6 +68,8 @@ export interface VendorReportsQuery {
  *  vendor's store name. */
 export interface CommissionPaymentsQuery {
   status?: string;
+  /** Not a confirmed backend filter yet — callers must still filter client-side. */
+  vendorId?: string;
   keyword?: string;
   from?: string;
   to?: string;

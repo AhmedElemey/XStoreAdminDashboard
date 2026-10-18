@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapOrder, normalizeListingStatus, resolveListingStatus, unwrapDetail } from './mappers';
+import { mapOrder, normalizeListingStatus, readAllPages, resolveListingStatus, unwrapDetail } from './mappers';
 
 describe('mapOrder address extraction', () => {
   it('uses a flat string address as-is (the documented BACKEND_HANDOFF.md shape)', () => {
@@ -71,5 +71,30 @@ describe('unwrapDetail', () => {
     expect(unwrapDetail({ isSuccess: true, result: { item: { id: '2' } } })).toEqual({ id: '2' });
     expect(unwrapDetail(null)).toBeNull();
     expect(unwrapDetail('x')).toBeNull();
+  });
+});
+
+describe('readAllPages', () => {
+  const pages = (n: number, size: number, total: number) => async (page: number) => ({
+    items: Array.from({ length: Math.min(size, total - (page - 1) * size) }, (_, i) => ({ id: (page - 1) * size + i })),
+    totalCount: total,
+    totalPages: n,
+  });
+
+  it('collects every page and stops at the last one', async () => {
+    const calls: number[] = [];
+    const fetch = pages(3, 2, 5);
+    const r = await readAllPages((p, s) => (calls.push(p), fetch(p)), 2);
+    expect(r.items.map((x: any) => x.id)).toEqual([0, 1, 2, 3, 4]);
+    expect(r.total).toBe(5);
+    expect(r.truncated).toBe(false);
+    expect(calls).toEqual([1, 2, 3]);
+  });
+
+  it('handles a plain array response and flags truncation at maxPages', async () => {
+    expect((await readAllPages(async () => [{ id: 1 }], 100)).items.length).toBe(1);
+    const r = await readAllPages(pages(10, 2, 20), 2, 3);
+    expect(r.items.length).toBe(6);
+    expect(r.truncated).toBe(true);
   });
 });
