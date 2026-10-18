@@ -218,6 +218,58 @@ td.r .btn + .btn { margin-left: 8px; }
 .kv b { text-align: right; }
 .sec-h { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin: 16px 0 4px; }
 
+/* ---------- product detail page ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.ext { font-size: 0.85em; opacity: 0.6; margin-left: 4px; }
+.mod-link { color: inherit; text-decoration: none; }
+.mod-link:hover, .mod-link:focus-visible { text-decoration: underline; }
+a.thumb { text-decoration: none; color: inherit; }
+.pd-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.pd-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.pd-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pd-main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; aspect-ratio: 4 / 3; border-radius: 11px; overflow: hidden; background: linear-gradient(135deg, #eaf0f1, #dae6e9); }
+.pd-main img { width: 100%; height: 100%; object-fit: contain; }
+.pd-thumbs { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding: 2px; }
+.pd-thumbs button { flex: 0 0 64px; width: 64px; height: 64px; padding: 0; border-radius: 9px; border: 2px solid var(--line); background: #fff; overflow: hidden; cursor: pointer; }
+.pd-thumbs button.sel { border-color: var(--primary); }
+.pd-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pd-desc { white-space: pre-line; line-height: 1.6; font-size: 13.5px; overflow-wrap: anywhere; }
+.pd-kv-val { min-width: 0; overflow-wrap: anywhere; }
+.pd-kv-val.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.pd-thumbs button:focus-visible, .mod-link:focus-visible, .ft-tools :focus-visible, .ft-det > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* field tree */
+.ft-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ft-tools input { padding: 6px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; min-width: 0; width: 180px; }
+.ft-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; margin: 0; }
+.ft-row dt { color: var(--text-2); flex: 0 0 auto; max-width: 40%; overflow-wrap: anywhere; }
+.ft-row dd { margin: 0; min-width: 0; text-align: right; overflow-wrap: anywhere; font-weight: 600; }
+.ft-det { padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+.ft-det > summary { cursor: pointer; font-weight: 700; }
+.ft-group { border-left: 2px solid var(--line); padding-left: 12px; margin: 4px 0 0 4px; }
+.ft-text.ft-block { display: block; white-space: pre-wrap; text-align: start; font-weight: 400; }
+.ft-link { color: var(--primary); display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.ft-thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+.ft-thumbs, .ft-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.ft-table { overflow-x: auto; max-width: 100%; text-align: left; font-weight: 400; }
+.ft-table th, .ft-table td { padding: 7px 10px; white-space: nowrap; }
+.ft-pre, .ft-raw pre { max-height: 420px; overflow: auto; font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: left; font-weight: 400; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ft-raw { margin-top: 14px; }
+.ft-raw > summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+@media (max-width: 900px) {
+  .pd-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .pd-actions { width: 100%; }
+  .pd-actions .btn { flex: 1; justify-content: center; }
+  .pd-main { aspect-ratio: 1 / 1; }
+  .ft-row { flex-direction: column; gap: 4px; }
+  .ft-row dt { max-width: 100%; }
+  .ft-row dd { text-align: left; }
+  .ft-thumbs, .ft-chips { justify-content: flex-start; }
+  .ft-tools input { width: 100%; }
+}
+
 /* ---------- modal popup ---------- */
 .modal-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; max-width: 92vw; background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 20px 60px rgba(17, 24, 39, 0.25); z-index: 60; }
 .modal-ta { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 13.5px; font-family: inherit; resize: vertical; }

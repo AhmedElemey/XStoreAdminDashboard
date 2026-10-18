@@ -3,7 +3,7 @@ import { dateOnly, dateTime, egp } from './format';
 import { parseSettingType } from './app-settings';
 
 /** first non-empty of a list of candidate values (mirrors legacy _fne). */
-function firstNonEmpty(...vals: unknown[]): string {
+export function firstNonEmpty(...vals: unknown[]): string {
   for (const v of vals) {
     if (v !== undefined && v !== null && String(v).trim() !== '') return String(v);
   }
@@ -52,7 +52,7 @@ function boolOrUnknown(v: unknown): boolean | null {
   return v === undefined ? null : !!v;
 }
 
-function absoluteImage(img: string | null, apiBase: string): string | null {
+export function absoluteImage(img: string | null, apiBase: string): string | null {
   if (!img) return null;
   if (/^https?:\/\//i.test(img)) return img;
   return apiBase.replace(/\/+$/, '') + '/' + img.replace(/^\/+/, '');
@@ -114,7 +114,7 @@ export function mapListing(p: Dto, apiBase: string): MappedListing {
     stock: numOr(p['stockQuantity'], p['stock']),
     condition: condLabel,
     brand: firstNonEmpty(p['brand']) || '—',
-    location: firstNonEmpty(p['location'], [p['governorateNameEn'], p['detailedAddressByUser']].filter(Boolean).join(', ')) || '—',
+    location: firstNonEmpty(typeof p['location'] === 'object' ? null : p['location'], [p['governorateNameEn'], p['detailedAddressByUser']].filter(Boolean).join(', ')) || '—',
     description: firstNonEmpty(p['descriptionEn'], p['description']),
     submitted: firstNonEmpty(p['createdAt'], p['submittedAt']),
     isHot: !!(p['isHotDeal'] || p['hotDeal']),
@@ -357,4 +357,45 @@ export function mapCommission(c: Dto): MappedCommission {
     pause: numOr(c['pauseThresholdEgp'], c['pauseThreshold'], c['pause']) ?? 0,
     commission: numOr(c['commissionValueOnOrder'], c['commissionValue'], c['commissionPercent'], c['commission']) ?? 0,
   };
+}
+
+export type ListingStatus = 'PENDING' | 'ACTIVE' | 'REJECTED';
+
+/** Normalizes a listing status to the three values moderation uses. Strings are matched
+ *  case/punctuation-insensitively (e.g. "Pending Approval", "approved", "LIVE"). Numeric
+ *  enum values are deliberately NOT mapped — their order is unconfirmed — so they, and
+ *  anything unrecognized, return ''. */
+export function normalizeListingStatus(v: unknown): ListingStatus | '' {
+  if (typeof v !== 'string') return '';
+  const k = v.toUpperCase().replace(/[^A-Z]/g, '');
+  if (k === 'PENDING' || k === 'PENDINGAPPROVAL' || k === 'AWAITINGAPPROVAL' || k === 'INREVIEW') return 'PENDING';
+  if (k === 'ACTIVE' || k === 'APPROVED' || k === 'LIVE' || k === 'PUBLISHED') return 'ACTIVE';
+  if (k === 'REJECTED' || k === 'DECLINED') return 'REJECTED';
+  return '';
+}
+
+/** Status of a listing: the DTO's own status/listingStatus/approvalStatus field first, then the
+ *  `status` URL query param the opener passed, otherwise ''. */
+export function resolveListingStatus(dto: Dto | null | undefined, queryStatus?: string | null): ListingStatus | '' {
+  const d = dto || {};
+  for (const v of [d['status'], d['listingStatus'], d['approvalStatus']]) {
+    const n = normalizeListingStatus(v);
+    if (n) return n;
+  }
+  return normalizeListingStatus(queryStatus ?? '');
+}
+
+/** Unwraps a single-object response that may be nested in a {data}/{item}/{result} envelope.
+ *  Only unwraps when the wrapper holds an object and the outer object has no id of its own. */
+export function unwrapDetail(data: unknown): Dto | null {
+  let cur: unknown = data;
+  for (let i = 0; i < 3; i++) {
+    if (!cur || typeof cur !== 'object' || Array.isArray(cur)) return null;
+    const o = cur as Dto;
+    if (o['id'] !== undefined || o['listingId'] !== undefined) return o;
+    const inner = [o['data'], o['item'], o['result']].find((x) => x && typeof x === 'object' && !Array.isArray(x));
+    if (!inner) return o;
+    cur = inner;
+  }
+  return cur && typeof cur === 'object' ? (cur as Dto) : null;
 }

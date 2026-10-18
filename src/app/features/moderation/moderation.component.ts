@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { ToastService } from '../../core/toast.service';
-import { DrawerService } from '../../core/drawer.service';
 import { NavBadgesService } from '../../core/nav-badges.service';
 import { ImageService } from '../../core/image.service';
 import { readPage } from '../../core/mappers';
@@ -14,7 +14,6 @@ import { PagerComponent } from '../../shared/pager.component';
 import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { IconComponent } from '../../shared/icon.component';
 import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
-import { ProductDrawerComponent } from './product-drawer.component';
 
 const STATUS_TABS: [string, string][] = [
   ['Pending', 'PENDING'],
@@ -26,13 +25,12 @@ let searchTimer: ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'app-moderation',
-  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
+  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent, RouterLink],
   templateUrl: './moderation.component.html',
 })
 export class ModerationComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private toast = inject(ToastService);
-  private drawer = inject(DrawerService);
   private badges = inject(NavBadgesService);
   private images = inject(ImageService);
 
@@ -157,18 +155,6 @@ export class ModerationComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected openDrawer(i: number) {
-    const raw = (this.items() || [])[i];
-    if (!raw) return;
-    this.drawer.show('Review product', ProductDrawerComponent, {
-      listing: this.mapped(raw),
-      status: this.status(),
-      onApprove: () => this.decide(i, 'approve'),
-      onReject: () => this.decide(i, 'reject'),
-      onToggleHot: () => this.toggleHot(i),
-    });
-  }
-
   protected async decide(i: number, action: 'approve' | 'reject') {
     const raw = (this.items() || [])[i];
     if (!raw) return;
@@ -190,7 +176,6 @@ export class ModerationComponent implements OnInit, OnDestroy {
     try {
       await this.api.approveListing(m.id);
       this.toast.show('Product approved — now live ✓');
-      this.drawer.close();
       await this.load(); // keep Approve disabled until the approved row has left the list
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
@@ -220,7 +205,6 @@ export class ModerationComponent implements OnInit, OnDestroy {
     try {
       await this.api.rejectListing(m.id, reason);
       this.toast.show('Product rejected — vendor notified');
-      this.drawer.close();
       this.load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
@@ -245,8 +229,6 @@ export class ModerationComponent implements OnInit, OnDestroy {
       await this.api.toggleHotDeal(m.id, !m.isHot);
       raw['isHotDeal'] = !m.isHot;
       this.items.update((list) => (list ? [...list] : list));
-      const updated = this.mapped(raw);
-      this.drawer.updateInputs({ listing: updated });
       this.toast.show(m.isHot ? 'Removed hot-deal tag' : 'Marked as hot deal 🔥');
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

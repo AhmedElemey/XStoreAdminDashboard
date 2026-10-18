@@ -44,7 +44,7 @@
             <div class="kv">
               <span>
                 @if (it.id) {
-                  <a [routerLink]="['/products', it.id]" style="color:var(--primary);cursor:pointer">{{ it.name }} × {{ it.qty }}</a>
+                  <a [routerLink]="['/products', it.id]" target="_blank" rel="noopener" style="color:var(--primary)">{{ it.name }} × {{ it.qty }}<span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>
                 } @else {
                   {{ it.name }} × {{ it.qty }}
                 }
