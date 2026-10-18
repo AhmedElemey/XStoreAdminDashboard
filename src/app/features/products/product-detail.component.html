@@ -1,58 +1,275 @@
-@if (listingState() === 'loading') {
+@if (state() === 'loading') {
   <app-state-block kind="loading" message="Loading product…" />
-} @else if (listingState() === 'error' || !listing()) {
-  <app-state-block kind="error" message="Couldn't load this product." />
+} @else if (state() === 'error') {
+  <app-state-block kind="error" [message]="errorMsg()" (retry)="retry()" />
+} @else if (state() === 'notfound' || !listing()) {
+  <app-state-block kind="empty" message="This product doesn't exist or was removed." />
+  <p style="text-align: center; margin-top: 12px">
+    <a class="btn btn-g" routerLink="/moderation">Back to moderation</a>
+  </p>
 } @else {
   @let p = listing()!;
-  <div class="page-head">
-    <div>
-      <h2 style="margin:0">{{ p.title }}</h2>
-      <p style="margin:2px 0 0">{{ p.vendor }} · {{ p.category }}</p>
-    </div>
-    <button class="btn btn-g" (click)="back()">← Back</button>
-  </div>
-
-  <div class="card">
-    <div class="c-head"><h3>Product details</h3></div>
-    <div class="c-body" style="padding-top:4px">
-      @if (p.image) {
-        <div style="width:100%;max-width:320px;height:200px;border-radius:11px;overflow:hidden;margin-bottom:16px">
-          <img [src]="p.image" style="width:100%;height:100%;object-fit:cover" />
-        </div>
+  @let x = extras();
+  <div class="page-head" [attr.aria-busy]="busy()">
+    <div style="min-width: 0">
+      <h2 style="margin: 0; overflow-wrap: anywhere">{{ p.title }}</h2>
+      @if (x.titleAr) {
+        <p dir="rtl" lang="ar" style="font-size: 16px; font-weight: 600; color: var(--text)">
+          {{ x.titleAr }}
+        </p>
       }
-      <div style="font-size:22px;font-weight:800;color:var(--primary)">
-        {{ p.price == null ? '—' : egp(p.price) }}
-        @if (p.compareAt) {
-          <span style="text-decoration:line-through;color:var(--text-3);font-size:15px;font-weight:500">{{ egp(p.compareAt) }}</span>
+      <p style="margin: 2px 0 0; overflow-wrap: anywhere">
+        @if (x.vendorId) {
+          <a [routerLink]="['/vendors', x.vendorId]" style="color: var(--primary)">{{
+            p.vendor
+          }}</a>
+        } @else {
+          {{ p.vendor }}
         }
-      </div>
-      <div style="margin:12px 0;display:flex;gap:6px;flex-wrap:wrap">
-        <span class="badge-s b-indigo">Stock: {{ p.stock == null ? '—' : p.stock }}</span>
-        <span class="badge-s b-grey">{{ p.condition }}</span>
+        · {{ p.category }}
+      </p>
+      <div style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap">
+        @switch (status()) {
+          @case ('PENDING') {
+            <span class="badge-s b-amber">Pending approval</span>
+          }
+          @case ('ACTIVE') {
+            <span class="badge-s b-green">Approved</span>
+          }
+          @case ('REJECTED') {
+            <span class="badge-s b-red">Rejected</span>
+          }
+          @default {
+            @if (unknownStatus()) {
+              <span class="badge-s b-grey">{{ unknownStatus() }}</span>
+            }
+          }
+        }
         @if (p.isHot) {
           <span class="badge-s b-red">🔥 Hot deal</span>
         }
       </div>
-      @if (p.rejectionReason) {
-        <div style="background:var(--error-bg);border:1px solid var(--error);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:var(--error);margin-bottom:4px">Rejection reason</div>
-          <div style="font-size:13px;line-height:1.6">{{ p.rejectionReason }}</div>
-        </div>
-      }
-      @if (p.description) {
-        <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:16px">{{ p.description }}</p>
-      }
-      <div class="kv"><span>Vendor</span><b>{{ p.vendor }}</b></div>
-      <div class="kv"><span>Category</span><b>{{ p.category }}</b></div>
-      <div class="kv"><span>Brand</span><b>{{ p.brand }}</b></div>
-      <div class="kv"><span>Condition</span><b>{{ p.condition }}</b></div>
-      <div class="kv"><span>Location</span><b>{{ p.location }}</b></div>
-      @if (p.submitted) {
-        <div class="kv"><span>Submitted</span><b>{{ formatDate(p.submitted) }}</b></div>
-      }
-      @if (p.id) {
-        <div class="kv"><span>Product ID</span><b>{{ p.id }}</b></div>
+    </div>
+    <div class="pd-actions">
+      <a class="btn btn-g" routerLink="/moderation" (click)="onBack($event)"
+        >← {{ canGoBack ? 'Back' : 'Back to moderation' }}</a
+      >
+      @if (status() === 'PENDING') {
+        <button type="button" class="btn btn-ok" [disabled]="busy()" (click)="approve()">
+          ✓ Approve
+        </button>
+        <button
+          #rejectBtn
+          type="button"
+          class="btn btn-no"
+          [disabled]="busy()"
+          (click)="openReject()"
+        >
+          ✕ Reject
+        </button>
+      } @else if (status() === 'ACTIVE') {
+        <button
+          type="button"
+          class="btn"
+          [class.btn-no]="p.isHot"
+          [class.btn-g]="!p.isHot"
+          [disabled]="busy()"
+          (click)="toggleHot()"
+        >
+          {{ p.isHot ? '🔥 Unset hot' : '🔥 Mark hot deal' }}
+        </button>
       }
     </div>
   </div>
+
+  <div class="pd-grid">
+    <div class="pd-col">
+      <div class="card">
+        <div class="c-body">
+          <div role="group" aria-label="Product images">
+            @if (gallery().length && !failed()[selected()]) {
+              <a class="pd-main" [href]="gallery()[selected()].href" target="_blank" rel="noopener">
+                <img
+                  [src]="gallery()[selected()].src"
+                  [alt]="p.title + ' — image ' + (selected() + 1) + ' of ' + gallery().length"
+                  (error)="markFailed(selected())"
+                />
+              </a>
+            } @else {
+              <div class="pd-main pd-empty">
+                <span role="img" aria-label="No image available" style="font-size: 64px">📦</span>
+                <span class="muted">{{
+                  gallery().length ? 'Image failed to load' : 'No images'
+                }}</span>
+              </div>
+            }
+            @if (gallery().length > 1) {
+              <p class="muted" style="font-size: 12px; margin: 8px 0 0; text-align: center">
+                {{ selected() + 1 }} / {{ gallery().length }}
+              </p>
+              <div #thumbs class="pd-thumbs" (keydown)="onThumbKey($event)">
+                @for (g of gallery(); track $index) {
+                  <button
+                    type="button"
+                    [class.sel]="$index === selected()"
+                    [attr.aria-label]="'Show image ' + ($index + 1) + ' of ' + gallery().length"
+                    [attr.aria-current]="$index === selected() ? 'true' : null"
+                    [tabindex]="$index === selected() ? 0 : -1"
+                    (click)="select($index)"
+                  >
+                    <img [src]="g.src" alt="" loading="lazy" />
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="c-head"><h3>Description</h3></div>
+        <div class="c-body">
+          @if (p.description) {
+            <p class="pd-desc">{{ p.description }}</p>
+          }
+          @if (x.descAr) {
+            <h4 class="sec-h" style="margin-top:{{ p.description ? 16 : 0 }}px">
+              العربية / Arabic
+            </h4>
+            <p class="pd-desc" dir="rtl" lang="ar" style="text-align: start">{{ x.descAr }}</p>
+          }
+          @if (!p.description && !x.descAr) {
+            <p class="muted" style="font-size: 13px">No description provided.</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-col">
+      <div class="card">
+        <div class="c-body">
+          <div style="font-size: 26px; font-weight: 800; color: var(--primary)">
+            {{ p.price == null ? '—' : egp(p.price) }}
+            @if (p.compareAt) {
+              <span
+                style="
+                  text-decoration: line-through;
+                  color: var(--text-3);
+                  font-size: 15px;
+                  font-weight: 500;
+                "
+                >{{ egp(p.compareAt) }}</span
+              >
+            }
+            @if (discount()) {
+              <span class="badge-s b-green" style="vertical-align: middle">−{{ discount() }}%</span>
+            }
+          </div>
+          <div style="margin: 12px 0; display: flex; gap: 6px; flex-wrap: wrap">
+            @if (p.stock === 0) {
+              <span class="badge-s b-red">Out of stock</span>
+            } @else {
+              <span class="badge-s b-indigo">Stock: {{ p.stock == null ? '—' : p.stock }}</span>
+            }
+            <span class="badge-s b-grey">{{ p.condition }}</span>
+            @if (p.isHot) {
+              <span class="badge-s b-red">🔥 Hot deal</span>
+            }
+          </div>
+          @if (p.rejectionReason) {
+            <div
+              style="
+                background: var(--error-bg);
+                border: 1px solid var(--error);
+                border-radius: 10px;
+                padding: 12px 14px;
+              "
+            >
+              <div
+                style="font-size: 12px; font-weight: 700; color: var(--error); margin-bottom: 4px"
+              >
+                Rejection reason
+              </div>
+              <div style="font-size: 13px; line-height: 1.6; overflow-wrap: anywhere">
+                {{ p.rejectionReason }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="c-head"><h3>Key facts</h3></div>
+        <div class="c-body" style="padding-top: 4px">
+          @for (f of facts(); track f.label) {
+            <div class="kv">
+              <span>{{ f.label }}</span>
+              <b class="pd-kv-val" [class.mono]="f.mono">
+                @if (f.link && f.value) {
+                  <a [routerLink]="f.link" style="color: var(--primary)">{{ f.value }}</a>
+                } @else {
+                  {{ f.value || '—' }}
+                }
+                @if (f.copy && f.value) {
+                  <button
+                    type="button"
+                    class="btn btn-g btn-sm"
+                    style="margin-left: 6px"
+                    aria-label="Copy listing ID"
+                    (click)="copy(f.value)"
+                  >
+                    Copy
+                  </button>
+                }
+              </b>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt">
+    <app-field-tree [data]="raw()" [apiBase]="apiBase" />
+  </div>
+
+  @if (rejectOpen()) {
+    <div class="overlay show" (click)="closeReject()"></div>
+    <div
+      #modalCard
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rej-title"
+      aria-describedby="rej-help"
+      (keydown)="trapTab($event)"
+    >
+      <h3 id="rej-title" style="font-size: 16px; margin-bottom: 4px">Reject "{{ p.title }}"</h3>
+      <p id="rej-help" class="muted" style="font-size: 12.5px; margin-bottom: 12px">
+        A reason is required — it will be shown to the vendor.
+      </p>
+      <textarea
+        #rejectTa
+        class="modal-ta"
+        rows="4"
+        placeholder="Enter rejection reason (required)…"
+        required
+        aria-label="Rejection reason"
+        [value]="rejectReason()"
+        (input)="onRejectInput($any($event.target).value)"
+        [style.border-color]="rejectError() ? 'var(--error)' : ''"
+      ></textarea>
+      @if (rejectError()) {
+        <span
+          role="alert"
+          style="display: block; font-size: 12.5px; color: var(--error); margin-top: 6px"
+          >{{ rejectError() }}</span
+        >
+      }
+      <div style="display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end">
+        <button type="button" class="btn btn-g" (click)="closeReject()">Cancel</button>
+        <button type="button" class="btn btn-no" (click)="confirmReject()">Reject</button>
+      </div>
+    </div>
+  }
 }

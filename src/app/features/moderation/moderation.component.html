@@ -1,7 +1,7 @@
 <div class="page-head">
   <div>
     <h2>Product Moderation</h2>
-    <p>New listings go live only after admin approval — click any product to see full details</p>
+    <p>New listings go live only after admin approval — click any product to open its full details in a new tab</p>
   </div>
   <app-chip-tabs [labels]="tabLabels" [active]="activeLabel()" (select)="selectTab($event)" />
 </div>
@@ -25,15 +25,29 @@
     @for (raw of items(); track $index) {
       @let m = mapped(raw);
       <div class="mod">
-        <div class="thumb" style="cursor:pointer" (click)="openDrawer($index)">
-          @if (thumb(raw)) {
-            <img [src]="thumb(raw)" />
+        @if (m.id) {
+          <a class="thumb" [routerLink]="['/products', m.id]" [queryParams]="{ status: status() }" target="_blank" rel="noopener" [attr.aria-label]="'Open ' + m.title + ' in a new tab'">
+            @if (thumb(raw)) {
+              <img [src]="thumb(raw)" alt="" />
+            } @else {
+              📦
+            }
+          </a>
+        } @else {
+          <div class="thumb">
+            @if (thumb(raw)) {
+              <img [src]="thumb(raw)" alt="" />
+            } @else {
+              📦
+            }
+          </div>
+        }
+        <div class="minfo">
+          @if (m.id) {
+            <b><a class="mod-link" [routerLink]="['/products', m.id]" [queryParams]="{ status: status() }" target="_blank" rel="noopener" [attr.title]="'Open ' + m.title + ' in a new tab'">{{ m.title }}<span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a></b>
           } @else {
-            📦
+            <b>{{ m.title }}</b>
           }
-        </div>
-        <div class="minfo" style="cursor:pointer" (click)="openDrawer($index)">
-          <b>{{ m.title }}</b>
           <p>
             {{ m.vendor }} · <span class="badge-s b-grey">{{ m.category }}</span> ·
             <span class="money">{{ m.price == null ? '—' : egp(m.price) }}</span>
@@ -46,7 +60,9 @@
           <p class="muted" style="font-size:12px;margin-top:3px">{{ m.submitted ? formatDate(m.submitted) + ' · ' : '' }}{{ m.condition }}</p>
         </div>
         <div class="mactions">
-          <button class="btn btn-g btn-sm" (click)="openDrawer($index)">Details</button>
+          @if (m.id) {
+            <a class="btn btn-g btn-sm" [routerLink]="['/products', m.id]" [queryParams]="{ status: status() }" target="_blank" rel="noopener">Details <span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>
+          }
           @if (status() === 'ACTIVE') {
             <button class="btn btn-sm" [class.btn-no]="m.isHot" [class.btn-g]="!m.isHot" (click)="toggleHot($index)">{{ m.isHot ? '🔥 Remove' : '🔥 Hot' }}</button>
           }

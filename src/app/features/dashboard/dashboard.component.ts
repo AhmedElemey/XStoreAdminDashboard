@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { KpiCardComponent } from '../../shared/kpi-card.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StateBlockComponent } from '../../shared/state-block.component';
@@ -12,7 +12,7 @@ import { ApiError } from '../../core/api-error';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [KpiCardComponent, AvatarComponent, StateBlockComponent, FormsModule],
+  imports: [RouterLink, KpiCardComponent, AvatarComponent, StateBlockComponent, FormsModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {

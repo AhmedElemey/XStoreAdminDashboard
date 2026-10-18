@@ -132,7 +132,7 @@
           <div class="kv">
             <span>
               @if (p.id) {
-                <a [routerLink]="['/products', p.id]" style="color:var(--primary);cursor:pointer">{{ p.title }}</a>
+                <a [routerLink]="['/products', p.id]" target="_blank" rel="noopener" style="color:var(--primary)">{{ p.title }}<span class="ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>
               } @else {
                 {{ p.title }}
               }

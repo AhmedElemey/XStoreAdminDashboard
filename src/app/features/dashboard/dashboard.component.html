@@ -99,11 +99,20 @@
       <div class="c-body" style="padding-top:6px">
         @if (pendingApprovals().length) {
           @for (p of pendingApprovals(); track p.id) {
-            <div class="list-row" style="cursor:pointer" (click)="goto('moderation')">
-              <app-avatar [name]="p.vendor" />
-              <div style="flex:1"><b>{{ p.title }}</b><small class="muted">{{ p.vendor }} · {{ p.category }}</small></div>
-              <span class="badge-s b-amber">Pending</span>
-            </div>
+            @if (p.id) {
+              <a class="list-row" [routerLink]="['/products', p.id]" [queryParams]="{ status: 'PENDING' }" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" [attr.title]="'Open ' + p.title + ' in a new tab'">
+                <app-avatar [name]="p.vendor" />
+                <div style="flex:1;min-width:0"><b>{{ p.title }}</b><small class="muted">{{ p.vendor }} · {{ p.category }}</small></div>
+                <span class="badge-s b-amber">Pending</span>
+                <span class="ext" aria-hidden="true">↗</span><span class="sr-only">(opens in new tab)</span>
+              </a>
+            } @else {
+              <div class="list-row" style="cursor:pointer" (click)="goto('moderation')">
+                <app-avatar [name]="p.vendor" />
+                <div style="flex:1"><b>{{ p.title }}</b><small class="muted">{{ p.vendor }} · {{ p.category }}</small></div>
+                <span class="badge-s b-amber">Pending</span>
+              </div>
+            }
           }
         } @else {
           <p class="muted" style="font-size:13px">Nothing pending — all caught up.</p>
