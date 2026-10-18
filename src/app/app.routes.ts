@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth.guard';
+import { limitedAdminGuard } from './core/limited-admin.guard';
 import { ShellComponent } from './layout/shell.component';
 
 export const routes: Routes = [
@@ -49,6 +50,7 @@ export const routes: Routes = [
       {
         path: 'payments',
         data: { title: 'Fee Payments' },
+        canActivate: [limitedAdminGuard],
         loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent),
       },
       {
@@ -113,6 +115,7 @@ export const routes: Routes = [
       {
         path: 'general-settings',
         data: { title: 'General Settings' },
+        canActivate: [limitedAdminGuard],
         loadComponent: () => import('./features/general-settings/general-settings.component').then((m) => m.GeneralSettingsComponent),
       },
       { path: '**', redirectTo: 'overview' },

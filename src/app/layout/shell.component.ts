@@ -19,6 +19,9 @@ interface NavGroup {
   links: NavLink[];
 }
 
+/** Fee Payments and General Settings are hidden from the Administrator role. */
+const LIMITED_ADMIN_HIDDEN = new Set(['payments', 'general-settings']);
+
 @Component({
   selector: 'app-shell',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, IconComponent, ToastComponent, DrawerHostComponent],
@@ -38,10 +41,12 @@ export class ShellComponent {
   // protected packagesSubmitted = computed(() => this.demo.packages().filter((p) => p.status === 'submitted').length || null);
 
   constructor() {
+    // Restores the sidebar name and roleName after a page refresh (login already loads them).
+    this.auth.ensureProfile();
     this.badges.refresh();
   }
 
-  protected navGroups: NavGroup[] = [
+  private readonly allNavGroups: NavGroup[] = [
     {
       group: 'Overview',
       links: [{ view: 'overview', icon: 'grid', label: 'Dashboard' }],
@@ -77,6 +82,20 @@ export class ShellComponent {
     },
   ];
 
+  /** An "Administrator" never sees Fee Payments or General Settings. */
+  protected navGroups = computed<NavGroup[]>(() =>
+    this.auth.limitedAdmin()
+      ? this.allNavGroups
+          .map((g) => ({ ...g, links: g.links.filter((l) => !LIMITED_ADMIN_HIDDEN.has(l.view)) }))
+          .filter((g) => g.links.length > 0)
+      : this.allNavGroups,
+  );
+
+  /** The bell only counts queues this role can actually open. */
+  protected anyPending = computed(
+    () => (this.badges.moderationPending() ?? 0) > 0 || (!this.auth.limitedAdmin() && (this.badges.paymentsPending() ?? 0) > 0),
+  );
+
   protected toggleSidebar() {
     this.sidebarOpen.update((v) => !v);
   }
@@ -94,7 +113,7 @@ export class ShellComponent {
    *  and only says "nothing new" when there really is nothing pending. */
   protected openNotifications() {
     if (this.badges.moderationPending()) this.router.navigateByUrl('/moderation');
-    else if (this.badges.paymentsPending()) this.router.navigateByUrl('/payments');
+    else if (!this.auth.limitedAdmin() && this.badges.paymentsPending()) this.router.navigateByUrl('/payments');
     else this.toast.show('No new notifications');
   }
 }

@@ -5,7 +5,7 @@
       <div><b>xStore</b><span>Admin Console</span></div>
     </div>
     <div class="nav">
-      @for (g of navGroups; track g.group) {
+      @for (g of navGroups(); track g.group) {
         <div class="nav-group">{{ g.group }}</div>
         @for (link of g.links; track link.view) {
           <a [routerLink]="link.view" routerLinkActive="active" (click)="closeSidebar()">
@@ -28,9 +28,9 @@
     <div class="topbar">
       <div class="icon-btn menu-btn" (click)="toggleSidebar()"><app-icon name="menu" /></div>
       <div class="top-actions">
-        <button type="button" class="icon-btn" [title]="badges.anyPending() ? 'Items waiting for your review' : 'No new notifications'" (click)="openNotifications()">
+        <button type="button" class="icon-btn" [title]="anyPending() ? 'Items waiting for your review' : 'No new notifications'" (click)="openNotifications()">
           <app-icon name="bell" />
-          @if (badges.anyPending()) {
+          @if (anyPending()) {
             <span class="dot"></span>
           }
         </button>

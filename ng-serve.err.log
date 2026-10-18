@@ -1,2 +1,207 @@
 Node.js version v25.9.0 detected.
 Prior to version 27, odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2741: Property 'reviewedBy' is missing in type '{ id: string; vendorId: string; vendorName: string; method: string; amount: number; approvedAmount: number | null; status: string; receiptUrl: string | null; rejectionReason: string; createdAt: string; reviewedAt: string; }' but required in type 'MappedCommissionPayment'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/mappers.ts:205:2:
+[37m      205 │   [32mreturn[37m {
+          ╵   [32m~~~~~~[0m
+
+  'reviewedBy' is declared here.
+
+    src/app/core/models.ts:125:2:
+[37m      125 │   [32mreviewedBy[37m: string;
+          ╵   [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2741: Property 'reviewedBy' is missing in type '{ id: string; vendorId: string; vendorName: string; method: string; amount: number; approvedAmount: number | null; status: string; receiptUrl: string | null; rejectionReason: string; createdAt: string; reviewedAt: string; }' but required in type 'MappedCommissionPayment'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/mappers.ts:206:2:
+[37m      206 │   [32mreturn[37m {
+          ╵   [32m~~~~~~[0m
+
+  'reviewedBy' is declared here.
+
+    src/app/core/models.ts:125:2:
+[37m      125 │   [32mreviewedBy[37m: string;
+          ╵   [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'resetProfile' does not exist on type 'AuthService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:43:17:
+[37m      43 │     if (!v) this.[32mresetProfile[37m();
+         ╵                  [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'navGroups' does not exist on type 'ShellComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/layout/shell.component.html:8:17:
+[37m      8 │       @for (g of [32mnavGroups[37m; track g.group) {
+        ╵                  [32m~~~~~~~~~[0m
+
+  Error occurs in the template of component ShellComponent.
+
+    src/app/layout/shell.component.ts:28:15:
+[37m      28 │   templateUrl: [32m'./shell.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2488: Type 'Signal<NavGroup[]>' must have a '[Symbol.iterator]()' method that returns an iterator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/layout/shell.component.html:8:17:
+[37m      8 │       @for (g of [32mnavGroups[37m; track g.group) {
+        ╵                  [32m~~~~~~~~~[0m
+
+  Error occurs in the template of component ShellComponent.
+
+    src/app/layout/shell.component.ts:28:15:
+[37m      28 │   templateUrl: [32m'./shell.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2488: Type 'Signal<NavGroup[]>' must have a '[Symbol.iterator]()' method that returns an iterator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/layout/shell.component.html:8:17:
+[37m      8 │       @for (g of [32mnavGroups[37m; track g.group) {
+        ╵                  [32m~~~~~~~~~[0m
+
+  Error occurs in the template of component ShellComponent.
+
+    src/app/layout/shell.component.ts:28:15:
+[37m      28 │   templateUrl: [32m'./shell.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'roleId' does not exist on type 'AuthService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:142:11:
+[37m      142 │       this.[32mroleId[37m.set(Number.isFinite(role) ? role : null);
+          ╵            [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'roleId' does not exist on type 'AuthService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:166:9:
+[37m      166 │     this.[32mroleId[37m.set(null);
+          ╵          [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'roleId' does not exist on type 'AuthService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:165:9:
+[37m      165 │     this.[32mroleId[37m.set(null);
+          ╵          [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:143:19:
+[37m      143 │       const name = [32mfirstText[37m(findField(p, ['fullNameEn', 'fullNam...
+          ╵                    [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:143:29:
+[37m      143 │       const name = firstText([32mfindField[37m(p, ['fullNameEn', 'fullNam...
+          ╵                              [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:143:74:
+[37m      143 │ ...'fullNameEn', 'fullName'])) || [32mfirstText[37m(findField(p, ['name']));
+          ╵                                   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:143:84:
+[37m      143 │ ...'fullNameEn', 'fullName'])) || firstText([32mfindField[37m(p, ['name']));
+          ╵                                             [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:145:22:
+[37m      145 │       const rawRole = [32mfindField[37m(p, ['roleName', 'RoleName', 'role...
+          ╵                       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:146:17:
+[37m      146 │       let role = [32mfirstText[37m(rawRole);
+          ╵                  [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:147:66:
+[37m      147 │ ...wRole === 'object') role = [32mfirstText[37m(findField(rawRole, ['role...
+          ╵                               [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:147:76:
+[37m      147 │ ...'object') role = firstText([32mfindField[37m(rawRole, ['roleName', 'na...
+          ╵                               [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:144:19:
+[37m      144 │       const name = [32mfirstText[37m(findField(p, ['fullNameEn', 'fullNam...
+          ╵                    [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:144:29:
+[37m      144 │       const name = firstText([32mfindField[37m(p, ['fullNameEn', 'fullNam...
+          ╵                              [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:144:74:
+[37m      144 │ ...'fullNameEn', 'fullName'])) || [32mfirstText[37m(findField(p, ['name']));
+          ╵                                   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:144:84:
+[37m      144 │ ...'fullNameEn', 'fullName'])) || firstText([32mfindField[37m(p, ['name']));
+          ╵                                             [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:146:22:
+[37m      146 │       const rawRole = [32mfindField[37m(p, ['roleName', 'RoleName', 'role...
+          ╵                       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:147:17:
+[37m      147 │       let role = [32mfirstText[37m(rawRole);
+          ╵                  [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'firstText'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:148:66:
+[37m      148 │ ...wRole === 'object') role = [32mfirstText[37m(findField(rawRole, ['role...
+          ╵                               [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'findField'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/auth.service.ts:148:76:
+[37m      148 │ ...'object') role = firstText([32mfindField[37m(rawRole, ['roleName', 'na...
+          ╵                               [32m~~~~~~~~~[0m
+
+

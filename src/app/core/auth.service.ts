@@ -19,6 +19,12 @@ export class AuthService {
   private readonly tokenSig = signal(localStorage.getItem(TOKEN_KEY) || '');
   readonly isLoggedIn = computed(() => !!this.tokenSig());
   readonly adminName = signal('Ahmed (Owner)');
+  /** roleName from GET /api/auth/get-profile; '' while unknown, so nothing is hidden by default. */
+  readonly roleName = signal('');
+  /** roleName "Administrator" = limited admin — Fee Payments and General Settings stay owner-only. */
+  readonly limitedAdmin = computed(() => this.roleName().toLowerCase() === 'administrator');
+  private profileReq: Promise<void> | null = null;
+  private profileLoaded = false;
 
   get base(): string {
     return localStorage.getItem(BASE_KEY) || API_DEFAULT_BASE;
@@ -31,9 +37,11 @@ export class AuthService {
     return this.tokenSig();
   }
   set token(v: string) {
+    const changed = v !== this.tokenSig();
     if (v) localStorage.setItem(TOKEN_KEY, v);
     else localStorage.removeItem(TOKEN_KEY);
     this.tokenSig.set(v);
+    if (changed) this.resetProfile();
   }
 
   /** Generic fetch wrapper — mirrors legacy apiFetch(): Bearer auth, JSON or multipart body,
@@ -56,10 +64,15 @@ export class AuthService {
       });
     }
     const headers: Record<string, string> = {};
-    if (isTrustedPlatformHost(url)) headers['Authorization'] = PLATFORM_ACCESS_KEY;
     if (this.token) {
-      // The backend accepts either — sent both to match the Postman collection exactly.
+      // The live backend validates the admin session ONLY from the standard Bearer header
+      // (it answers 401 + WWW-Authenticate: Bearer otherwise). X-Auth-Token is kept
+      // alongside to match the Postman collection's dual scheme.
+      headers['Authorization'] = 'Bearer ' + this.token;
       headers['X-Auth-Token'] = this.token;
+    } else if (isTrustedPlatformHost(url)) {
+      // Free-tier infra gate for the marketplace host — only relevant before sign-in.
+      headers['Authorization'] = PLATFORM_ACCESS_KEY;
     }
     let payload: BodyInit | undefined;
     if (body instanceof FormData) {
@@ -109,7 +122,7 @@ export class AuthService {
     const token = (data?.['token'] || data?.['accessToken']) as string | undefined;
     if (!token) throw new ApiError(0, 'Server did not return a token.');
     this.token = token;
-    await this.loadProfile();
+    await this.ensureProfile();
   }
 
   async logout(): Promise<void> {
@@ -119,19 +132,50 @@ export class AuthService {
       /* clear the local session regardless */
     }
     this.token = '';
-    this.adminName.set('Ahmed (Owner)');
   }
 
-  /** GET /api/auth/get-profile — replaces the placeholder sidebar name once available.
-   *  Non-critical: a failure here just leaves the placeholder in place. */
-  async loadProfile(): Promise<void> {
+  /** GET /api/auth/get-profile — sets the sidebar name and roleName. Returns false when the
+   *  profile couldn't be loaded; non-critical, so the placeholders stay in place. */
+  async loadProfile(): Promise<boolean> {
     try {
       const p = await this.apiFetch<Record<string, unknown>>('/api/auth/get-profile', { noAuthRedirect: true });
-      const name = (p?.['fullNameEn'] || p?.['fullName'] || p?.['name']) as string | undefined;
+      // The profile arrives flat, inside the Result envelope's `data`, or wrapped again
+      // (`data.user` / `data.profile`) depending on backend version — search any of them.
+      const name = firstText(findField(p, ['fullNameEn', 'fullName'])) || firstText(findField(p, ['name']));
       if (name) this.adminName.set(name);
+      const rawRole = findField(p, ['roleName', 'RoleName', 'role_name', 'role']);
+      let role = firstText(rawRole);
+      if (!role && rawRole && typeof rawRole === 'object') role = firstText(findField(rawRole, ['roleName', 'name', 'title']));
+      this.roleName.set(role);
+      if (!role) console.warn('[auth] No roleName in the get-profile response — role-based nav/route restrictions stay off.');
+      return true;
     } catch {
-      /* keep the placeholder */
+      return false;
     }
+  }
+
+  /** Loads the profile once per session — the shell calls it on every page load (so the role
+   *  survives a refresh) and the role guard awaits it. Concurrent callers share one request;
+   *  a failed load is retried by the next caller. */
+  ensureProfile(): Promise<void> {
+    if (!this.token || this.profileLoaded) return Promise.resolve();
+    if (!this.profileReq) {
+      const reqToken = this.token;
+      this.profileReq = this.loadProfile().then((ok) => {
+        if (this.token !== reqToken) return; // session switched while this request was in flight
+        this.profileLoaded = ok;
+        this.profileReq = null;
+      });
+    }
+    return this.profileReq;
+  }
+
+  /** Session over — drop the name and role so a different account can't inherit them. */
+  private resetProfile() {
+    this.adminName.set('Ahmed (Owner)');
+    this.roleName.set('');
+    this.profileLoaded = false;
+    this.profileReq = null;
   }
 }
 
@@ -145,4 +189,25 @@ function serverMsg(d: unknown): string {
   if (err && typeof err === 'object') return String((err as Record<string, unknown>)['message'] || '');
   if (typeof err === 'string') return err;
   return String(o['message'] || o['title'] || '');
+}
+
+/** Depth-limited recursive lookup for a field under any of `keys`, wherever the profile
+ *  response nests it (flat / `data` / `data.user` / …). Tolerant like the DTO mappers. */
+function findField(value: unknown, keys: readonly string[], depth = 0): unknown {
+  if (depth > 3 || value === null || typeof value !== 'object') return undefined;
+  const obj = value as Record<string, unknown>;
+  for (const key of keys) {
+    const v = obj[key];
+    if (v !== undefined && v !== null && v !== '') return v;
+  }
+  for (const v of Object.values(obj)) {
+    const found = findField(v, keys, depth + 1);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+function firstText(...vals: unknown[]): string {
+  for (const v of vals) if (typeof v === 'string' && v.trim()) return v.trim();
+  return '';
 }
