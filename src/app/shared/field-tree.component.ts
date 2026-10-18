@@ -22,7 +22,7 @@ import {
         <details class="ft-det" [open]="isOpen()" (toggle)="onToggle($event)">
           <summary>
             <span [attr.title]="name()">{{ label() }}</span>
-            <span class="muted"
+            <span class="muted" style="margin-left: 4px"
               >({{
                 c.kind === 'object' ? c.entries.length + ' fields' : c.items.length + ' items'
               }})</span
