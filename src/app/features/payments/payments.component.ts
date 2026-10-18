@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AdminApiService } from '../../core/admin-api.service';
 import { DrawerService } from '../../core/drawer.service';
 import { NavBadgesService } from '../../core/nav-badges.service';
@@ -13,6 +14,7 @@ import { ChipTabsComponent } from '../../shared/chip-tabs.component';
 import { IconComponent } from '../../shared/icon.component';
 import { DateRangeFilterComponent } from '../../shared/date-range-filter.component';
 import { PaymentDrawerComponent } from './payment-drawer.component';
+import { approvePayment, rejectPayment } from './payment-actions';
 
 const STATUS_TABS: [string, string][] = [
   ['Pending', 'Pending'],
@@ -42,7 +44,7 @@ let searchTimer: ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'app-payments',
-  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent],
+  imports: [StateBlockComponent, PagerComponent, ChipTabsComponent, IconComponent, DateRangeFilterComponent, RouterLink],
   templateUrl: './payments.component.html',
 })
 export class PaymentsComponent implements OnInit, OnDestroy {
@@ -147,49 +149,11 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     const raw = (this.items() || [])[i];
     if (!raw) return;
     const payment = this.mapped(raw);
+    const deps = { api: this.api, toast: this.toast, drawer: this.drawer, onDone: () => this.load() };
     this.drawer.show('Review payment', PaymentDrawerComponent, {
       payment,
-      onApprove: () => this.approve(payment),
-      onReject: (reason: string) => this.reject(payment, reason),
+      onApprove: () => approvePayment(deps, payment),
+      onReject: (reason: string) => rejectPayment(deps, payment, reason),
     });
-  }
-
-  /** Returns true on success so the drawer knows whether to keep its form state. */
-  private async approve(p: MappedCommissionPayment): Promise<boolean> {
-    try {
-      await this.api.approveCommissionPayment(p.id, p.amount > 0 ? p.amount : undefined);
-      this.toast.show(`Approved — ${egp(p.amount)} deducted from ${p.vendorName}'s balance ✓`);
-      this.drawer.close();
-      this.load();
-      return true;
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) return false;
-      this.toast.show(`Approve failed: ${(e as Error).message || 'error'}`);
-      if (e instanceof ApiError && e.status === 409) {
-        // Someone else already reviewed it: show the real status instead of a stale Pending row.
-        this.drawer.close();
-        this.load();
-      }
-      return false;
-    }
-  }
-
-  private async reject(p: MappedCommissionPayment, reason: string): Promise<boolean> {
-    try {
-      await this.api.rejectCommissionPayment(p.id, reason);
-      this.toast.show('Payment rejected — vendor notified');
-      this.drawer.close();
-      this.load();
-      return true;
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) return false;
-      this.toast.show(`Reject failed: ${(e as Error).message || 'error'}`);
-      if (e instanceof ApiError && e.status === 409) {
-        // Someone else already reviewed it: show the real status instead of a stale Pending row.
-        this.drawer.close();
-        this.load();
-      }
-      return false;
-    }
   }
 }

@@ -54,6 +54,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent),
       },
       {
+        path: 'payments/vendor/:vendorId',
+        data: { title: 'Vendor Payment History' },
+        canActivate: [limitedAdminGuard],
+        loadComponent: () => import('./features/payments/vendor-payments.component').then((m) => m.VendorPaymentsComponent),
+      },
+      {
         path: 'categories',
         data: { title: 'Categories' },
         loadComponent: () => import('./features/categories/categories.component').then((m) => m.CategoriesComponent),

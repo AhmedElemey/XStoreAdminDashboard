@@ -31,6 +31,12 @@
     <b>{{ p.vendorName }}</b>
   }
 </div>
+@if (p.vendorId) {
+  <div class="kv">
+    <span>History</span>
+    <a [routerLink]="['/payments/vendor', p.vendorId]" (click)="closeDrawer()" style="color:var(--primary);cursor:pointer;font-weight:700">Payment history →</a>
+  </div>
+}
 @if (isPending()) {
   <div class="kv"><span>Current balance owed</span><b>{{ outstanding() == null ? '—' : egp(outstanding()!) }}</b></div>
 }
