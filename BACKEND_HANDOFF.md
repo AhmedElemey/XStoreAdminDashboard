@@ -53,7 +53,7 @@ What this dashboard calls (`AdminApiService.commissionPayments()` /
 `approveCommissionPayment()` / `rejectCommissionPayment()`):
 
 ```
-GET  /api/admin/commission-payments?status=Pending|Approved|Rejected&keyword=&from=&to=&page=1&pageSize=20
+GET  /api/admin/commission-payments?status=Pending|Approved|Rejected&vendorId=&keyword=&from=&to=&page=1&pageSize=20
      → { items: CommissionPaymentDto[], totalCount, totalPages }
 POST /api/admin/commission-payments/{id}/approve   { amountEgp }   → 200/204, 409 if not Pending
 POST /api/admin/commission-payments/{id}/reject    { reason }      → 200/204, 409 if not Pending
@@ -62,6 +62,32 @@ CommissionPaymentDto = { id, vendorId, vendor: { id, storeName }, method, amount
                          approvedAmountEgp, status, receiptImageUrl, rejectionReason,
                          createdAt, reviewedAt, reviewedBy }
 ```
+
+### Backend ask: `vendorId` filter (2026-10-18)
+
+The **vendor payment history** screen (`/payments/vendor/:vendorId`, super admin only, opened from
+Fee Payments) shows one vendor's full history. It calls:
+
+```
+GET /api/admin/commission-payments?vendorId={vendorId}&page=1&pageSize=100   (then page=2, 3, … until totalPages)
+```
+
+Please support `vendorId` as an **exact-match** filter on the request's vendor (the same id as
+`CommissionPaymentDto.vendorId` / `vendor.id`):
+
+- Combinable with the existing `status`, `keyword`, `from`, `to` filters (AND). The history screen
+  sends only `vendorId` and filters by status/date itself, so the totals cover all statuses.
+- `totalCount` / `totalPages` must reflect the filtered set.
+- An unknown `vendorId` → `200` with an empty `items` list (not 404); omitted or empty → all vendors (today's behaviour).
+- Accept `pageSize` up to **100** — the history screen and General Settings now page through
+  whole lists at 100 per request (capped at 20 pages = 2000 rows).
+- Order by `createdAt` descending (the dashboard re-sorts anyway, but paging should be stable).
+
+**Until this ships**, the dashboard also filters the rows itself and keeps only the requested
+vendor's. If the backend ignores `vendorId`, the screen pages through **every** vendor's
+requests (slow) and shows a notice that the history may be incomplete if the 2000-row cap is hit
+or other vendors' rows were dropped. Once `vendorId` is honoured, that notice disappears with no
+dashboard change needed.
 
 The full contract (including the vendor-side `POST /api/vendor/commission-payments` and the
 transaction rules) lives in the mobile repo:
