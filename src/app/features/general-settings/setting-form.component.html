@@ -7,10 +7,12 @@
 
   <div class="form-row">
     <label for="st-type">Data type *</label>
-    <select id="st-type" [value]="dataType()" [disabled]="editing()" (change)="setType($any($event.target).value)" (blur)="touch('dataType')">
-      <option value="" disabled>Select a data type</option>
+    <select id="st-type" [disabled]="editing()" (change)="setType($any($event.target).value)" (blur)="touch('dataType')">
+      <!-- [selected] per option, not [value] on the select: the select's value is applied before
+           the @for options exist, so the browser would fall back to the first option ("String"). -->
+      <option value="" disabled [selected]="!dataType()">Select a data type</option>
       @for (t of types; track t) {
-        <option [value]="t">{{ t === 'Json' ? 'Json / List' : t }}</option>
+        <option [value]="t" [selected]="t === dataType()">{{ t === 'Json' ? 'Json / List' : t }}</option>
       }
     </select>
     @if (show('dataType') && typeError()) {
