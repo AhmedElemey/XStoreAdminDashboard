@@ -205,3 +205,29 @@ Prior to version 27, odd numbered Node.js versions will not enter LTS status and
           ╵                               [32m~~~~~~~~~[0m
 
 
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2741: Property 'fcmToken' is missing in type '{ id: string; name: string; sub: string; city: string; phone: string; email: string; role: string; verified: boolean | null; blocked: boolean | null; blockedUntil: string | null; orders: string | number; spend: string; joined: string; }' but required in type 'MappedUser'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/mappers.ts:161:2:
+[37m      161 │   [32mreturn[37m {
+          ╵   [32m~~~~~~[0m
+
+  'fcmToken' is declared here.
+
+    src/app/core/models.ts:69:2:
+[37m      69 │   [32mfcmToken[37m: string;
+         ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2741: Property 'fcmToken' is missing in type '{ id: string; store: string; owner: string; city: string; phone: string; email: string; category: string; verified: boolean | null; blocked: boolean | null; blockedUntil: string | null; blockReason: string; products: number | null; rating: number | null; joined: string; }' but required in type 'MappedVendor'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/core/mappers.ts:181:2:
+[37m      181 │   [32mreturn[37m {
+          ╵   [32m~~~~~~[0m
+
+  'fcmToken' is declared here.
+
+    src/app/core/models.ts:95:2:
+[37m      95 │   [32mfcmToken[37m: string;
+         ╵   [32m~~~~~~~~[0m
+
+

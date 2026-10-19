@@ -79,6 +79,9 @@
         @if (m.id) {
           <div class="kv"><span>User ID</span><b>{{ m.id }}</b></div>
         }
+        @if (m.fcmToken) {
+          <div class="kv"><span>FCM Token</span><b>{{ m.fcmToken }}</b></div>
+        }
       </div>
     </div>
   </div>

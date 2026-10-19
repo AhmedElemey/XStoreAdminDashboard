@@ -66,6 +66,7 @@ export interface MappedUser {
   orders: number | string;
   spend: string;
   joined: string;
+  fcmToken: string | null;
 }
 
 export interface MappedVendor {
@@ -91,6 +92,7 @@ export interface MappedVendor {
   products: number | null;
   rating: number | null;
   joined: string;
+  fcmToken: string | null;
 }
 
 export interface MappedVendorReport {

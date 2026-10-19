@@ -172,6 +172,7 @@ export function mapUser(u: Dto): MappedUser {
     orders: orders == null ? '—' : orders,
     spend: spend == null ? '—' : egp(spend),
     joined: dateOnly(firstNonEmpty(u['creationDate'], u['CreationDate'], u['joinedAt'], u['createdAt'], u['joinDate'])) || '—',
+    fcmToken: firstNonEmpty(u['fcmToken'], u['FcmToken']) || null,
   };
 }
 
@@ -193,6 +194,7 @@ export function mapVendor(v: Dto): MappedVendor {
     products: numOr(v['activeProductsCount'], v['ActiveProductsCount'], v['productsCount'], v['listingsCount'], v['products']),
     rating: numOr(v['storeRating'], v['StoreRating'], v['rating']),
     joined: dateOnly(firstNonEmpty(v['joinedDate'], v['JoinedDate'], v['creationDate'], v['CreationDate'], v['joinedAt'], v['createdAt'])) || '—',
+    fcmToken: firstNonEmpty(v['fcmToken'], v['FcmToken']) || null,
   };
 }
 
