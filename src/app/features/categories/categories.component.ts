@@ -35,6 +35,9 @@ export class CategoriesComponent implements OnInit {
   );
   protected loadState = signal<'loading' | 'error' | null>('loading');
   protected errorMsg = signal('');
+  /** Id of the category currently being deleted, so a second click (on this row or another)
+   *  can't fire an overlapping delete while one is already in flight. */
+  protected deletingId = signal<string | null>(null);
 
   ngOnInit() {
     this.load();
@@ -115,7 +118,15 @@ export class CategoriesComponent implements OnInit {
       this.toast.show('Missing category id');
       return;
     }
+    // Business rule: subcategories must be deleted before their parent.
+    const children = this.childrenOf(raw);
+    if (children.length) {
+      this.toast.show(`Delete its ${children.length} subcategor${children.length === 1 ? 'y' : 'ies'} first.`);
+      return;
+    }
+    if (this.deletingId()) return;
     if (!confirm(`Delete category "${m.nameEn}"? This cannot be undone.`)) return;
+    this.deletingId.set(m.id);
     try {
       await this.api.deleteCategory(m.id);
       this.toast.show(`Category "${m.nameEn}" deleted`);
@@ -123,6 +134,8 @@ export class CategoriesComponent implements OnInit {
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       this.toast.show('Delete failed: ' + ((e as Error).message || 'error'));
+    } finally {
+      this.deletingId.set(null);
     }
   }
 
