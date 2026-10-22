@@ -115,6 +115,16 @@ export class CategoriesComponent implements OnInit {
       this.toast.show('Missing category id');
       return;
     }
+    // The backend doesn't cascade: a parent with subcategories must have them deleted
+    // first, or the delete fails. Block it here with a clear message instead of letting
+    // the admin hit a raw backend error.
+    const childCount = this.childrenOf(raw).length;
+    if (childCount > 0) {
+      this.toast.show(
+        `Delete its ${childCount} subcategor${childCount === 1 ? 'y' : 'ies'} first, then "${m.nameEn}".`,
+      );
+      return;
+    }
     if (!confirm(`Delete category "${m.nameEn}"? This cannot be undone.`)) return;
     try {
       await this.api.deleteCategory(m.id);
