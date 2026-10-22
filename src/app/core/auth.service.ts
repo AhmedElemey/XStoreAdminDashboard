@@ -23,6 +23,9 @@ export class AuthService {
   readonly roleName = signal('');
   /** roleName "Administrator" = limited admin — Fee Payments and General Settings stay owner-only. */
   readonly limitedAdmin = computed(() => this.roleName().toLowerCase() === 'administrator');
+  /** True when the last get-profile fetch failed — route guards must fail closed on this,
+   *  since an unknown role here does not mean "not a limited admin". */
+  readonly profileLoadFailed = signal(false);
   private profileReq: Promise<void> | null = null;
   private profileLoaded = false;
 
@@ -148,8 +151,10 @@ export class AuthService {
       if (!role && rawRole && typeof rawRole === 'object') role = firstText(findField(rawRole, ['roleName', 'name', 'title']));
       this.roleName.set(role);
       if (!role) console.warn('[auth] No roleName in the get-profile response — role-based nav/route restrictions stay off.');
+      this.profileLoadFailed.set(false);
       return true;
     } catch {
+      this.profileLoadFailed.set(true);
       return false;
     }
   }
@@ -174,6 +179,7 @@ export class AuthService {
   private resetProfile() {
     this.adminName.set('Ahmed (Owner)');
     this.roleName.set('');
+    this.profileLoadFailed.set(false);
     this.profileLoaded = false;
     this.profileReq = null;
   }

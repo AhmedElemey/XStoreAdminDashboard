@@ -8,6 +8,10 @@ import { AuthService } from './auth.service';
 export const limitedAdminGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   await auth.ensureProfile();
+  // A failed profile fetch means the role is unknown, not confirmed non-limited —
+  // fail closed here (unlike nav visibility) so a transient network error can't
+  // let a limited admin reach an owner-only route by typing the URL directly.
+  if (auth.profileLoadFailed()) return inject(Router).createUrlTree(['/overview']);
   if (!auth.limitedAdmin()) return true;
   return inject(Router).createUrlTree(['/overview']);
 };
